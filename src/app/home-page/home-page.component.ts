@@ -16,7 +16,7 @@ export class HomePageComponent implements OnInit {
 
 ngOnInit(){
   
-  this.loadScript("assets/js/main.js");
+  //this.loadScript("assets/js/main.js");
 }
 
 }

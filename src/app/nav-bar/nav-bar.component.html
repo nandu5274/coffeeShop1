@@ -1,5 +1,4 @@
  <!-- ======= Top Bar ======= -->
- test1
  <div id="topbar" class="d-flex align-items-center fixed-top">
     <div class="container d-flex justify-content-center justify-content-md-between">
 
@@ -27,13 +26,13 @@
 
       <nav id="navbar" class="navbar order-last order-lg-0">
         <ul>
-          <li><a class="nav-link scrollto active" href="#hero">Home</a></li>
-          <li><a class="nav-link scrollto" href="#about">About</a></li>
-          <li><a class="nav-link scrollto" href="#menu">Menu</a></li>
-          <li><a class="nav-link scrollto" href="#specials">Specials</a></li>
-          <li><a class="nav-link scrollto" href="#events">Events</a></li>
-          <li><a class="nav-link scrollto" href="#chefs">Chefs</a></li>
-          <li><a class="nav-link scrollto" href="#gallery">Gallery</a></li>
+          <li><a class="nav-link scrollto" href="#hero" (click)="navigateToMenu('hero')">Home</a></li>
+          <li><a class="nav-link scrollto" href="#about" (click)="navigateToMenu('about')" >About</a></li>
+          <li><a class="nav-link scrollto" href="#menu"  (click)="navigateToMenu('menu')" >Menu</a></li>
+          <li><a class="nav-link scrollto" href="#specials" (click)="navigateToMenu('specials')" >Specials</a></li>
+          <li><a class="nav-link scrollto" href="#events" (click)="navigateToMenu('events')" >Events</a></li>
+          <li><a class="nav-link scrollto" href="#chefs" (click)="navigateToMenu('chefs')">Chefs</a></li>
+          <li><a class="nav-link scrollto" href="#gallery" (click)="navigateToMenu('gallery')" >Gallery</a></li>
           <li class="dropdown"><a href="#"><span>Drop Down</span> <i class="bi bi-chevron-down"></i></a>
             <ul>
               <li><a href="#">Drop Down 1</a></li>
