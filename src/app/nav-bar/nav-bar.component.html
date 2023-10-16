@@ -26,13 +26,13 @@
 
       <nav id="navbar" class="navbar order-last order-lg-0">
         <ul>
-          <li><a class="nav-link scrollto" href="#hero" (click)="navigateToMenu('hero')">Home</a></li>
-          <li><a class="nav-link scrollto" href="#about" (click)="navigateToMenu('about')" >About</a></li>
-          <li><a class="nav-link scrollto" href="#menu"  (click)="navigateToMenu('menu')" >Menu</a></li>
-          <li><a class="nav-link scrollto" href="#specials" (click)="navigateToMenu('specials')" >Specials</a></li>
-          <li><a class="nav-link scrollto" href="#events" (click)="navigateToMenu('events')" >Events</a></li>
-          <li><a class="nav-link scrollto" href="#chefs" (click)="navigateToMenu('chefs')">Chefs</a></li>
-          <li><a class="nav-link scrollto" href="#gallery" (click)="navigateToMenu('gallery')" >Gallery</a></li>
+          <li><a class="nav-link scrollto" href="#hero" [class.active]="isOtherItemsActive" (click)="navigateToMenu('hero')">Home</a></li>
+          <li><a class="nav-link scrollto" href="#about" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('about')" >About</a></li>
+          <li><a class="nav-link scrollto" href="#menu"  [class.active]="isMenuActive" (click)="navigateToMenu('menu')" >Menu</a></li>
+          <li><a class="nav-link scrollto" href="#specials" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('specials')" >Specials</a></li>
+          <li><a class="nav-link scrollto" href="#events" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('events')" >Events</a></li>
+          <li><a class="nav-link scrollto" href="#chefs" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('chefs')">Chefs</a></li>
+          <li><a class="nav-link scrollto" href="#gallery" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('gallery')" >Gallery</a></li>
           <li class="dropdown"><a href="#"><span>Drop Down</span> <i class="bi bi-chevron-down"></i></a>
             <ul>
               <li><a href="#">Drop Down 1</a></li>

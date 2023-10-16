@@ -1,22 +1,29 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 
 @Component({
   selector: 'app-items-menu',
   templateUrl: './items-menu.component.html',
   styleUrls: ['./items-menu.component.scss']
 })
-export class ItemsMenuComponent implements OnInit {
+export class ItemsMenuComponent implements AfterViewInit {
 
+  ngAfterViewInit() {
+    setTimeout(() => {
+      const loadEvent = new Event('load');
+      window.dispatchEvent(loadEvent);
+    }, 20);
+  }
+  handleCustomEvent(event: Event): void {
+    console.log('Handling customEvent in AppComponent');
 
-  public loadScript(url: string) {
-    let node = document.createElement('script');
-    node.src = url;
-    node.type = 'text/javascript';
-    document.getElementsByTagName('head')[0].appendChild(node);
-}
+    // Do your handling logic here
 
-ngOnInit(){
-  
-//  this.loadScript("assets/js/main.js");
-}
+    // Remove the event listener to prevent further execution
+    window.removeEventListener('customEvent', this.handleCustomEvent);
+  }
+
+  ngOnDestroy(): void {
+    // Clean up: Remove the event listener when the component is destroyed
+    window.removeEventListener('customEvent', this.handleCustomEvent);
+  }
 }
