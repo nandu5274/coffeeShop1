@@ -1,0 +1,290 @@
+<!-- ======= Menu Section ======= -->
+<section id="menu" class="menu section-bg" style="padding-top: 9em;">
+  <div class="container" data-aos="fade-up" >
+
+    <div  *ngIf="showMenu"  class="section-title" style="padding-top: 1em;">
+      <h2 class="align">Menu features {{filteredMenuItems.length}} delicious dishes</h2>
+      <div  class="refresh Menu-row">
+        <div style="    margin-bottom: 0.5em;">
+          <p class="header-align">Check Our  Menu 
+             <a style="    display: block;">
+             <img src="assets/img/table.png" class="table"  alt=""> 
+          <a style="font-family: sans-serif; font-size: smaller; font-weight: 500;"> : {{tablePlace}} {{tableNumber}}</a>
+        </a>
+          </p>
+   
+          <a class = "itemgst"> * Images displayed below are meant for reference.</a>
+          <a class = "itemgst" style="text-align: center; color: lemonchiffon;"> 
+            * The breakfast menu is only offered from 9:30 AM to 12:30 PM.
+            </a>
+
+        </div>
+    
+
+        <div *ngIf="isCap === 'true'" class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
+          <button style=" background-color: #d49b3b; color: #11100e;" routerLink="/cap">cap</button>
+        
+        </div>
+      </div>
+     
+    </div>
+
+
+
+
+
+<!-- 
+    <div class="row" data-aos="fade-up" data-aos-delay="100">
+      <div class="col-lg-12 d-flex justify-content-center">
+        <ul id="menu-flters">
+          <li data-filter="*" class="filter-active">All</li>
+          <li data-filter=".filter-starters">Starters</li>
+          <li data-filter=".filter-salads">Salads</li>
+          <li data-filter=".filter-specialty">Specialty</li>
+          <li data-filter=".filter-coffee">Coffee</li>
+        </ul>
+      </div>
+    </div> -->
+
+    <div   *ngIf="showCourse" class="row" data-aos="fade-up" data-aos-delay="100">
+      <div class="col-lg-12 d-flex justify-content-center" style="padding:0">
+        <ul  id="menu-flters">
+                    <li data-filter="*" class="filter-active"  (click)="filterBYcuisine('all')" >All</li>
+          <li *ngFor="let menuCourse of menuCourseCuisineList.cuisines"  [attr.data-filter]="menuCourse.cuisine.class" #menuListItem  
+           (click)="filterBYcuisine(menuCourse.cuisine.type)">
+            {{menuCourse.cuisine.type}}</li> 
+
+         
+          </ul>
+      </div>
+      </div>
+      <a style=" text-align: -webkit-center;"><hr style="width: 60%;     margin: 4px;"></a>
+
+    <div  id="showCourse-view" *ngIf="showCourse" class="row" data-aos="fade-up" data-aos-delay="100">
+      <div class="col-lg-12 d-flex justify-content-center" style="padding:0">
+        <ul id="menu-flters" >
+
+        <li *ngFor="let menuCourse of filteredMenuCourseList" id="{{ menuCourse.type }}"   [ngClass]="{'vew-course': menuCourse.view === true}" [attr.data-filter]="menuCourse.class" #menuListItem 
+        >{{menuCourse.type}}
+           <a style="position: relative; 
+           font-size: larger;
+          "  #menuContainer >
+          {{menuCourse.emj}}
+        </a>    </li>
+        </ul>
+      </div>
+    </div>
+
+    <div   *ngIf="showMenu" class="row menu-container " data-aos="fade-up" data-aos-delay="200"  style="height: fit-content !important">
+
+      <div   *ngFor="let menuItem of filteredMenuItems; index as i"  class="col-lg-6 menu-item menu-item-click"  [class]="menuItem.class" (click)="openModal(menuItem)">
+        <img [src]="menuItem.imagePath" class="menu-img" alt="">
+        <div class="menu-content">
+          <a style="max-width:12em">{{menuItem.name}} <img [src]="menuItem.typePath" style="width: 14px; margin: 0px 2px 0px 2px;"> </a><span>&#8377; {{menuItem.cost}}</span>
+        
+        </div>
+        <div class="menu-ingredients">
+          {{menuItem.desc}}
+        </div>
+        <div class="menu-ingredients" style="font-size: 21px !important;">
+          <div class="feature"  *ngIf="menuItem.mustTry" >
+            <p class="shine-text">MUST TRY</p>
+          </div>
+        </div>
+      </div>
+
+
+    
+
+<!-- 
+      <div class="col-lg-6 menu-item filter-starters" (click)="openModal()">
+        <img src="assets/img/menu/lobster-bisque.jpg" class="menu-img" alt="">
+        <div class="menu-content">
+          <a>Lobster Bisque</a><span>$5.95</span>
+        </div>
+        <div class="menu-ingredients">
+          Lorem, deren, trataro, filede, nerada
+        </div>
+      </div>
+
+      <div class="col-lg-6 menu-item filter-specialty">
+        <img src="assets/img/menu/bread-barrel.jpg" class="menu-img" alt="">
+        <div class="menu-content">
+          <a>Bread Barrel</a><span>$6.95</span>
+        </div>
+        <div class="menu-ingredients">
+          Lorem, deren, trataro, filede, nerada
+        </div>
+      </div>
+
+      <div class="col-lg-6 menu-item filter-starters">
+        <img src="assets/img/menu/cake.jpg" class="menu-img" alt="">
+        <div class="menu-content">
+          <a>Crab Cake</a><span>$7.95</span>
+        </div>
+        <div class="menu-ingredients">
+          A delicate crab cake served on a toasted roll with lettuce and tartar sauce
+        </div>
+      </div>
+
+      <div class="col-lg-6 menu-item filter-salads">
+        <img src="assets/img/menu/caesar.jpg" class="menu-img" alt="">
+        <div class="menu-content">
+          <a href="#">Caesar Selections</a><span>$8.95</span>
+        </div>
+        <div class="menu-ingredients">
+          Lorem, deren, trataro, filede, nerada
+        </div>
+      </div>
+
+      <div class="col-lg-6 menu-item filter-specialty">
+        <img src="assets/img/menu/tuscan-grilled.jpg" class="menu-img" alt="">
+        <div class="menu-content">
+          <a>Tuscan Grilled</a><span>$9.95</span>
+        </div>
+        <div class="menu-ingredients">
+          Grilled chicken with provolone, artichoke hearts, and roasted red pesto
+        </div>
+      </div>
+
+      <div class="col-lg-6 menu-item filter-starters">
+        <img src="assets/img/menu/mozzarella.jpg" class="menu-img" alt="">
+        <div class="menu-content">
+          <a>Mozzarella Stick</a><span>$4.95</span>
+        </div>
+        <div class="menu-ingredients">
+          Lorem, deren, trataro, filede, nerada
+        </div>
+      </div>
+
+      <div class="col-lg-6 menu-item filter-salads">
+        <img src="assets/img/menu/greek-salad.jpg" class="menu-img" alt="">
+        <div class="menu-content">
+          <a>Greek Salad</a><span>$9.95</span>
+        </div>
+        <div class="menu-ingredients">
+          Fresh spinach, crisp romaine, tomatoes, and Greek olives
+        </div>
+      </div>
+
+      <div class="col-lg-6 menu-item filter-salads">
+        <img src="assets/img/menu/spinach-salad.jpg" class="menu-img" alt="">
+        <div class="menu-content">
+          <a>Spinach Salad</a><span>$9.95</span>
+        </div>
+        <div class="menu-ingredients">
+          Fresh spinach with mushrooms, hard boiled egg, and warm bacon vinaigrette
+        </div>
+      </div>
+
+      <div class="col-lg-6 menu-item filter-specialty">
+        <img src="assets/img/menu/lobster-roll.jpg" class="menu-img" alt="">
+        <div class="menu-content">
+          <a>Lobster Roll</a><span>$12.95</span>
+        </div>
+        <div class="menu-ingredients">
+          Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll
+        </div>
+      </div>
+
+      <div class="col-lg-6 menu-item filter-coffee">
+        <img src="assets/img/menu/lobster-roll.jpg" class="menu-img" alt="">
+        <div class="menu-content">
+          <a>Cofee</a><span>$12.95</span>
+        </div>
+        <div class="menu-ingredients">
+          Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll
+        </div>
+      </div> -->
+
+    </div>
+    <div  *ngIf="!showMenu"  class="invalid-route">
+        please, close the browser and scan QR code from the table to view menu
+    </div>
+
+  </div>
+</section><!-- End Menu Section -->
+
+
+
+
+<div *ngIf="showModal" class="modal">
+  <div class="modal-content">
+
+    <!-- Modal for food menu -->
+
+
+    <div class="order-detail-container">
+      <div>
+        <img class="order-detail-img" [src]="selectedItem.imagePath" alt="vegan">
+      </div>
+      <div id="card" class="center">
+        <div style="display: flex;">
+          <div class="feature">
+            <p>👍 MUST TRY</p>
+          </div>
+          <div class="cuisine">
+            🌿
+          </div>
+          <div class="cuisine2" (click)="closeModal()">
+            &times;
+          </div>
+        </div>
+        <div class="dish">
+          <h1 class="item-name">{{selectedItem.name}} </h1>
+       
+        </div>
+  
+
+        <div class="description"   style="width: -webkit-fill-available;
+        height: 70px;">
+           <p style="    display: flex;
+           flex-direction: row;
+           text-align: center;
+           justify-content: space-between;">
+
+            <a   *ngFor="let menuItem of selectedItem.sizes; index as i"  
+            class="col-lg-6 menu-item menu-item-click"  style="display: flex;width: min-content;
+    flex-flow: column;" (click)="selectSize(menuItem)">
+            <a>
+              {{menuItem.size}}
+            </a>
+            <a>
+              {{menuItem.cost}}
+            </a>
+            <input type="radio" name="menuSize" [value]="menuItem" [(ngModel)]="selectedSize" (click)="$event.stopPropagation()">
+           </a>
+          </p> 
+
+        </div>
+        <div>
+        <div class="amount">
+          <h3><span>&#8377; {{selectedItem.cost}}</span></h3>
+        </div>
+        <div class="quantity-input" style="position: unset !important">
+          <button (click)="decrement()">-</button>
+          <input type="text" [(ngModel)]="quantity" />
+          <button (click)="increment()">+</button>
+        </div>
+      </div>
+        <div class="cta"  *ngIf="isCap === 'true'" >
+          <button type="button" (click)="sendDataToParent(quantity)">add to Bowl</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    <!-- Modal for food menu -->
+
+    <!-- Vendor JS Files -->
+    <script src="assets/vendor/aos/aos.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+    <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+    <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+    <script src="assets/vendor/php-email-form/validate.js"></script>
+
+    <!-- Template Main JS File -->
+    <script src="assets/js/main.js"></script>

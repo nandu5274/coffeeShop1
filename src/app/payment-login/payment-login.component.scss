@@ -1,0 +1,131 @@
+.login-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 30px;
+   
+    border-radius: 5px;
+   
+  }
+  
+  .error-banner {
+    background-color: #f2dede;
+    color: #a94442;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+  }
+  .login {
+    font-family: "Poppins", sans-serif !important;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .login-btn {
+    background: #1a1814;
+   
+    border: 2px solid #cda45e;
+    color: #fff;
+    border-radius: 50px;
+    padding: 8px 25px;
+    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    transition: 0.3s;
+  }
+  
+  .login-btn:hover {
+    background: #cda45e  !important;
+   
+    border: 2px solid #cda45e;
+    color: #fff;
+    border-radius: 50px;
+    padding: 8px 25px;
+    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    transition: 0.3s;
+  }
+
+  label {
+  
+    display: block;
+    margin-bottom: 8px;
+    color: #cda45e;
+    font-weight: bold;
+  }
+  
+  .password-input-container {
+    position: relative;
+  }
+  
+  .password-wrapper {
+    display: flex;
+  }
+  
+  .password-wrapper input {
+    flex: 1;
+    background: #cda45e;
+    width: calc(100% - 40px);
+    padding: 12px;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+    border: 1px solid #cda45e;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+
+
+  /* loading-spinner.component.css */
+  .spinner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Ensure it's above other content */
+    backdrop-filter: blur(10px); 
+  }
+  
+  .spinner {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #d49b3b;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+   
+  .username {
+    background: #cda45e;
+    flex: 1;
+    width: calc(100% - 30px);
+    padding: 12px;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+    border: 1px solid #cda45e;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  .password-wrapper button {
+    right: 2em;
+    top: -6px;
+    position: relative;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #555;
+  }

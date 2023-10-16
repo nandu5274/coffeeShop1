@@ -1,0 +1,108 @@
+ <!-- ======= Top Bar ======= -->
+
+
+ 
+
+ <div  *ngIf="showSpinner"  class="spinner-overlay">
+  <div class="spinner"></div>
+</div>
+
+ <div id="topbar" class="d-flex align-items-center fixed-top">
+    <div class="container d-flex justify-content-center justify-content-md-between">
+
+      <div class="contact-info d-flex align-items-center">
+        <i class="bi bi-phone d-flex align-items-center"><span>+91 9652544239</span></i>
+        <i class="bi bi-clock d-flex align-items-center ms-4"><span> Mon-Sun: 9AM - 11PM</span></i>
+      </div>
+
+      <div class="languages d-none d-md-flex align-items-center">
+        <ul>
+          <li>En</li>
+          <li><a href="#">De</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= Header ======= -->
+  <header id="header" class="fixed-top d-flex align-items-cente">
+    <div class="container-fluid container-xl d-flex align-items-center justify-content-lg-between">
+
+      <h1 class="logo me-auto me-lg-0"><a href="index.html">Cafe Kubera</a></h1>
+      <!-- Uncomment below if you prefer to use an image logo -->
+      <!-- <a href="index.html" class="logo me-auto me-lg-0"><img src="assets/img/logo.png" alt="" class="img-fluid"></a>-->
+
+      <nav id="navbar" class="navbar order-last order-lg-0">
+        <ul>
+          <li><a class="nav-link scrollto" href="#hero" [class.active]="isOtherItemsActive" (click)="navigateToMenu('hero')">Home</a></li>
+          <li><a class="nav-link scrollto" href="#about" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('about')" >About</a></li>
+          <li><a  *ngIf="showMenu" class="nav-link scrollto" href="#menu"  [class.active]="isMenuActive" (click)="navigateToMenu('menu')" >Menu</a></li>
+          <!-- <li><a class="nav-link scrollto" href="#specials" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('specials')" >Specials</a></li>
+          <li><a class="nav-link scrollto" href="#events" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('events')" >Events</a></li>
+          <li><a class="nav-link scrollto" href="#chefs" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('chefs')">Chefs</a></li>
+          <li><a class="nav-link scrollto" href="#gallery" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('gallery')" >Gallery</a></li> -->
+       
+          <!-- <li class="dropdown"><a href="#"><span>Drop Down</span> <i class="bi bi-chevron-down"></i></a>
+            <ul>
+              <li><a href="#">Drop Down 1</a></li>
+              <li class="dropdown"><a href="#"><span>Deep Drop Down</span> <i class="bi bi-chevron-right"></i></a>
+                <ul>
+                  <li><a href="#">Deep Drop Down 1</a></li>
+                  <li><a href="#">Deep Drop Down 2</a></li>
+                  <li><a href="#">Deep Drop Down 3</a></li>
+                  <li><a href="#">Deep Drop Down 4</a></li>
+                  <li><a href="#">Deep Drop Down 5</a></li>
+                </ul>
+              </li>
+              <li><a href="#">Drop Down 2</a></li>
+              <li><a href="#">Drop Down 3</a></li>
+              <li><a href="#">Drop Down 4</a></li>
+            </ul>
+          </li> -->
+          <li><a class="nav-link scrollto" href="#contact"  [class.active]="isOtherItemsActive"  (click)="navigateToMenu('contact')"  >Contact</a></li>
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav><!-- .navbar -->
+   
+     
+      <div class="d-flex "  *ngIf="showMenu" > 
+  
+          <a (click)="toggleModal()">
+            <img src="assets/img/cart.png" class="cart"  alt="" *ngIf="cartCount > 0">
+              <span class="iconClass"  *ngIf="cartCount > 0">{{cartCount}}</span>
+          </a>
+      
+        <!-- <img src="assets/img/cart.png" class="cart"  alt="">  -->
+      </div>
+
+
+     <a href="#book-a-table" class="book-a-table-btn scrollto d-none d-lg-flex"> Book a table</a>
+     
+    </div>
+
+
+
+    <div [class.show]="showModal" class="backdrop" (click)="toggleModal()"></div>
+    
+    <div [class.show]="showModal" class="right-modal">
+      <div class="cart-header">
+        <a class = "cart-header-title">Cart</a>
+        <a (click)="toggleModal()" class="prepare-btn cart-close-btn" > X </a>
+      </div>
+    
+        <app-items-cart (cartDataListCount)="updateCartCount($event)" (closeCartModal)="toggleModal()" (orderProcessingStatus) = "captureOrderProcessingStatus($event)" (orderingResponse) = "captureOrderProcessingResponse($event)"> </app-items-cart>
+    </div>
+
+    <app-booking-order  [orderProcessingStatus]="orderProcessingStatus" [response] = "response"></app-booking-order>
+  </header><!-- End Header -->
+
+  <!-- Info Alert Message -->
+  <div *ngIf="infoMessage" >
+    <div *ngFor="let message of infoMessages; let i = index" class="alert info" >
+      <span>{{ message }}</span>
+      <button (click)="closeInfoMessage(i)">×</button>
+    </div>
+  </div>
+
+  <!-- Button to Trigger Info Alert -->
+

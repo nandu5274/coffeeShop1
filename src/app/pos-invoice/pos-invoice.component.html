@@ -1,0 +1,114 @@
+
+
+    <body class="printable-content" style="    color: black; text-align: -webkit-center;
+    background: white;    padding: 5px;">
+        <div class="ticket">
+            <div style="display: flex;">
+              <div>
+            <a style="   position: relative; max-width: 4.5em;  top: 1px;filter: grayscale(100%);">
+                <img src="assets/img/invoice.png" alt="">
+            </a>
+        </div>
+        <div>
+            <p class="centered">
+          
+                
+                <a style="    font-size: x-large;
+                font-weight: 900;">Cafe Kubera</a>
+                <br>3rd line, Kanaka Durga nagar, 
+                <br><a> Guru Nanak Colony, Vijayawada - 520007 </a></p> 
+        </div>
+    </div>
+                <hr class = "hr">
+                <div style="    justify-content: space-between;
+                display: flex; flex-direction: column;">
+                <div style="    display: flex;
+                justify-content: space-between;">
+                    <a>Date: {{invoiceData.date}}</a>
+                    <a>Table No:  {{invoiceData.tableNo}}</a>
+                </div>
+                
+                <div style="    display: flex;
+                justify-content: space-between;">
+                    <a>Token Nos: {{invoiceData.tokenNumbers}}</a>
+                 
+                </div>
+
+                               
+                <div style="    display: flex;
+                justify-content: space-between;">
+                             <a style="    text-align: left;">Bill No: {{invoiceData.billNo}}</a>
+                             <a >GST No: 37AOBPY9254P1ZV</a>
+                 
+                </div>
+ 
+
+                
+                </div>
+            <table style="width: inherit;">
+                <thead  style="text-align: left;">
+                    <tr>
+                        <th class="description">Item</th>
+                        <th class="quantity" style="
+                        text-align: -webkit-center">quantity</th>
+                        <th class="price">price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr  *ngFor="let item of invoiceData.items " >
+                        <td class="description">{{item.item_name}}</td>
+                        <td class="quantity" style="
+                        text-align: -webkit-center">{{item.item_quantity}}</td>
+                        <!-- <td class="price">99999</td> -->
+                        <td class="price">{{item.item_quantity * item.item_gst_cost}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <hr class = "hr">
+            <div style="    justify-content: space-between; padding: 0px 2px;
+                display: flex; flex-direction: column;">
+                <div style="    display: flex;
+                justify-content: space-between;">
+                    <a></a>
+                    <a></a>
+                    <a>Sub Total</a>
+                    <a>{{invoiceData.actualAmount}}</a>
+                </div>
+                <hr class = "hr">
+
+                <div style="    display: flex;
+                justify-content: space-between;">
+                    <a></a>
+                    <a></a>
+                    <a>CGST 2.5%</a>
+                    <a>{{invoiceData.cgst}}</a>
+                </div>
+
+                <div style="    display: flex;
+                justify-content: space-between;">
+                    <a></a>
+                    <a></a>
+                    <a>SGST 2.5%</a>
+                    <a>{{invoiceData.sgst}}</a>
+                </div>
+                <div style="    display: flex;
+                justify-content: space-between;">
+                    <a></a>
+                    <a></a>
+                    <a class = "grand-total"> Grand Total</a>
+                    <a class = "grand-total">{{invoiceData.GrandTotal}}</a>
+                </div>
+                </div>
+
+       
+                <hr class = "hr">
+            <p class="centered">Thank you visit again!</p>
+             
+        </div>
+
+      
+    </body>
+
+    <button (click) = "printPage()" class="btn">print</button>
+
+ 

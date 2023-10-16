@@ -1,0 +1,59 @@
+{
+    "cuisines":[
+        
+            {
+                "cuisine": {
+                  "type": "BreakFast",
+                  "class": ".filter-BreakFast" ,
+                "items":["BreakFast"]
+                }
+              },
+              {
+                "cuisine": {
+                "type": "Barista",
+                "class": ".filter-HotCoffees" ,
+                "items":["HotCoffees","ColdCoffees","Cookies","GreenTea","IceTea","Shakes","Mocktails", "Soda","Beverages"]
+                }
+              },
+              {
+                "cuisine": {
+                "type": "Continental",
+                "class": ".filter-Salads" ,
+                "items":["Salads", "Fries", "Breads", "Sandwiches", "Burgers","Pizzas","Pastas","Grills","Bruschetta"]
+            
+                }
+              },
+              {
+                "cuisine": {
+                "type": "Indo-Chinese",
+                "class": ".filter-Soups" ,
+                "items":["Soups","Starters","Noodles","Rices"]
+            
+                }
+              },
+              {
+                "cuisine": {
+                "type": "Desserts",
+                "class": ".filter-Desserts" ,
+                "items":["Desserts"]
+            
+                }
+              },
+              {
+                "cuisine": {
+                "type": "Add-ons",
+                "class": ".filter-Add-ons" ,
+                "items":["Add-ons"]
+            
+                }
+              }
+ 
+          
+          
+          
+            ]
+ }
+    
+  
+
+

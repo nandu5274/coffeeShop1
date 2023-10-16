@@ -1,0 +1,484 @@
+
+
+.expanded {
+  max-height: 1000px !important; /* Set the max height you want when expanded */
+}
+
+
+
+
+.example-container {
+  display: flex;
+  flex-direction: column;
+  max-width: 600px;
+  margin: 2rem auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #ffffff;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #000000;
+}
+
+
+
+.right-modal {
+  overflow: scroll;
+  z-index: 141;
+  opacity: 0;
+  transform: translateX(100%); /* Start off-screen to the right */
+  position: fixed;
+  top: 0;
+  right: 0; /* Adjust right property instead of left for right-side positioning */
+  height: 100%;
+  width: 60%; /* Adjust width as needed */
+  background-color: #060504;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  perspective: 1000px; /* Add perspective for 3D effect */
+  transition: transform 0.3s ease-out, opacity 0.3s ease-in; 
+  z-index: 9999;
+}
+.right-modal.show {
+      
+  opacity: 1;
+transform: translateX(0);
+
+}
+
+::ng-deep body.right-modal-open {
+  overflow: hidden !important;
+}
+
+
+
+.backdrop {
+  z-index: 999;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Adjust the alpha value for the desired opacity */
+
+  opacity: 0;
+  pointer-events: none; /* Make the backdrop non-clickable by default */
+  transition: opacity 0.3s ease; /* Add a transition for a smooth effect */
+}
+
+.backdrop.show {
+  backdrop-filter: blur(5px); 
+  opacity: 1;
+  pointer-events: auto; /* Make the backdrop clickable when the modal is open */
+}
+
+
+
+
+.expand_border{
+  border-radius: 30px;
+    background: #cda45ef0;
+    margin: 1em;
+    padding: 0.5em;
+}
+
+.order-container{
+  max-height: 0px;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+.expand-container{
+
+  align-items: center;
+  border-radius: 30px;
+  padding: 0px 20px;
+  background: #0b0c0c;
+  height: 4em;
+  margin: 1em;
+  align-content: center;
+  display: flex;
+  justify-content: space-between;
+}
+.table-num {
+  margin: auto;
+  font-family: sans-serif !important;
+    font-size: x-large;
+    font-size: x-large;
+    color: #ffffff;
+    font-weight: bolder;
+}
+
+.modal {
+    backdrop-filter: blur(5px); 
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it's above other content */
+    perspective: 1000px; /* Add perspective for 3D effect */
+    transform: translateZ(50px); /* Move the modal forward in 3D space */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 8px 16px rgba(0, 0, 0, 0.2); /* Add shadows for depth */
+  }
+  
+  .modal-content {
+    background: transparent;
+    border-radius: 5px;
+    border: azure;
+   
+  }
+  .item-list {
+    height: 140px;
+    max-height: 140px; /* Set a fixed maximum height */
+    overflow-y: auto; /* Add a vertical scroll bar when content exceeds the maximum height */
+    margin-bottom: 10px; /* Add some space below the item list */
+
+  }
+  .cost, .additional, .total {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+  
+  .cost span, .additional span, .total span {
+    font-weight: bold;
+  }
+  
+
+  .test{
+    height: 14em;
+    width: 43%;
+    align-self: center;
+    background: white;
+    color: black;
+  }
+  .card-container {
+    overflow: overlay;
+    color: #cda45e;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-evenly; /* Cards will be auto-arranged with space between them */
+  }
+  
+  .card {
+    font-family: sans-serif !important;
+    background-color: #4e3629;
+    color: #fff;
+    border-radius: 10px;
+    width: 348px;
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  .table {
+    padding: 0px 12px 1px 12px;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 13px;
+    text-align: -webkit-center;
+    background: #11100e;
+  }
+
+  button:disabled,
+  button[disabled]{
+    border: 1px solid #999999 !important;
+    background-color: #cccccc !important;
+    color: #666666 !important;
+    cursor: not-allowed !important;
+  }
+  
+  .circle {
+    background-color: #d49b3b;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin-right: 20px;
+  }
+  
+  .content {
+    flex: 1;
+  }
+  
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  ul li {
+    margin: 5px 0;
+  }
+  .refresh{
+
+  }
+  
+  .buttons {
+    display: flex; /* Display the buttons in a single row */
+    justify-content: space-between; /* Space the buttons apart horizontally */
+    margin-top: 20px;
+  }
+  
+  .buttons button {
+    background-color: #f44336;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    flex: 1; /* Allow the buttons to share the available space equally */
+    margin-right: 10px; /* Add a small margin between buttons */
+  }
+
+  
+
+
+  .tabs {
+    padding: 0px 0px 0px 9px;
+    display: flex;
+    cursor: pointer;
+    overflow: hidden;
+    justify-content: center;
+  }
+  
+  .tab {
+    padding: 10px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+
+  }
+  .sticky-tabs {
+    padding: 0.5em 0em;
+    background: rgba(0, 0, 0, 0.85);
+    position: fixed;
+    top: 69.1px;
+    width: 100%;
+    z-index: 992;
+    transition: all 0.5s;
+  }
+  
+  .tab.active {
+    background-color: #d49b3b;
+    color: #000;
+  }
+  
+  .tab-content {
+    margin-top: 10px;
+    overflow: hidden;
+    transition: margin-left 0.3s;
+  }
+  
+  .tab-pane {
+    width: 100%;
+    float: left;
+  }
+  
+  .tab-btn {
+
+    border: 2px solid #cda45e;
+    color: #fff;
+    border-radius: 50px;
+    padding: 8px 25px;
+    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    transition: 0.3s;
+    text-align: center;
+  }
+
+.done-css{
+  background: #1bb914;
+  color: black;
+}
+
+.status-done {
+  background: #1bb914;
+  color: black;
+}
+
+.status-pending {
+  background: #e8bb08;
+  color: black;
+}
+
+.status-cancel {
+  background: #e80e0e;
+  color: black;
+}
+
+
+  /* loading-spinner.component.css */
+.spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000; /* Ensure it's above other content */
+  backdrop-filter: blur(10px); 
+}
+
+.spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #d49b3b;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+  @media screen and (max-width: 600px) {
+    .card-container {
+      width: -webkit-fill-available;
+    }
+    .card {
+      width: 100%
+    }
+  
+
+    .buttons {
+      flex-direction: column; /* Stack buttons vertically on smaller screens */
+    }
+  
+    .buttons button {
+      margin-right: 0;
+      margin-bottom: 10px;
+    }
+
+    .refresh{
+      flex-direction: column !important;
+    }
+  }
+
+    @media screen and (max-width: 992px) {
+
+    .sticky-tabs {
+    padding: 0.5em 0em;
+    background: rgba(0, 0, 0, 0.85);
+    position: fixed;
+    top: 58.2px;
+    width: 100%;
+    z-index: 992;
+    transition: all 0.5s;
+
+  }
+  
+  
+.right-modal {
+  overflow: scroll;
+  z-index: 141;
+  opacity: 0;
+  transform: translateX(100%); /* Start off-screen to the right */
+  position: fixed;
+  top: 0;
+  right: 0; /* Adjust right property instead of left for right-side positioning */
+  height: 100%;
+  width: 100%; /* Adjust width as needed */
+  background-color: #060504;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  perspective: 1000px; /* Add perspective for 3D effect */
+  transition: transform 0.3s ease-out, opacity 0.3s ease-in; 
+  z-index: 9999;
+}
+
+    
+    }
+    
+    .main-content {
+      padding: 20px;
+    }
+    
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      backdrop-filter: blur(5px);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .popup-content {
+      background: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+
+    .custom-input {
+      padding: 5px;
+      border: 1px solid #ccc;
+    }
+    
+    .custom-dropdown {
+      list-style-type: none;
+      padding: 0;
+      display: none;
+      border: 1px solid #ccc;
+    }
+    
+    .custom-option {
+      cursor: pointer;
+    }
+    
+    .custom-dropdown.active {
+      display: block;
+    }
+
+    .my-dropdown {
+      list-style-type: none;
+      padding: 0;
+   
+      border: 1px solid #ccc;
+      background-color: #fff; /* Add background color here */
+    }
+    
+    .my-option {
+      cursor: pointer;
+    }
+    
+    .my-dropdown.active {
+      display: block;
+    }
+
+    .my-select {
+      padding: 5px;
+      border: 1px solid #ccc;
+    }

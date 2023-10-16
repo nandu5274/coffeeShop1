@@ -1,0 +1,393 @@
+<div  *ngIf="showSpinner"  class="spinner-overlay">
+  <div class="spinner"></div>
+</div>
+
+<div  *ngIf="approvedShowSpinner"  class="spinner-overlay">
+  <div class="spinner"></div>
+</div>
+
+
+<section id="menu" class="menu section-bg" style="padding-top: 9em;">
+  <div class="tabs"   [class.sticky-tabs]="isSticky">
+    <div class="tab tab-btn " (click)="selectTab('waiting_order')" [class.active]="selectedTab === 'waiting_order'" >waiting order</div>
+    <div class="tab tab-btn " (click)="selectTab('Accepted_order')" [class.active]="selectedTab === 'Accepted_order'">Accepted order</div>
+  </div>
+  
+  <div class="tab-content">
+    <div *ngIf="selectedTab === 'waiting_order'"  >
+
+      <div class="container" data-aos="fade-up">
+
+        <div class="section-title" style="padding-top: 1em;">
+          <h2>Approval</h2>
+          <div  style="display: flex; flex-direction: row;" class="refresh">
+            <p>Approve the orders</p>
+            <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
+              <button style=" background-color: #d49b3b; color: #11100e;" (click) = "openOrderMenuModal()">order</button>
+              <button style=" background-color: #d49b3b; color: #11100e;" (click) = "refreshOrder()">Refresh</button>
+           
+              <button style=" background-color: #d49b3b; color: #11100e;" (click) = "openModal('d')">show c</button>
+           
+            </div>
+          
+          </div>
+         
+        </div>
+    
+    
+        <div  data-aos="fade-up" data-aos-delay="100">
+          <div class="col-lg-12 d-flex justify-content-center">
+            <div class="card-container">
+    
+    
+              <div class="card" *ngFor="let waitingApprovalOrder of ApprovalOrderList">
+                <div class="content">
+                 <div class="table">
+                  <a  style=" font-family: sans-serif !important; font-size: x-large; ">T: {{waitingApprovalOrder.order.table_place}}{{waitingApprovalOrder.order.table_no}}</a>
+                  <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e;"> {{waitingApprovalOrder.order.id}}</a>
+             
+                 </div>
+                 
+      
+                  <div style="text-align: center;">
+                    <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e; ">Items</a>
+                   
+                   </div>
+                         
+                  <div style="text-align: center;">
+                    <a  style=" font-family: sans-serif !important; font-size: medium; color: #ffc107; ">{{waitingApprovalOrder.order.order_created_time}}</a>
+                   </div>
+                  
+                   <hr>
+                  <ul  class="item-list">
+                    <li *ngFor="let waitingApprovalOrderItem of waitingApprovalOrder.orderItems">
+                      <div style="display: flex;
+                      place-content: space-between;">
+                        <a> {{waitingApprovalOrderItem.item_name}} </a>
+                   
+                        <a> {{waitingApprovalOrderItem.item_quantity }} </a>
+                      </div>
+                      
+                    </li>
+                  </ul>
+                  <hr>
+                  <div class="cost">
+                    <span>Order summary:</span>
+                    <span>&#8377;{{waitingApprovalOrder.order.order_summary_amount  | number:'1.2-2'}}</span>
+                  </div>
+                  <div class="additional">
+                    <span>Additional Service:</span>
+                    <span>&#8377;{{waitingApprovalOrder.order.order_additional_service_amount  | number:'1.2-2'}}</span>
+                  </div>
+                  <div class= "total">
+                    <span>Total Amount :</span>
+                    <span>&#8377;{{waitingApprovalOrder.order.order_total_amount  | number:'1.2-2'}}</span>
+                  </div>
+                  <div class="buttons">
+                    <button style="background-color: #198754!important" (click) = "approvedOrder(waitingApprovalOrder.order.id, waitingApprovalOrder.order.order_ref_id)" >Approve</button>
+                    
+                    <button (click) = "declineOrder(waitingApprovalOrder.order.id, waitingApprovalOrder.order.order_ref_id)">Cancel</button>
+                  </div>
+                </div>
+              </div>     
+              <!-- Add more cards here -->
+            </div>
+        </div>
+      </div>
+    
+    
+      
+    </div>
+
+    <!-- tab 1 ending -->
+
+    </div>
+    <div *ngIf="selectedTab === 'Accepted_order'" >
+
+
+
+
+
+      <div class="container" data-aos="fade-up">
+
+        <div class="section-title" style="padding-top: 1em;">
+          <h2>Approved</h2>
+          <div  style="display: flex; flex-direction: row;" class="refresh">
+            <p>Approved orders</p>
+            <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
+              <button style=" background-color: #d49b3b; color: #11100e;" (click) = "refreshApprovedOrder()">Refresh</button>
+              <button style=" background-color: #d49b3b; color: #11100e;" (click) = "openModal('d')">show c</button>
+              <button style=" background-color: #d49b3b; color: #11100e;"    (click)="toggleModal()">orders</button>
+            </div>
+          
+          </div>
+         
+        </div>
+    
+    
+        <div  data-aos="fade-up" data-aos-delay="100">
+              
+    <div  #expandedDiv   *ngFor="let entry of ApprovedOrderListMap | keyvalue" class="expand_border" >
+      <div class="expand-container"  >
+        <div>
+          <p class="table-num" (click)="toggleExpand(ApprovedOrderListMap,entry)"> Table: {{ entry.key }}</p>
+        </div>
+        <div> 
+          <div class="buttons" style="margin: 0px;">
+            <button style="background-color: #198754!important; margin: auto;" (click)="moveOrderToCheckOut(entry.value)" >Checkout</button>
+          </div>
+        </div>
+    
+       
+      </div>
+
+          <div class="col-lg-12 d-flex justify-content-center order-container"  [ngClass]="{'expanded': entry.value[0].order.isExpanded}">
+            <div class="card-container"  >
+
+
+      <div class="card" *ngFor="let waitingApprovalOrder of entry.value">
+        <div class="content">
+         <div class="table">
+          <a  style=" font-family: sans-serif !important; font-size: x-large; ">T: {{waitingApprovalOrder.order.table_place }}  {{waitingApprovalOrder.order.table_no}}</a>
+          <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e;"> {{waitingApprovalOrder.order.id}}</a>
+         </div>
+         
+
+          <div style="text-align: center;">
+            <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e; ">Items</a>
+           </div>
+           <div style="text-align: center;">
+            <a  style=" font-family: sans-serif !important; font-size: medium; color: #ffc107; ">{{waitingApprovalOrder.order.order_created_time}}</a>
+           </div>
+           <hr>
+          <ul  class="item-list">
+            <li *ngFor="let waitingApprovalOrderItem of waitingApprovalOrder.orderItems">
+              <div style="display: flex;
+              place-content: space-between;">
+                <a> {{waitingApprovalOrderItem.item_name}} </a>
+                <a> {{waitingApprovalOrderItem.item_cost}} </a>
+                <a> {{waitingApprovalOrderItem.item_quantity }} </a>
+              </div>
+              
+            </li>
+          </ul>
+          <hr>
+
+          <div class= "total">
+            <span>Total Amount :</span>
+            <span>&#8377;{{waitingApprovalOrder.order.order_total_amount  | number:'1.2-2'}}</span>
+          </div>
+        
+        </div>
+      </div>     
+    </div>
+            
+              <!-- Add more cards here -->
+            </div>
+        </div>
+      </div>
+    
+    
+      
+    </div>
+
+
+    </div>
+    <div *ngIf="selectedTab === 'tab3'" >Content for Tab 3</div>
+  </div>
+  
+    </section>
+
+
+<div  *ngIf="showModal" class="modal">
+  <div class="modal-content">
+    <button (click) = "closeModal()" style="width: 9em;
+    align-self: center;">close</button>
+    <!-- Modal for food menu -->
+    <div class="test" style=" height: 264px;
+    padding: 2em;
+    /* max-height: 239px; */
+    width: 91%;
+    overflow-y: auto;
+    margin-bottom: 10px;">
+      <div>
+        <h3>Console Logs:</h3>
+        <ul>
+          <li *ngFor="let log of logs">{{ log }}</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<div  *ngIf="showMenuOrderModal" class="modal" style=" z-index: 999999;">
+  <div class="modal-content">
+    <div class="main-content" style="width: fit-content; align-self: center; margin: 1em;">
+      <div class="popup-overlay" >
+        <div class="popup-content" style=" background: #d49b3b; padding: 0.5em;border-radius: 10px;
+        color: black;">
+         <div>  <h2 style="font-family: sans-serif !important; text-align: center;">Select Table</h2> </div>
+         <div style="padding: inherit;">
+          <div style="    margin: 1em;">
+            Table : <input type = "number"  [(ngModel)]="tableNumber" (ngModelChange)="isTableNUmberUndefined()">
+          </div>
+          <div style="    margin: 1em;">
+            <a>
+              place : 
+            </a>
+          
+            <div>
+              <select [(ngModel)]="tablePlace" class="my-select">
+                <option *ngFor="let option of options" [value]="option">{{ option }}</option>
+              </select>
+            </div>
+
+
+          </div>
+     
+          <div class="buttons">
+            <button  [disabled]="isTableNUmberUndefined()" style="background-color: #198754" (click) = "openMenuPage()">Order</button>
+            <button style="background-color: #198754" (click) = "closeOrderMenuModal()">Close</button>
+          </div>
+         </div>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+</div>
+
+
+<div [class.show]="showOrderModal" class="backdrop" (click)="toggleModal()"></div>
+<div [class.show]="showOrderModal" class="right-modal">
+  <div class="cart-header" style="    cursor: pointer;
+  display: flex;
+  justify-content: space-between;">
+    <a class = "cart-header-title" style="font-size: xx-large;">Order Details
+    <a>
+      <button style="     font-size: large; background-color: #d49b3b; color: #11100e;" (click) = "refreshOrderStatus()">Refresh</button>
+    </a>
+    </a>
+
+    <a (click)="toggleModal()" class="prepare-btn cart-close-btn" > X </a>
+  </div>
+<div>
+<div  *ngFor="let order of orderItemsStatusList"> 
+  <div style=" font-size: medium;
+  color: black;
+  padding: 0.5em;
+  border-radius: 13px;
+  flex-direction: column;
+  display: flex;
+  justify-content:space-between;
+  background: #d49b3b;
+  margin: 1em 0em;
+  font-weight: bold;"> 
+  <div style="    display: flex;
+  justify-content: space-between;
+  margin: 0.5em 0em;">
+    <a>
+      Table  : {{order.table_place}}  {{order.table_no}}
+     </a>
+     
+      <a>
+        created  : {{order.created_at}}
+       </a>
+       <a>
+        order no : {{order.id}}
+      </a>
+  </div>
+ 
+  <div  style="    display: flex;
+  justify-content: space-between;
+  margin: 0.5em 0em 0em 0em" >
+    <button style=" border: none;
+    padding: 5px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    /* flex: 1; */
+    margin-right: 10px;
+    background-color: #1cb916;
+    color: #11100e;
+    margin: 1px 10px;"  (click) = showInvoice(order)>Print</button>
+    <a style="      align-self: center; margin: 1px 10px;"  >
+    Status : {{order.order_status}}
+    </a>
+    <div style="align-self: center;">
+      <p style="
+      margin: 0px;"> {{ order.created_at | timeAgo: timer$ }}</p>
+     </div>
+    
+ </div>
+
+
+
+
+
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Item Name</th>
+        <th>Item Quantity</th>
+       
+        <th>Item Status</th>
+        <th>Update</th>
+        <th>PickUp</th>
+        <th>Cancel</th>
+        <!-- Add more headers as needed -->
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of order.order_items">
+        <td>{{ item.item_name }}</td>
+        <td>{{ item.item_quantity }}</td>
+       
+        <td  [ngClass]="getStatusClass(item.status)" >{{ item.status}}</td>
+        
+        <td > 
+          <div *ngIf="item.status === 'progress'">
+          <button style=" background-color: #d49b3b; color: #11100e;"    (click)="updateOrderItem(item,'Done')">Done</button>
+          </div>
+        </td>
+        <td > 
+          <div *ngIf="item.status === 'progress'">
+          <button style=" background-color: #d49b3b; color: #11100e;"    (click)="pickupOrder(item,'Done',order.table_no)">Pick</button>
+          </div>
+        </td>
+  
+  
+          <td>
+            <div *ngIf="item.status === 'progress'">
+             <button style=" background-color: #d49b3b; color: #11100e;"   (click)="updateOrderItem(item,'Cancel')">Cancel</button>
+          </div>
+          </td>
+        <!-- Add more data cells as needed -->
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  </div>
+</div>
+
+
+
+
+<div class="main-content" style="position: relative;z-index: 9999;
+">
+
+  <div class="popup-overlay" *ngIf="iskotPopupOpen" (click)="closePopup()">
+    <div class="popup-content">
+      <app-pos-kot [printData]="printValue"   (messageEvent)="updateOrderStatus($event, printValue)"></app-pos-kot>
+
+      <button class="bnts"(click)="closePopup()" >Close</button>
+    </div>
+  </div>
+</div>
+
+

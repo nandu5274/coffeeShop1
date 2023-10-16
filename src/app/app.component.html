@@ -1,0 +1,125 @@
+<div class="main-container">
+
+  <!--  below code is for popups -->
+  <!--
+  <div  *ngIf="showModal" class="modal">
+    <div class="modal-content">
+      <button (click) = "closeModal()" style="width: 9em;
+      align-self: center;     position: fixed;" class=" pop-up-btm">close</button>
+   
+      <div class="test" style=" height: 86vh;
+      padding: 2em;
+      
+      overflow-y: auto;"
+     >
+        <div>
+        
+          <ul style="text-align: -webkit-center;">
+                <a style=" display: block;
+                max-width:230px;
+                max-height:95px;
+                width: auto;
+                height: auto;"></a>
+                <img [src]="imageUrl" alt="Responsive Image" class="imag-size">
+            
+          </ul>
+        </div>
+      </div>
+  
+    </div>
+  </div>
+
+-->
+    <!--  above code is for popups -->
+
+    <div  *ngIf="showVersionModal" class="modal">
+
+      <div class="modal-content"  *ngIf="reloadCount<5">
+        <div style="    background-color: #cda45e;
+        color: #1a1814;
+        padding: 15px;
+        border: 1px solid #f2dede;
+        border-radius: 4px;
+        align-items: center;
+        align-self:center;
+        z-index: 99999999;
+        width: fit-content;">
+        Refreshed {{this.reloadCount}} times To get Latest Version
+        </div>
+          
+        </div>
+        
+        <div class="modal-content"  *ngIf="reloadCount>=5">
+          <div style="    background-color: #cda45e;
+          color: #1a1814;
+          padding: 15px;
+          border: 1px solid #f2dede;
+          border-radius: 4px;
+          align-items: center;
+          align-self:center;
+          z-index: 99999999;
+          width: fit-content;">
+          Reached max Retries, close the tab and Re-scan
+          </div>
+            
+          </div>
+      </div>
+   
+  
+<div class="container" #container>
+    
+  <!-- <img src="assets/img/specials-2.png"  class="heart" *ngFor="let heart of hearts; let i = index" [style.left.px]="heart.left" [style.animation-duration.s]="heart.duration" /> -->
+  <!-- <div class="heart" *ngFor="let heart of hearts; let i = index" [style.left.px]="heart.left" [style.animation-duration.s]="heart.duration"></div> -->
+  </div> 
+
+
+  <div id="ipl">
+   
+
+    <div class="container">
+      <!-- <button (click)="openPopup()">Open Popup</button> -->
+      <div *ngIf="showPopup" class="popup">
+        <div *ngIf="step === 0">
+          <p>This is a disclaimer.</p>
+          <button (click)="continue()">Accept</button>
+        </div>
+        <div *ngIf="step === 1" class="slide" [@slideInOut]>
+          <label for="name">Name:</label>
+          <input type="text" id="name" [(ngModel)]="name">
+          <br>
+          <label for="mobile">Mobile:</label>
+          <input type="text" id="mobile" [(ngModel)]="mobile">
+          <br>
+          <button (click)="continue()">Continue</button>
+        </div>
+        <div *ngIf="step === 2" class="slide"[@slideInOut] >
+          <p>Choose an option:</p>
+          <input type="radio" id="option1" name="option" [(ngModel)]="selectedOption" value="Option 1">
+          <label for="option1">Option 1</label><br>
+          <input type="radio" id="option2" name="option" [(ngModel)]="selectedOption" value="Option 2">
+          <label for="option2">Option 2</label><br>
+          <button (click)="next()">Next</button>
+        </div>
+        <div *ngIf="step === 3" class="slide" [@slideInOut]>
+          <div style="width: 10em;">
+    
+
+          <p>Spin the wheel and get a number from 1 to 5:</p>
+          <button (click)="spinWheel()">Spin the Wheel</button>
+          <p *ngIf="wheelResult !== null">Result: {{ wheelResult }}</p>
+          <button (click)="reset()">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <app-nav-bar></app-nav-bar>
+
+    <router-outlet></router-outlet>
+
+    <app-footer></app-footer>
+
+
+
+  </div>
+
