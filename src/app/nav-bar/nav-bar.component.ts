@@ -21,8 +21,10 @@ isMenuActive: boolean = false; // Set it to true to make it initially active
 
 isOtherItemsActive:boolean = false; 
 
-
+previousUrl:any;
 ngOnInit(){
+
+  this.previousUrl = sessionStorage.getItem("previousUrl");
   
  // this.loadScript("assets/js/main.js");
 }
@@ -36,13 +38,26 @@ navigateToMenu(nav:any) {
    elements.forEach((element) => {
     element.classList.remove('active');
   });
+  this.previousUrl = sessionStorage.getItem("previousUrl");
+  sessionStorage.setItem("previousUrl", nav);
   }
-  else{
+  else if(sessionStorage.getItem("previousUrl") == 'menu'){
     this.isMenuActive = false
     this.router.navigate(['/'], { fragment: nav }) .then(() => {
       window.location.reload();
-    });;
+    });
+    this.previousUrl = sessionStorage.getItem("previousUrl");
+  
+    sessionStorage.setItem("previousUrl", nav);
+  }else
+  {
+    this.isMenuActive = false
+    this.router.navigate(['/'], { fragment: nav })
+    this.previousUrl = sessionStorage.getItem("previousUrl");
+  
+    sessionStorage.setItem("previousUrl", nav);
   }
+ 
 
 }
 
