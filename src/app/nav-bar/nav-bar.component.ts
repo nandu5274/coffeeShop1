@@ -39,7 +39,9 @@ navigateToMenu(nav:any) {
   }
   else{
     this.isMenuActive = false
-    this.router.navigate(['/'], { fragment: nav });
+    this.router.navigate(['/'], { fragment: nav }) .then(() => {
+      window.location.reload();
+    });;
   }
 
 }
