@@ -15,9 +15,7 @@ export class ItemsMenuComponent implements AfterViewInit {
   }
   handleCustomEvent(event: Event): void {
     console.log('Handling customEvent in AppComponent');
-
     // Do your handling logic here
-
     // Remove the event listener to prevent further execution
     window.removeEventListener('customEvent', this.handleCustomEvent);
   }
@@ -25,5 +23,29 @@ export class ItemsMenuComponent implements AfterViewInit {
   ngOnDestroy(): void {
     // Clean up: Remove the event listener when the component is destroyed
     window.removeEventListener('customEvent', this.handleCustomEvent);
+  }
+
+  showModal = false;
+
+  openModal() {
+    document.body.style.overflow = 'hidden';
+    this.showModal = true;
+  }
+
+  closeModal() {
+    document.body.style.overflow = 'auto';
+    this.showModal = false;
+  }
+
+  quantity: number = 1;
+
+  increment() {
+    this.quantity++;
+  }
+
+  decrement() {
+    if (this.quantity > 1) {
+      this.quantity--;
+    }
   }
 }

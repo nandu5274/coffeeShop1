@@ -14,13 +14,14 @@
             <li data-filter=".filter-starters">Starters</li>
             <li data-filter=".filter-salads">Salads</li>
             <li data-filter=".filter-specialty">Specialty</li>
+            <li data-filter=".filter-coffee">Coffee</li>
           </ul>
         </div>
       </div>
 
       <div class="row menu-container" data-aos="fade-up" data-aos-delay="200">
 
-        <div class="col-lg-6 menu-item filter-starters">
+        <div class="col-lg-6 menu-item filter-starters" (click)="openModal()">
           <img src="assets/img/menu/lobster-bisque.jpg" class="menu-img" alt="">
           <div class="menu-content">
             <a href="#">Lobster Bisque</a><span>$5.95</span>
@@ -110,10 +111,80 @@
           </div>
         </div>
 
+        <div class="col-lg-6 menu-item filter-coffee">
+          <img src="assets/img/menu/lobster-roll.jpg" class="menu-img" alt="">
+          <div class="menu-content">
+            <a href="#">Cofee</a><span>$12.95</span>
+          </div>
+          <div class="menu-ingredients">
+            Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll
+          </div>
+        </div>
+
       </div>
 
     </div>
   </section><!-- End Menu Section -->
+
+
+
+
+  <div  *ngIf="showModal"  class="modal">
+    <div class="modal-content">
+     
+<!-- Modal for food menu -->
+
+
+  <div class="order-detail-container">
+    <div>
+    <img class = "order-detail-img" src="assets/img/menu/lobster-bisque.jpg" alt="vegan">
+  </div>
+    <div id="card" class="center">
+<div style="display: flex;">
+      <div class="feature">
+        <p>👍 MUST TRY</p>
+      </div>
+      <div class="cuisine">
+        🌿
+      </div>
+      <div class="cuisine2" (click)="closeModal()">
+        &times;
+      </div>
+    </div>
+      <div class="dish">
+        <h1 class = "item-name">Salad Combo Bowl </h1>
+
+      </div>
+      <div class="rating">
+        <p>
+          <span class="fa fa-star checked"></span> 4.3
+        </p>
+      </div>
+
+      <div class="description">
+        <p>
+          It features a mix of romaine lettuce and red baby butter lettuce, shredded carrots.
+        </p>
+
+      </div>
+      <div class="amount">
+
+        <h3>$15.00</h3>
+      </div>
+      <div class="quantity-input">
+        <button (click)="decrement()">-</button>
+        <input type="text" [(ngModel)]="quantity" />
+        <button (click)="increment()">+</button>
+      </div>
+      <div class="cta">
+        <button type="button">add to Bowl</button>
+      </div>
+    </div>
+  </div>
+
+
+
+<!-- Modal for food menu -->
 
   <!-- Vendor JS Files -->
   <script src="assets/vendor/aos/aos.js"></script>

@@ -22,12 +22,12 @@ isMenuActive: boolean = false; // Set it to true to make it initially active
 isOtherItemsActive:boolean = false; 
 
 previousUrl:any;
-ngOnInit(){
 
+ngOnInit(){
   this.previousUrl = sessionStorage.getItem("previousUrl");
-  
  // this.loadScript("assets/js/main.js");
 }
+
 navigateToMenu(nav:any) {
   
   if(nav=='menu')
@@ -57,8 +57,6 @@ navigateToMenu(nav:any) {
   
     sessionStorage.setItem("previousUrl", nav);
   }
- 
-
 }
 
 }
