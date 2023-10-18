@@ -1,22 +1,19 @@
-import { Component, OnInit } from '@angular/core';
-
+import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { Location } from '@angular/common';
 @Component({
   selector: 'app-home-page',
   templateUrl: './home-page.component.html',
   styleUrls: ['./home-page.component.scss']
 })
-export class HomePageComponent implements OnInit {
+export class HomePageComponent implements OnInit , AfterViewInit{
 
-  public loadScript(url: string) {
-    let node = document.createElement('script');
-    node.src = url;
-    node.type = 'text/javascript';
-    document.getElementsByTagName('head')[0].appendChild(node);
-}
-
+  private hasReloaded = false;
+  constructor(private location: Location) { }
 ngOnInit(){
-  
-  this.loadScript("assets/js/main.js");
+
+}
+ngAfterViewInit() {
+
 }
 
 }
