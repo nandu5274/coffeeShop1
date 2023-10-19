@@ -1,8 +1,4 @@
 node_modules
-.DS_Store
-.DS_Store
+**/.DS_Store
 /.angular/cache
 
-.DS_Store
-src/.DS_Store
-src/assets/.DS_Store
