@@ -1,0 +1,192 @@
+.cart {
+    position: relative;
+    height: 27px;
+    right: -84px;
+   
+}
+.iconClass{
+    text-align-last: center;
+    height: 24px;
+    width: 24px;
+    display: inline-table;
+    top: -13px;
+    position: relative;
+    right: -74px;
+    font-size: small;
+    color: white;
+    padding: 2px;
+    border-radius: 50%;
+    background: #d49b3b;
+  }
+
+  .right-modal {
+   
+    opacity: 0;
+    transform: translateX(100%); /* Start off-screen to the right */
+    position: fixed;
+    top: 0;
+    right: 0; /* Adjust right property instead of left for right-side positioning */
+    height: 100%;
+    width: 498px; /* Adjust width as needed */
+    background-color: #fff;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    perspective: 1000px; /* Add perspective for 3D effect */
+    transition: transform 0.3s ease-out, opacity 0.3s ease-in; 
+  }
+  .right-modal.show {
+        
+    opacity: 1;
+  transform: translateX(0);
+  
+  }
+ 
+  ::ng-deep body.right-modal-open {
+    overflow: hidden;
+  }
+
+
+
+  .backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Adjust the alpha value for the desired opacity */
+ 
+    opacity: 0;
+    pointer-events: none; /* Make the backdrop non-clickable by default */
+    transition: opacity 0.3s ease; /* Add a transition for a smooth effect */
+  }
+  
+  .backdrop.show {
+    opacity: 1;
+    pointer-events: auto; /* Make the backdrop clickable when the modal is open */
+  }
+
+@media only screen and (max-width: 991px) {
+.cart {
+position: relative;
+height: 27px;
+right: 16px;
+padding-right: 4px;
+}
+
+.iconClass{
+    text-align-last: center;
+    height: 15px;
+    width: 23px;
+    display: inline-table;
+    top: -13px;
+    position: relative;
+    right: 30px;
+    font-size: small;
+    color: white;
+    padding: 1px;
+    border-radius: 50%;
+    background: #d49b3b;
+
+  }
+
+  .right-modal {
+   
+    opacity: 0;
+    transform: translateX(100%); /* Start off-screen to the right */
+    position: fixed;
+    top: 0;
+    right: 0; /* Adjust right property instead of left for right-side positioning */
+    height: 100%;
+    width: 100%; /* Adjust width as needed */
+    background-color: #fff;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    perspective: 1000px; /* Add perspective for 3D effect */
+    transition: transform 0.3s ease-out, opacity 0.3s ease-in; 
+  }
+}
+
+
+@media only screen and (min-width: 1200px) and (max-width: 1400px) {
+    .cart {
+    position: relative;
+    height: 27px;
+    right: -30px;
+    }
+
+
+.iconClass{
+    text-align-last: center;
+    height: 24px;
+    width: 24px;
+    display: inline-table;
+    top: -13px;
+    position: relative;
+    right: -20px;
+    font-size: small;
+    color: white;
+    padding: 2px;
+    border-radius: 50%;
+    background: #d49b3b;
+  }
+
+
+
+}
+
+
+@media only screen and (min-width: 1020px) and (max-width: 1199px) {
+    .cart {
+    position: relative;
+    height: 27px;
+    right: -5px;
+
+    }
+
+    .iconClass{
+        text-align-last: center;
+        height: 24px;
+        width: 24px;
+        display: inline-table;
+        top: -14px;
+        position: relative;
+        right: 6px;
+        font-size: small;
+        color: white;
+        padding: 2px;
+        border-radius: 50%;
+        background: #d49b3b;
+      }
+}
+
+
+
+@media only screen and (min-width: 992px) and (max-width: 1019px) {
+    .cart {
+       
+        position: relative;
+        height: 27px;
+        right: -14px;
+        top: 11px;
+
+    }
+
+    .iconClass{
+       
+        text-align-last: center;
+        height: 24px;
+        width: 24px;
+        display: inline-table;
+        top: -26px;
+        position: relative;
+        right: -32px;
+        font-size: small;
+        color: white;
+        padding: 2px;
+        border-radius: 50%;
+        background: #d49b3b;
+    
+    
+      }
+
+}

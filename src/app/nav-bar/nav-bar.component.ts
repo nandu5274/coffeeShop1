@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
 @Component({
@@ -59,4 +59,28 @@ navigateToMenu(nav:any) {
   }
 }
 
+showModal: boolean = false;
+
+
+
+toggleModal(): void {
+  this.showModal = !this.showModal;
+  this.toggleBodyScroll(this.showModal);
+}
+
+@HostListener('window:keyup.esc')
+onEscKeyup() {
+  if (this.showModal) {
+    this.toggleModal();
+  }
+}
+
+private toggleBodyScroll(shouldEnable: boolean): void {
+  const body = document.body;
+  if (shouldEnable) {
+    body.classList.add('right-modal-open');
+  } else {
+    body.classList.remove('right-modal-open');
+  }
+}
 }
