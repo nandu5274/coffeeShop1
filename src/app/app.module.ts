@@ -9,6 +9,8 @@ import { NavBarComponent } from './nav-bar/nav-bar.component';
 import { FooterComponent } from './footer/footer.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
+import { ItemsCartComponent } from './items-cart/items-cart.component';
+import { BookingOrderComponent } from './booking-order/booking-order.component';
 
 
 @NgModule({
@@ -18,6 +20,8 @@ import { FormsModule } from '@angular/forms';
     ItemsMenuComponent,
     NavBarComponent,
     FooterComponent,
+    ItemsCartComponent,
+    BookingOrderComponent,
 
   ],
   imports: [
