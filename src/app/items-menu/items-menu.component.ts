@@ -1,4 +1,6 @@
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Output } from '@angular/core';
+import { CartItemDto } from '../dtos/CartItemDto';
+import { SharedService } from '../service/shared-service';
 
 @Component({
   selector: 'app-items-menu',
@@ -6,6 +8,11 @@ import { AfterViewInit, Component } from '@angular/core';
   styleUrls: ['./items-menu.component.scss']
 })
 export class ItemsMenuComponent implements AfterViewInit {
+
+  constructor(private sharedService: SharedService) {}
+
+  
+  cartItemDto: CartItemDto = new CartItemDto;
 
   ngAfterViewInit() {
     setTimeout(() => {
@@ -48,4 +55,14 @@ export class ItemsMenuComponent implements AfterViewInit {
       this.quantity--;
     }
   }
+
+
+
+  sendDataToParent() {
+    this.cartItemDto!.id = 54;
+    this.sharedService.setItemToCartData(this.cartItemDto!);
+    this.closeModal(); 
+  }
+
+
 }

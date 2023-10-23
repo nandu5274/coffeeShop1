@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 })
 export class NavBarComponent implements OnInit  {
 
+
   public loadScript(url: string) {
     let node = document.createElement('script');
     node.src = url;
@@ -18,12 +19,18 @@ constructor(private router: Router) {}
 
 
 isMenuActive: boolean = false; // Set it to true to make it initially active
-
+cartCount:any;
 isOtherItemsActive:boolean = false; 
 
 previousUrl:any;
 
 ngOnInit(){
+  const sessionCartDataList = sessionStorage.getItem('cartDataList');
+
+  if (sessionCartDataList) {
+    let cartDataList = JSON.parse(sessionStorage.getItem("cartDataList")!);
+      this.cartCount =  cartDataList.length;
+  }
   this.previousUrl = sessionStorage.getItem("previousUrl");
  // this.loadScript("assets/js/main.js");
 }
@@ -82,5 +89,10 @@ private toggleBodyScroll(shouldEnable: boolean): void {
   } else {
     body.classList.remove('right-modal-open');
   }
+}
+
+updateCartCount(cartCount:any)
+{
+  this.cartCount = cartCount;
 }
 }

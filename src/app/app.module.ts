@@ -11,6 +11,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
 import { ItemsCartComponent } from './items-cart/items-cart.component';
 import { BookingOrderComponent } from './booking-order/booking-order.component';
+import { SharedService } from './service/shared-service';
 
 
 @NgModule({
@@ -30,7 +31,7 @@ import { BookingOrderComponent } from './booking-order/booking-order.component';
     BrowserAnimationsModule,
     FormsModule
   ],
-  providers: [],
+  providers: [SharedService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

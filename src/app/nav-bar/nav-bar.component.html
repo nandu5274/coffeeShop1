@@ -60,7 +60,7 @@
   
           <a (click)="toggleModal()">
             <img src="assets/img/cart.png" class="cart"  alt="">
-              <span class="iconClass">2</span>
+              <span class="iconClass">{{cartCount}}</span>
           </a>
       
         <!-- <img src="assets/img/cart.png" class="cart"  alt="">  -->
@@ -80,7 +80,7 @@
         <a class = "cart-header-title">Cart</a>
         <a (click)="toggleModal()" class="prepare-btn cart-close-btn" > X </a>
       </div>
-        <app-items-cart> </app-items-cart>
+        <app-items-cart  (cartDataListCount)="updateCartCount($event)"> </app-items-cart>
     </div>
 
     <app-booking-order></app-booking-order>
