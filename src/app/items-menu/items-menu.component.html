@@ -6,7 +6,7 @@
       <h2>Menu</h2>
       <p>Check Our Tasty Menu</p>
     </div>
-
+<!-- 
     <div class="row" data-aos="fade-up" data-aos-delay="100">
       <div class="col-lg-12 d-flex justify-content-center">
         <ul id="menu-flters">
@@ -17,10 +17,32 @@
           <li data-filter=".filter-coffee">Coffee</li>
         </ul>
       </div>
+    </div> -->
+
+    <div class="row" data-aos="fade-up" data-aos-delay="100">
+      <div class="col-lg-12 d-flex justify-content-center">
+        <ul id="menu-flters">
+          <li data-filter="*" class="filter-active">All</li>
+        <li *ngFor="let menuCourse of menuCourseList" [attr.data-filter]="menuCourse.class">{{menuCourse.type}}</li>
+        </ul>
+      </div>
     </div>
 
     <div class="row menu-container" data-aos="fade-up" data-aos-delay="200">
+    
+      <div   *ngFor="let menuItem of menuItemsList"  class="col-lg-6 menu-item menu-item-click"  [class]="menuItem.class" (click)="openModal(menuItem)">
+        <img [src]="menuItem.imagePath" class="menu-img" alt="">
+        <div class="menu-content">
+          <a>{{menuItem.name}}</a><span>&#8377; {{menuItem.cost}}</span>
+        </div>
+        <div class="menu-ingredients">
+          {{menuItem.ingredients}}
+        </div>
+      </div>
 
+    
+
+<!-- 
       <div class="col-lg-6 menu-item filter-starters" (click)="openModal()">
         <img src="assets/img/menu/lobster-bisque.jpg" class="menu-img" alt="">
         <div class="menu-content">
@@ -119,7 +141,7 @@
         <div class="menu-ingredients">
           Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll
         </div>
-      </div>
+      </div> -->
 
     </div>
 
@@ -137,7 +159,7 @@
 
     <div class="order-detail-container">
       <div>
-        <img class="order-detail-img" src="assets/img/menu/lobster-bisque.jpg" alt="vegan">
+        <img class="order-detail-img" [src]="selectedItem.imagePath" alt="vegan">
       </div>
       <div id="card" class="center">
         <div style="display: flex;">
@@ -152,24 +174,24 @@
           </div>
         </div>
         <div class="dish">
-          <h1 class="item-name">Salad Combo Bowl </h1>
+          <h1 class="item-name">{{selectedItem.name}} </h1>
 
         </div>
         <div class="rating">
           <p>
-            <span class="fa fa-star checked"></span> 4.3
+            <span class="fa fa-star checked"></span> {{selectedItem.rating}}
           </p>
         </div>
 
-        <div class="description">
+        <div class="description"   style="width: -webkit-fill-available;
+        height: 70px;">
           <p>
-            It features a mix of romaine lettuce and red baby butter lettuce, shredded carrots.
+            {{selectedItem.description}}
           </p>
 
         </div>
         <div class="amount">
-
-          <h3>$15.00</h3>
+          <h3><span>&#8377; {{selectedItem.cost}}</span></h3>
         </div>
         <div class="quantity-input">
           <button (click)="decrement()">-</button>
@@ -177,7 +199,7 @@
           <button (click)="increment()">+</button>
         </div>
         <div class="cta">
-          <button type="button" (click)="sendDataToParent()">add to Bowl</button>
+          <button type="button" (click)="sendDataToParent(quantity)">add to Bowl</button>
         </div>
       </div>
     </div>

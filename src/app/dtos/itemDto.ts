@@ -3,7 +3,7 @@ export class ItemDto {
     name!: string;
     description!: string;
     cost!: number;
-    imageId!: string;
+    imagePath!: string;
     rating!: number;
     type!: string;
     available!:string

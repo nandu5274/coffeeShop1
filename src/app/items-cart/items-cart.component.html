@@ -1,166 +1,40 @@
 <div class="summary_card"  style="overflow: auto;">
-    <div class="card_item">
+  <div *ngFor="let cartData of cartDataList">
+    <div class="card_item" >
       <div class="product_img">
-        <img src="assets/img/menu/spinach-salad.jpg" class="menu-img" alt="">
+        <img [src]="cartData.imagePath"  class="menu-img" alt="">
       </div>
       <div class="product_info">
-        <h1>Nike Shoes</h1>
-        <p>Lorem Ipsum is simply dummy text.</p>
-        <div class="close-btn">
+        <h1>{{cartData.name}}</h1>
+        <p>{{cartData.description}}</p>
+        <div class="close-btn" (click) = "removeItem(cartData)">
          x
         </div>
-        <div class="product_rate_info">
-          <h1>$ 200</h1>
-          <span class="pqt-minus">-</span>
-          <span class="pqt">1</span>
-          <span class="pqt-plus">+</span>
+        <div class="product_rate_info info-width" >
+          <h1><span>&#8377; {{cartData.totalCartCost | number:'1.2-2'}}</span></h1>
+          <span class="pqt-minus"(click) = "decrement(cartData)">-</span>
+          <span class="pqt"> {{cartData.quantity}}</span>
+          <span class="pqt-plus" (click) = "increment(cartData)">+</span>
         </div>
       </div>
     </div>
-    <hr />
-    <div class="card_item">
-        <div class="product_img">
-          <img src="assets/img/menu/spinach-salad.jpg" class="menu-img" alt="">
-        </div>
-        <div class="product_info">
-          <h1>Nike Shoes</h1>
-          <p>Lorem Ipsum is simply dummy text.</p>
-          <div class="close-btn">
-            <i class="fa fa-close"></i>
-          </div>
-          <div class="product_rate_info">
-            <h1>$ 200</h1>
-            <span class="pqt-minus">-</span>
-            <span class="pqt">1</span>
-            <span class="pqt-plus">+</span>
-          </div>
-        </div>
-      </div>
-      <hr />
-      <div class="card_item">
-        <div class="product_img">
-          <img src="assets/img/menu/spinach-salad.jpg" class="menu-img" alt="">
-        </div>
-        <div class="product_info">
-          <h1>Nike Shoes</h1>
-          <p>Lorem Ipsum is simply dummy text.</p>
-          <div class="close-btn">
-            x
-           </div>
-          <div class="product_rate_info">
-            <h1>$ 200</h1>
-            <span class="pqt-minus">-</span>
-            <span class="pqt">1</span>
-            <span class="pqt-plus">+</span>
-          </div>
-        </div>
-      </div>
-      <div class="card_item">
-        <div class="product_img">
-          <img src="assets/img/menu/spinach-salad.jpg" class="menu-img" alt="">
-        </div>
-        <div class="product_info">
-          <h1>Nike Shoes</h1>
-          <p>Lorem Ipsum is simply dummy text.</p>
-          <div class="close-btn">
-            x
-           </div>
-          <div class="product_rate_info">
-            <h1>$ 200</h1>
-            <span class="pqt-minus">-</span>
-            <span class="pqt">1</span>
-            <span class="pqt-plus">+</span>
-          </div>
-        </div>
-      </div>
-      <div class="card_item">
-        <div class="product_img">
-          <img src="assets/img/menu/spinach-salad.jpg" class="menu-img" alt="">
-        </div>
-        <div class="product_info">
-          <h1>Nike Shoes</h1>
-          <p>Lorem Ipsum is simply dummy text.</p>
-          <div class="close-btn">
-            <i class="fa fa-close"></i>
-          </div>
-          <div class="product_rate_info">
-            <h1>$ 200</h1>
-            <span class="pqt-minus">-</span>
-            <span class="pqt">1</span>
-            <span class="pqt-plus">+</span>
-          </div>
-        </div>
-      </div>
-      <div class="card_item">
-        <div class="product_img">
-          <img src="assets/img/menu/spinach-salad.jpg" class="menu-img" alt="">
-        </div>
-        <div class="product_info">
-          <h1>Nike Shoes</h1>
-          <p>Lorem Ipsum is simply dummy text.</p>
-          <div class="close-btn">
-            x
-           </div>
-          <div class="product_rate_info">
-            <h1>$ 200</h1>
-            <span class="pqt-minus">-</span>
-            <span class="pqt">1</span>
-            <span class="pqt-plus">+</span>
-          </div>
-        </div>
-      </div>
-      <div class="card_item">
-        <div class="product_img">
-          <img src="assets/img/menu/spinach-salad.jpg" class="menu-img" alt="">
-        </div>
-        <div class="product_info">
-          <h1>Nike Shoes</h1>
-          <p>Lorem Ipsum is simply dummy text.</p>
-          <div class="close-btn">
-            <i class="fa fa-close"></i>
-          </div>
-          <div class="product_rate_info">
-            <h1>$ 200</h1>
-            <span class="pqt-minus">-</span>
-            <span class="pqt">1</span>
-            <span class="pqt-plus">+</span>
-          </div>
-        </div>
-      </div>
-    <div class="card_item">
-      <div class="product_img">
-        <img class = "order-detail-img" src="assets/img/menu/lobster-bisque.jpg" alt="vegan">
-      </div>
-      <div class="product_info">
-        <h1>Amazon Prime</h1>
-        <p>Lorem Ipsum is simply dummy text.</p>
-        <div class="close-btn">
-          <i class="fa fa-close"></i>
-        </div>
-        <div class="product_rate_info">
-          <h1>$ 160</h1>
-          <span class="pqt-minus">-</span>
-          <span class="pqt">1</span>
-          <span class="pqt-plus">+</span>
-        </div>
-      </div>
-    </div>
-    
- 
+    <hr/>
   </div>
   <hr />
+
+</div>
   <div>
     <div class="order_price">
       <p>Order summary</p>
-      <h4>$400</h4>
+      <h4><span>&#8377;{{orderAmount | number:'1.2-2'}}</span></h4>
     </div>
     <div class="order_service">
       <p>Additional Service</p>
-      <h4>$10</h4>
+      <h4><span>&#8377;{{additionAmount | number:'1.2-2'}}</span></h4>
     </div>
     <div class="order_total">
       <p>Total Amount</p>
-      <h4>$370</h4>
+      <h4><span>&#8377;{{totalAmount  | number:'1.2-2'}}</span></h4>
     </div>
 </div>
 
