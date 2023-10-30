@@ -1,5 +1,6 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { ResponseDto } from '../dtos/responseDto';
 
 @Component({
   selector: 'app-nav-bar',
@@ -21,14 +22,15 @@ constructor(private router: Router) {}
 isMenuActive: boolean = false; // Set it to true to make it initially active
 cartCount:any;
 isOtherItemsActive:boolean = false; 
-
+orderProcessingStatus:any='';
+response!:ResponseDto;
 previousUrl:any;
 
 ngOnInit(){
   const sessionCartDataList = sessionStorage.getItem('cartDataList');
 
   if (sessionCartDataList) {
-    let cartDataList = JSON.parse(sessionStorage.getItem("cartDataList")!);
+    let cartDataList = JSON.parse(atob(sessionStorage.getItem("cartDataList")!));
       this.cartCount =  cartDataList.length;
   }
   this.previousUrl = sessionStorage.getItem("previousUrl");
@@ -94,5 +96,16 @@ private toggleBodyScroll(shouldEnable: boolean): void {
 updateCartCount(cartCount:any)
 {
   this.cartCount = cartCount;
+}
+
+
+captureOrderProcessingStatus(status:any)
+{
+  this.orderProcessingStatus = status
+}
+
+captureOrderProcessingResponse(response:any)
+{
+this.response = response;
 }
 }

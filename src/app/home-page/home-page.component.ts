@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
+import { SharedService } from '../service/shared-service';
 @Component({
   selector: 'app-home-page',
   templateUrl: './home-page.component.html',
@@ -8,12 +9,20 @@ import { Location } from '@angular/common';
 export class HomePageComponent implements OnInit , AfterViewInit{
 
   private hasReloaded = false;
-  constructor(private location: Location) { }
+  constructor(private location: Location, private sharedService: SharedService) { }
+ 
+
+
 ngOnInit(){
 
 }
 ngAfterViewInit() {
 
+}
+
+navigateToMenu(menu:any)
+{
+this.sharedService.navigateToMenu(menu);
 }
 
 }

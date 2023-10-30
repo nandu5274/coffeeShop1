@@ -12,6 +12,8 @@ import { FormsModule } from '@angular/forms';
 import { ItemsCartComponent } from './items-cart/items-cart.component';
 import { BookingOrderComponent } from './booking-order/booking-order.component';
 import { SharedService } from './service/shared-service';
+import { GraphQLModule } from './graphql.module';
+import { HttpClientModule } from '@angular/common/http';
 
 
 @NgModule({
@@ -29,7 +31,9 @@ import { SharedService } from './service/shared-service';
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    FormsModule
+    FormsModule,
+    GraphQLModule,
+    HttpClientModule
   ],
   providers: [SharedService],
   bootstrap: [AppComponent]

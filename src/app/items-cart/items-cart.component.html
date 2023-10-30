@@ -1,4 +1,4 @@
-<div class="summary_card"  style="overflow: auto;">
+<div  *ngIf="cartDataList.length > 0" class="summary_card"  style="overflow: auto;">
   <div *ngFor="let cartData of cartDataList">
     <div class="card_item" >
       <div class="product_img">
@@ -23,6 +23,19 @@
   <hr />
 
 </div>
+<div  class="summary_card"  style="overflow: auto;" *ngIf="cartDataList.length == 0" >
+ 
+  <div class="order_price no-items-cart">
+    <div >
+    <p> Add your items </p>
+    </div>
+    <div >
+      <button class="prepare-btn" (click)="navigateToMenu('menu')"> Menu </button>
+  </div>
+  </div>
+
+
+</div>
   <div>
     <div class="order_price">
       <p>Order summary</p>
@@ -38,6 +51,6 @@
     </div>
 </div>
 
-<div>
-    <a class="prepare-btn"> Order </a>
+<div *ngIf="!orderButtonDisabled">
+    <button class="prepare-btn" (click) = "sentOrder()"> Order </button>
 </div>

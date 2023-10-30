@@ -213,11 +213,22 @@
     transition: 0.3s;
     line-height: 1;
     color: white;
+    background: black;
     border: 2px solid #cda45e;
     margin: 10px 0px 7px 1px;
     float: right;
   }
 
+  .no-items-cart {
+    position: relative;
+    top: 41%;
+    /* left: 50%; */
+    height: 13%;
+    font-size: x-large;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
     
   .prepare-btn:hover {
     background: #cda45e;

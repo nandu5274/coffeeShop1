@@ -481,6 +481,55 @@ h6 {
   }
 }
 
+@media only screen and (max-width: 992px)  {
+  #hero {
+    width: 100%;
+    height: 100vh;
+    background: url("../img/hero-m2-bg.jpg") top center;
+    background-size: cover;
+    position: relative;
+    padding: 0;
+  }
+  #hero .container {
+    padding-top: 73vh;
+  }
+  
+
+}
+
+
+@media only screen and (max-width: 450px)  {
+  #hero {
+    width: 100%;
+    height: 100vh;
+    background: url("../img/hero-m3-bg.jpg") top center;
+    background-size: cover;
+    position: relative;
+    padding: 0;
+   
+  }
+  #hero .container {
+    padding-top: 73vh;
+  }
+}
+  @media only screen and (max-width: 400px)  {
+    #hero {
+      width: 100%;
+      height: 100vh;
+      background: url("../img/hero-m3-bg.jpg") top center;
+      background-size: cover;
+      position: relative;
+      padding: 0;
+      
+    }
+    #hero .container {
+      padding-top: 62vh;
+    }
+    
+  
+
+}
+
 #hero h1 {
   margin: 0;
   font-size: 48px;
