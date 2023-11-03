@@ -1,0 +1,33 @@
+
+
+.modal {
+    backdrop-filter: blur(5px); 
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it's above other content */
+    perspective: 1000px; /* Add perspective for 3D effect */
+    transform: translateZ(50px); /* Move the modal forward in 3D space */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 8px 16px rgba(0, 0, 0, 0.2); /* Add shadows for depth */
+  }
+  
+  .modal-content {
+    background: transparent;
+    border-radius: 5px;
+    border: azure;
+   
+  }
+
+
+  .test{
+    height: 14em;
+    width: 43%;
+    align-self: center;
+    background: white;
+    color: black;
+  }
