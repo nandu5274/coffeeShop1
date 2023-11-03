@@ -7,6 +7,7 @@ import { ResponseDto } from '../dtos/responseDto';
 import { DropboxService } from '../service/dropbox.service';
 import * as Papa from 'papaparse';
 import { DatePipe } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-items-cart',
@@ -28,7 +29,7 @@ export class ItemsCartComponent implements OnInit {
   @Output() orderingResponse: EventEmitter<any> = new EventEmitter();
   quantityUpdated: boolean = false;
   constructor(private sharedService: SharedService, private router: Router, private graphqlService: GraphqlService,
-    private dropboxService: DropboxService, private datePipe: DatePipe) { }
+    private dropboxService: DropboxService, private datePipe: DatePipe, private http: HttpClient) { }
 
   ngOnInit() {
     let sessionCartDataList = sessionStorage.getItem('cartDataList');
@@ -184,7 +185,7 @@ export class ItemsCartComponent implements OnInit {
 
    console.log("orderTableData", JSON.stringify(orderTableData))
    this.orderProcessingStatus.emit('processing')
- // this.graphqlService.saveDataAndLink(orderTableData);
+  this.graphqlService.saveDataAndLink(orderTableData);
   this.sharedService.getOrderProcessingResponseObservable().subscribe((data) => {
     this.responseDto = data;
     this.sentOrderStatus();
@@ -200,6 +201,7 @@ export class ItemsCartComponent implements OnInit {
       sessionStorage.setItem("orderSuccessItem",  btoa(JSON.stringify(this.responseDto)))
       this.orderingResponse.emit(this.responseDto);
       sessionStorage.removeItem("cartDataList");
+      this.sendOrderForApproval(JSON.stringify(this.responseDto.data.data.insert_kubera_order_one.id))
     }else if(this.responseDto.status == "error")
     {
       this.orderProcessingStatus.emit('error')
@@ -232,6 +234,18 @@ export class ItemsCartComponent implements OnInit {
       console.log('File uploaded:', response);
     }).catch((error) => {
       console.error('Error uploading file:', error);
+    });
+  }
+
+  sendOrderForApproval(id:any){
+    this.http.get('https://kuber-backup.onrender.com/dropbox/broadcast?message=' + "orderid-"+id)
+    .subscribe((response) => {
+      // Handle the response data here
+      console.log(response);
+    },
+    (error) => {
+      // Handle any errors that occurred during the request
+      console.error(error);
     });
   }
 

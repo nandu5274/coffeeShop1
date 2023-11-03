@@ -1,5 +1,7 @@
 import { AfterViewInit, Component } from '@angular/core';
 import { WebSocketService } from '../service/WebSocket.service';
+import { Observable } from 'rxjs/internal/Observable';
+import { timer } from 'rxjs';
 
 @Component({
   selector: 'app-captain-page',
@@ -20,6 +22,9 @@ export class CaptainPageComponent implements AfterViewInit {
       console.log("message", message)
       this.messages.push(message);
     });
+
+   
+ 
     console.log("caption")
   }
 
@@ -28,8 +33,11 @@ export class CaptainPageComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    
-    console.log("laoeded dev")
+    timer(0, 600000).subscribe(() => { 
+      this.webSocketService.reconnect()
+      console.log("tetsing")
+    });
+  
   }
   
 
@@ -78,8 +86,8 @@ export class CaptainPageComponent implements AfterViewInit {
         icon: 'assets/img/menu/lobster-bisque.jpg',
       };
 
-      const notification = new Notification('Push Notification Title', options);
-    }, 1000); // 5 minutes in milliseconds
+      const notification = new Notification('Cafe Kubera order', options);
+    }, 100); // 5 minutes in milliseconds
   }
 
 
