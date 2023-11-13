@@ -25,6 +25,7 @@ export class GraphqlService {
           order_summary_amount
           order_additional_service_amount
           order_total_amount
+          table_no
           order_items {
             item_name
             item_description

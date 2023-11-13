@@ -83,4 +83,53 @@ navigateToMenu(nav:any) {
   }
 }
 
+
+ async parseNestedCsvToObject(blob: Blob): Promise<{ headers1: Record<string, string>, headers2: Record<string, string>[] }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event:any) => {
+      const csvData = event.target.result as string;
+      const cleanedCsvData = csvData.replace(/\r/g, '');
+
+      const lines = cleanedCsvData.split('\n');
+
+   
+
+      // Extract the headers from the first and third lines
+      const headers1: string[] = lines[0].split(',');
+      const headers2: string[] = lines[2].split(',');
+
+      // Extract the data from the second line
+      const data1: string[] = lines[1].split(',');
+
+      // Process the lines from the 4th line to the end
+      const data2: Record<string, string>[] = [];
+
+      lines.slice(3).forEach(line => {
+        const values = line.split(',');
+        const item: Record<string, string> = {};
+        headers2.forEach((header, index) => {
+          item[header] = values[index];
+        });
+        data2.push(item);
+      });
+
+      if (headers1.length !== data1.length) {
+        console.error('CSV parsing error: Header and data length mismatch for headers1');
+        reject('CSV parsing error');
+        return;
+      }
+
+      // Convert headers1 to an object
+      const headers1Obj: Record<string, string> = {};
+      for (let i = 0; i < headers1.length; i++) {
+        headers1Obj[headers1[i]] = data1[i];
+      }
+
+      resolve({ headers1: headers1Obj, headers2: data2 });
+    };
+    reader.readAsText(blob);
+  });
+}
+
 }

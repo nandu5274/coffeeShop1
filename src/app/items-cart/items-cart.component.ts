@@ -188,20 +188,24 @@ export class ItemsCartComponent implements OnInit {
   this.graphqlService.saveDataAndLink(orderTableData);
   this.sharedService.getOrderProcessingResponseObservable().subscribe((data) => {
     this.responseDto = data;
-    this.sentOrderStatus();
+    this.sentOrderStatus(csvOrderTableData, csvOrderItemsTableData);
    
   })
-  this.generateAndUploadCSV(csvOrderTableData, csvOrderItemsTableData)
+  
+  //this.generateAndUploadCSV(csvOrderTableData, csvOrderItemsTableData)
   }
 
-  sentOrderStatus() {
+  sentOrderStatus(csvOrderTableData: any, csvOrderItemsTableData:any) {
     if(this.responseDto.status == "success")
     {
       this.orderProcessingStatus.emit('success')
       sessionStorage.setItem("orderSuccessItem",  btoa(JSON.stringify(this.responseDto)))
       this.orderingResponse.emit(this.responseDto);
       sessionStorage.removeItem("cartDataList");
-      this.sendOrderForApproval(JSON.stringify(this.responseDto.data.data.insert_kubera_order_one.id))
+      this.responseDto.message = "approval"
+      console.log("data 2 - ", JSON.stringify(this.responseDto))
+      this.generateAndUploadToApprovalWaiting(csvOrderTableData, csvOrderItemsTableData,this.responseDto.data.data.insert_kubera_order_one.id,this.responseDto.data.data.insert_kubera_order_one.order_ref_id)
+  
     }else if(this.responseDto.status == "error")
     {
       this.orderProcessingStatus.emit('error')
@@ -212,7 +216,7 @@ export class ItemsCartComponent implements OnInit {
     return csv;
   }
   generateAndUploadCSV(csvOrderTableData: any, csvOrderItemsTableData:any) {
-    const currentDate = new Date();
+    const currentDate = new Date();  
     const formattedDate = this.datePipe.transform(currentDate, 'yyyy_MM_dd_HH_mm_ss');
     const DateFolder = this.datePipe.transform(currentDate, 'yyyy_MM_dd');
     console.log("formattedDate", formattedDate);
@@ -237,8 +241,37 @@ export class ItemsCartComponent implements OnInit {
     });
   }
 
+
+  generateAndUploadToApprovalWaiting(csvOrderTableData:any, orderItemTableDataList:any, id:any, order_ref_id:any){
+    const orderTableFilePath = '/orders/approval_waiting_orders/'+'order_'+id+'_order_ref_'+order_ref_id+'.csv';
+    csvOrderTableData.id = id;
+    const csvOrderTableDataCsv = this.objectsToCsv2([csvOrderTableData]);
+    const orderItemTableDataListCsv = this.objectsToCsv2(orderItemTableDataList);
+    const orderTableCsvData  = csvOrderTableDataCsv +"\n" +orderItemTableDataListCsv
+
+
+    this.dropboxService.uploadFile(orderTableFilePath, orderTableCsvData).then((response:any) => {
+
+      console.log('File uploaded:', response);
+      this.sendOrderForApproval(JSON.stringify(this.responseDto))
+
+    }).catch((error) => {
+      this.dropboxService.updateFile(orderTableFilePath, orderTableCsvData).then((response:any) => {
+        this.sendOrderForApproval(JSON.stringify(this.responseDto));
+        console.log('File updated:', response);
+      }).catch((error) => {
+        
+        console.error('Error uploading file:', error);
+      });
+      
+      console.error('Error uploading file:', error);
+    });
+
+  
+  }
+
   sendOrderForApproval(id:any){
-    this.http.get('https://kuber-backup.onrender.com/dropbox/broadcast?message=' + "orderid-"+id)
+    this.http.get('https://kuber-backup.onrender.com/dropbox/broadcast?message=approval')
     .subscribe((response) => {
       // Handle the response data here
       console.log(response);
@@ -248,5 +281,10 @@ export class ItemsCartComponent implements OnInit {
       console.error(error);
     });
   }
-
+  objectsToCsv2(objects: any[]): string {
+    const csv = Papa.unparse(objects, {
+      header: true
+    });
+    return csv;
+  }
 }
