@@ -52,8 +52,8 @@ export class CaptainPageComponent implements AfterViewInit {
     console.log("caption")
   }
 
-  sendMessageToWebSocket() {
-    this.webSocketService.sendMessage('Hello, WebSocket Server!');
+  sendMessageToWebSocket(msg:any) {
+    this.webSocketService.sendMessage(msg);
   }
 
   ngAfterViewInit() {
@@ -119,7 +119,7 @@ export class CaptainPageComponent implements AfterViewInit {
 
   approveOrderBYpopup(msg: any) {
     if (typeof msg === "string") {
-      if (msg = "approval") {
+      if (msg.includes("approval")) {
         this.playSound()
         if (this.showSpinner == false) {
           this.getUpdatedApprovalWaitingOrders();
@@ -342,7 +342,8 @@ export class CaptainPageComponent implements AfterViewInit {
 
 
     if (res.includes("successful")) {
-      this.dropboxService.moveFile(sourcePath, approvedDestinationPath);
+      res = await this.dropboxService.moveFile(sourcePath, approvedDestinationPath);
+      this.sendMessageToWebSocket('kitchen')
       setTimeout(() => {
         this.refreshOrder()
       }, 1000); // 5 minutes in milliseconds

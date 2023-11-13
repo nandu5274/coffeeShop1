@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Dropbox } from 'dropbox';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import * as Papa from 'papaparse';
+import { Observable } from 'rxjs';
 @Injectable({
   providedIn: 'root',
 })
@@ -170,16 +171,17 @@ export class DropboxService {
 
     return status;
   }
-
+// working below retry code
 
   async uploadFile(filePath: string, fileContent: string) {
-    this.dbx = new Dropbox({ accessToken: sessionStorage.getItem('access_token')!})
     let retries = 0;
-    const maxRetries = 3
+    const maxRetries = 4
     let response;
     let retryDelay = 1000
+    let lastError: any;
     while (retries < maxRetries) {
       try {
+        this.dbx = new Dropbox({ accessToken: sessionStorage.getItem('access_token')!})
         response = await this.dbx.filesUpload({
           path: filePath,
           contents: fileContent,
@@ -188,35 +190,34 @@ export class DropboxService {
         console.log(`File uploaded successfully: ${filePath}`);
         return response; // Exit the function if the upload is successful
       } catch (error:any) {
-        console.error(`Error uploading file: ${error}`);
-        if (error.status === 409) {
-          console.error('Skipping retry on 409 Conflict error.');
-          return null; // Skip retry on 409 Conflict
-        }
+        console.error(`Error uploadFile: ${error}`);
+        lastError = error;
         retries++;
         if (retries < maxRetries) {
-          console.log(`Retrying in ${retryDelay}ms...`);
+          console.log(`uploadFile Retrying in ${retryDelay}ms...`);
           await new Promise(resolve => setTimeout(resolve, retryDelay));
           retryDelay *= 2; // Exponential backoff, or use a fixed delay
+        } else {
+          // If retries are exhausted, return the error
+          console.log(`uploadFile failed after ${maxRetries} retries.`);
         }
-        return null;
       }
     }
-    console.error(`File upload failed after ${maxRetries} retries.`);
-    return null;
+    return Promise.reject(lastError);
   
   }
   
 
 
   async updateFile(filePath: string, fileContent: string) {
-    this.dbx = new Dropbox({ accessToken: sessionStorage.getItem('access_token')!})
     let retries = 0;
-    const maxRetries = 3
+    const maxRetries = 4
     let response;
     let retryDelay = 1000
+    let lastError: any;
     while (retries < maxRetries) {
       try {
+        this.dbx = new Dropbox({ accessToken: sessionStorage.getItem('access_token')!})
         response = this.dbx.filesUpload({
           path: filePath,
           contents: fileContent,
@@ -225,85 +226,86 @@ export class DropboxService {
         console.log(`File updated successfully: ${filePath}`);
         return response; // Exit the function if the upload is successful
       } catch (error:any) {
-        console.error(`Error updating file: ${error}`);
-        if (error.status === 409) {
-          console.error('Skipping updating retry on 409 Conflict error.');
-          return null; // Skip retry on 409 Conflict
-        }
+        console.error(`Error updateFile: ${error}`);
+        lastError = error;
         retries++;
         if (retries < maxRetries) {
-          console.log(`update Retrying in ${retryDelay}ms...`);
+          console.log(`updateFile Retrying in ${retryDelay}ms...`);
           await new Promise(resolve => setTimeout(resolve, retryDelay));
           retryDelay *= 2; // Exponential backoff, or use a fixed delay
+        } else {
+          // If retries are exhausted, return the error
+          console.log(`updateFile failed after ${maxRetries} retries.`);
         }
-        return null;
       }
     }
-    console.error(`File update failed after ${maxRetries} retries.`);
-    return null;
+    return Promise.reject(lastError);
   
   }
   
-
-
   async getFilesInFolder(folderPath: string) {
-    this.dbx = new Dropbox({ accessToken: sessionStorage.getItem('access_token')!})
+  
+
     let retries = 0;
-    const maxRetries = 3
+    const maxRetries = 4;
     let response;
-    let retryDelay = 1000
+    let retryDelay = 2000;
+    let lastError: any;
+
     while (retries < maxRetries) {
       try {
-        response =  await this.dbx.filesListFolder({ path: folderPath });
+        this.dbx = new Dropbox({ accessToken: sessionStorage.getItem('access_token')! });
+        response = await this.dbx.filesListFolder({ path: folderPath });
         console.log(`getFilesInFolder successfully: ${folderPath}`);
-        return  response.result.entries;; // Exit the function if the upload is successful
-      } catch (error:any) {
-        console.error(`Error getFilesInFolder : ${error}`);
+        return response.result.entries; // Exit the function if the upload is successful
+      } catch (error: any) {
+        console.error(`Error getFilesInFolder: ${error}`);
+        lastError = error;
         retries++;
         if (retries < maxRetries) {
           console.log(`getFilesInFolder Retrying in ${retryDelay}ms...`);
           await new Promise(resolve => setTimeout(resolve, retryDelay));
           retryDelay *= 2; // Exponential backoff, or use a fixed delay
+        } else {
+          // If retries are exhausted, return the error
+          console.log(`getFilesInFolder failed after ${maxRetries} retries.`);
         }
-        return error;
       }
     }
-    console.error(`getFilesInFolder failed after ${maxRetries} retries.`);
-    return null;
-  
-  }
-  
 
+    // If the function reaches here, it means the API call was unsuccessful, and retries are exhausted
+    return Promise.reject(lastError);
+  }
 
 
   async getFileData(filePath: string) {
-    this.dbx = new Dropbox({ accessToken: sessionStorage.getItem('access_token')!})
+   
     let retries = 0;
-    const maxRetries = 3
+    const maxRetries = 4
     let response;
+    let lastError: any;
     let retryDelay = 1000
     while (retries < maxRetries) {
       try {
+        this.dbx = new Dropbox({ accessToken: sessionStorage.getItem('access_token')!})
         response =  await this.dbx.filesDownload({ path: filePath });
         console.log(`filesDownload successfully: ${filePath}`);
         return  response.result; // Exit the function if the upload is successful
       } catch (error:any) {
-        console.error(`Error filesDownload : ${error}`);
-        if (error.status === 409) {
-          console.error('Skipping filesDownload retry on 409 Conflict error.');
-          return null; // Skip retry on 409 Conflict
-        }
+        console.error(`Error filesDownload: ${error}`);
+        lastError = error;
         retries++;
         if (retries < maxRetries) {
           console.log(`filesDownload Retrying in ${retryDelay}ms...`);
           await new Promise(resolve => setTimeout(resolve, retryDelay));
           retryDelay *= 2; // Exponential backoff, or use a fixed delay
+        } else {
+          // If retries are exhausted, return the error
+          console.log(`filesDownload failed after ${maxRetries} retries.`);
         }
-        return error;
       }
     }
-    console.error(`filesDownload failed after ${maxRetries} retries.`);
-    return null;
+    return Promise.reject(lastError);
   
   }
 
@@ -312,13 +314,15 @@ export class DropboxService {
 
 
   async copyFile(sourcePath:any , destinationPath:any, copyType:any) {
-    this.dbx = new Dropbox({ accessToken: sessionStorage.getItem('access_token')!})
+   
     let retries = 0;
-    const maxRetries = 3
+    const maxRetries = 4
     let response;
     let retryDelay = 1000
+    let lastError: any;
     while (retries < maxRetries) {
       try {
+        this.dbx = new Dropbox({ accessToken: sessionStorage.getItem('access_token')!})
         response = await this.dbx.filesCopyV2({
           from_path: sourcePath,
           to_path: destinationPath,
@@ -328,24 +332,20 @@ export class DropboxService {
         return  response;
         // Exit the function if the upload is successful
       } catch (error:any) {
-        console.error(`Error copyFile : ${error}`);
-        if (error.status === 409) {
-          console.error('Skipping copyFile retry on 409 Conflict error.');
-          response = copyType + " successful"
-          return response; // Skip retry on 409 Conflict
-        }
+        console.error(`Error copyFile: ${error}`);
+        lastError = error;
         retries++;
         if (retries < maxRetries) {
           console.log(`copyFile Retrying in ${retryDelay}ms...`);
           await new Promise(resolve => setTimeout(resolve, retryDelay));
           retryDelay *= 2; // Exponential backoff, or use a fixed delay
+        } else {
+          // If retries are exhausted, return the error
+          console.log(`copyFile failed after ${maxRetries} retries.`);
         }
-        return copyType + " error";
       }
     }
-    console.error(`copyFile failed after ${maxRetries} retries.`);
-    return null;
-  
+    return Promise.reject(lastError);
   }
 
 
@@ -355,9 +355,10 @@ export class DropboxService {
   async moveFile(fromPath: string, toPath: string) {
     this.dbx = new Dropbox({ accessToken: sessionStorage.getItem('access_token')!})
     let retries = 0;
-    const maxRetries = 3
+    const maxRetries = 4
     let response;
     let retryDelay = 1000
+    let lastError: any;
     while (retries < maxRetries) {
       try {
         response =     await this.dbx.filesMoveV2({
@@ -368,22 +369,19 @@ export class DropboxService {
         return  response;
         // Exit the function if the upload is successful
       } catch (error:any) {
-        console.error(`Error in file move : ${error}`);
-        if (error.status === 409) {
-          console.error('Skipping File move retry on 409 Conflict error.');
-          return response; // Skip retry on 409 Conflict
-        }
+        console.error(`Error moveFile: ${error}`);
+        lastError = error;
         retries++;
         if (retries < maxRetries) {
-          console.log(`File move  Retrying in ${retryDelay}ms...`);
+          console.log(`moveFile Retrying in ${retryDelay}ms...`);
           await new Promise(resolve => setTimeout(resolve, retryDelay));
           retryDelay *= 2; // Exponential backoff, or use a fixed delay
+        } else {
+          // If retries are exhausted, return the error
+          console.log(`moveFile failed after ${maxRetries} retries.`);
         }
-        return error;
       }
     }
-    console.error(`File move  failed after ${maxRetries} retries.`);
-    return null;
-  
+    return Promise.reject(lastError);
   }
 }

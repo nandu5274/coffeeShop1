@@ -24,7 +24,7 @@ export class KitchenPageComponent {
     private sharedService: SharedService) {  
     this.initializePushNotifications();
     this.sound = new Howl({
-      src: ['assets/audio/order_waiting.mp3'],
+      src: ['assets/audio/kitchen.mp3'],
     });
   }
 
@@ -41,7 +41,7 @@ export class KitchenPageComponent {
     this.webSocketService.getMessageSubject().subscribe((event) => {
       // Handle incoming WebSocket messages here
       const message = event.data;
-     // this.triggerPopupMessage(message)
+     this.approveOrderBYpopup(message)
       console.log("message", message)
       this.messages.push(message);
     });
@@ -78,7 +78,7 @@ export class KitchenPageComponent {
   approveOrderBYpopup(msg:any)
   {
     if (typeof msg === "string") {
-      if(msg = "approval")
+      if(msg.includes("kitchen"))
       {
         this.playSound()
           if(this.showSpinner == false)
