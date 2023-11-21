@@ -28,7 +28,7 @@
         <ul>
           <li><a class="nav-link scrollto" href="#hero" [class.active]="isOtherItemsActive" (click)="navigateToMenu('hero')">Home</a></li>
           <li><a class="nav-link scrollto" href="#about" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('about')" >About</a></li>
-          <li><a class="nav-link scrollto" href="#menu"  [class.active]="isMenuActive" (click)="navigateToMenu('menu')" >Menu</a></li>
+          <li><a  *ngIf="showMenu" class="nav-link scrollto" href="#menu"  [class.active]="isMenuActive" (click)="navigateToMenu('menu')" >Menu</a></li>
           <li><a class="nav-link scrollto" href="#specials" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('specials')" >Specials</a></li>
           <li><a class="nav-link scrollto" href="#events" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('events')" >Events</a></li>
           <li><a class="nav-link scrollto" href="#chefs" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('chefs')">Chefs</a></li>
@@ -56,7 +56,7 @@
       </nav><!-- .navbar -->
    
      
-      <div class="d-flex " > 
+      <div class="d-flex "  *ngIf="showMenu" > 
   
           <a (click)="toggleModal()">
             <img src="assets/img/cart.png" class="cart"  alt="">

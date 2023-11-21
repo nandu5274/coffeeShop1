@@ -220,5 +220,6 @@ export class KitchenPageComponent {
   {
     this.getUpdatedKitchenOrders();
   }
+  
 
 }

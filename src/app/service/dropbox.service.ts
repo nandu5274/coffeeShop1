@@ -384,4 +384,40 @@ export class DropboxService {
     }
     return Promise.reject(lastError);
   }
+
+
+ 
+
+  async deleteFile(filePaths: string[]) {
+    this.dbx = new Dropbox({ accessToken: sessionStorage.getItem('access_token')!})
+    let retries = 0;
+    const maxRetries = 4
+    let response;
+    let retryDelay = 1000
+    let lastError: any;
+    while (retries < maxRetries) {
+      try {
+        const entries = filePaths.map((path) => ({ path }));
+
+      const response = await this.dbx.filesDeleteBatch({ entries });
+        console.log('File deleted successfully:', response);
+        return  response;
+        // Exit the function if the upload is successful
+      } catch (error:any) {
+        console.error(`Error in File delete : ${error}`);
+        lastError = error;
+        retries++;
+        if (retries < maxRetries) {
+          console.log(`File delete Retrying in ${retryDelay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+          retryDelay *= 2; // Exponential backoff, or use a fixed delay
+        } else {
+          // If retries are exhausted, return the error
+          console.log(`File delete failed after ${maxRetries} retries.`);
+        }
+      }
+    }
+    return Promise.reject(lastError);
+  }
+
 }

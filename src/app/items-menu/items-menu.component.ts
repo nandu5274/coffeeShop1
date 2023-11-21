@@ -10,7 +10,7 @@ import * as menuListJsonData from 'src/app/sampleResponse/menu-list.json';
 export class ItemsMenuComponent implements AfterViewInit,OnInit {
 
   constructor(private sharedService: SharedService) {}
-  
+  showMenu:any  = false
   ngOnInit(): void {
     this.populateMenuList();
   }
@@ -26,6 +26,15 @@ export class ItemsMenuComponent implements AfterViewInit,OnInit {
       const loadEvent = new Event('load');
       window.dispatchEvent(loadEvent);
     }, 20);
+
+    setTimeout(() => {
+      this.showMenu = this.sharedService.getShowMenuFlagData();
+  
+      this.sharedService.getShowMenuFlagDataObservable().subscribe((data) => {
+        this.showMenu = data;
+      })
+  
+    })
   }
   handleCustomEvent(event: Event): void {
     console.log('Handling customEvent in AppComponent');

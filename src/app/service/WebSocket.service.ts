@@ -16,7 +16,7 @@ export class WebSocketService {
   private socket: any;
   constructor() {
 
-    //this.socket = new SockJS('https://kuber-backup.onrender.com/ws');
+    this.socket = new SockJS('https://kuber-backup.onrender.com/ws');
     this.connect();
 
   }

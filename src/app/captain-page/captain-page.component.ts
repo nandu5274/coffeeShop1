@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { WebSocketService } from '../service/WebSocket.service';
 import { Observable } from 'rxjs/internal/Observable';
 import { timer } from 'rxjs';
@@ -17,10 +17,12 @@ export class CaptainPageComponent implements AfterViewInit {
   messages: string[] = [];
   Status: any = ""
   showSpinner: Boolean = false;
+  approvedShowSpinner: Boolean = false;
   count: any = 0;
   private sound: Howl;
   ApprovalOrderList: SingleFileOrderDto[] = [];
   ApprovedOrderList: SingleFileOrderDto[] = [];
+  ApprovedOrderListMap!: Map<string, SingleFileOrderDto[]>;
   popmessgae: any = ""
   constructor(private webSocketService: WebSocketService, private datePipe: DatePipe, private dropboxService: DropboxService,
     private sharedService: SharedService) {
@@ -31,14 +33,14 @@ export class CaptainPageComponent implements AfterViewInit {
   }
   logs: string[] = [];
   ngOnInit() {
-
+    this.getApprovedOrders();
     console.log = (message: string) => {
       this.logs.push(message);
-       // console.log(message); // Log to the browser console
+      // console.log(message); // Log to the browser console
     };
 
     this.getApprovalWaitingOrders();
-    this.getApprovedOrders();
+
     this.webSocketService.getMessageSubject().subscribe((event) => {
       // Handle incoming WebSocket messages here
       const message = event.data;
@@ -52,7 +54,7 @@ export class CaptainPageComponent implements AfterViewInit {
     console.log("caption")
   }
 
-  sendMessageToWebSocket(msg:any) {
+  sendMessageToWebSocket(msg: any) {
     this.webSocketService.sendMessage(msg);
   }
 
@@ -360,15 +362,43 @@ export class CaptainPageComponent implements AfterViewInit {
 
     this.selectedTab = tabName;
 
-    if(tabName == 'waiting_order')
-    {
+    if (tabName == 'waiting_order') {
       this.getUpdatedApprovalWaitingOrders();
-    }else if (tabName == 'Accepted_order')
-    {
+    } else if (tabName == 'Accepted_order') {
       this.getUpdatedApprovedOrders();
     }
   }
 
+  isExpanded: boolean = false;
+  expandedStatus: boolean = false;
+  currentkey: any;
+  currentClosed: boolean = false;
+  toggleExpand(map: any, item: any) {
+    if (this.expandedStatus) {
+      map.forEach((value: any, key: any) => {
+        value[0].order.isExpanded = false;
+      });
+      item.value[0].order.isExpanded = !item.value[0].order.isExpanded;
+
+      if (this.currentkey == item.value[0].order.table_no && !this.currentClosed) {
+        item.value[0].order.isExpanded = false
+        this.currentClosed = true;
+      } else {
+        this.currentClosed = false;
+      }
+      this.currentkey = item.value[0].order.table_no;
+
+
+    } else {
+      item.value[0].order.isExpanded = !item.value[0].order.isExpanded;
+      this.expandedStatus = !this.expandedStatus
+    }
+    if (item.value[0].order.isExpanded && this.expandedDiv) {
+      this.expandedDiv.nativeElement.scrollIntoView({ behavior: 'auto', block: 'start' });
+    }
+  }
+
+  @ViewChild('expandedDiv') expandedDiv: ElementRef | undefined;
 
   async declineOrder(id: any, order_ref_id: any) {
     this.showSpinner = true;
@@ -385,7 +415,7 @@ export class CaptainPageComponent implements AfterViewInit {
   approvedFiles: any[] = [];
   async getApprovedOrders() {
     this.ApprovedOrderList = []
-    this.showSpinner = true;
+    this.approvedShowSpinner = true;
     const folderPath = '/orders/approved_orders/'; // Replace with the desired folder path
     this.approvedFiles = await this.dropboxService.getFilesInFolder(folderPath);
     for (const file of this.approvedFiles) {
@@ -394,18 +424,20 @@ export class CaptainPageComponent implements AfterViewInit {
       let order: SingleFileOrderDto = new SingleFileOrderDto();
       order.order = (await respo).headers1
       order.orderItems = (await respo).headers2
+      order.order.isExpanded = false
       this.ApprovedOrderList.push(order);
       console.log("respo - ", (await respo).headers1)
     }
     this.ApprovedOrderList.sort((a, b) => a.order.id - b.order.id);
     this.ApprovedOrderList.reverse()
-    this.showSpinner = false;
+    this.converteLIstTomap(this.ApprovedOrderList);
+    this.approvedShowSpinner = false;
   }
 
   updatedApprovedOrderFiles: any[] = [];
   async getUpdatedApprovedOrders() {
     //this.ApprovalOrderList = []
-    this.showSpinner = true;
+    this.approvedShowSpinner = true;
     const folderPath = '/orders/approved_orders/'; // Replace with the desired folder path
     this.updatedApprovedOrderFiles = await this.dropboxService.getFilesInFolder(folderPath);
     // added only newly added files
@@ -417,18 +449,43 @@ export class CaptainPageComponent implements AfterViewInit {
       let order: SingleFileOrderDto = new SingleFileOrderDto();
       order.order = (await respo).headers1
       order.orderItems = (await respo).headers2
+      order.order.isExpanded = false
       this.ApprovedOrderList.push(order);
       console.log("respo - ", (await respo).headers1)
     }
-    addedNewFiles.forEach(value => this.files.push(value))
+    addedNewFiles.forEach(value => this.approvedFiles.push(value))
     removeOldFiles.forEach(value => this.removeApprovedItem(value))
     this.ApprovedOrderList.sort((a, b) => a.order.id - b.order.id);
     this.ApprovedOrderList.reverse()
-    this.showSpinner = false;
-
+    this.converteLIstTomap(this.ApprovedOrderList);
+    this.approvedShowSpinner = false;
   }
-  refreshApprovedOrder()
-  {
+  converteLIstTomap(ApprovedOrderList: any) {
+    //   const yourMap: Map<number, SingleFileOrderDto> = new Map(ApprovedOrderList.map((obj:SingleFileOrderDto ) => [obj.order.table_no, obj]));
+
+
+    const yourMap: Map<string, SingleFileOrderDto[]> = ApprovedOrderList.reduce((map: any, obj: SingleFileOrderDto) => {
+      const key = obj.order.table_no;
+
+      // If the key doesn't exist in the map, initialize it with an empty array
+      if (!map.has(key)) {
+        map.set(key, []);
+      }
+
+      // Push the object to the array associated with the key
+      map.get(key)?.push(obj);
+
+      return map;
+    }, new Map<string, SingleFileOrderDto[]>());
+
+
+    this.ApprovedOrderListMap = yourMap
+
+    console.log(yourMap);
+  }
+
+
+  refreshApprovedOrder() {
     this.getUpdatedApprovedOrders()
   }
   isSticky: boolean = false;
@@ -437,4 +494,50 @@ export class CaptainPageComponent implements AfterViewInit {
     // Add the 'sticky' class to the tabs when scrolling down, and remove it when scrolling up
     this.isSticky = window.scrollY > 100;
   }
+
+  async moveOrderToCheckOut(data:any) {
+    this.approvedShowSpinner = true;
+   const value =  this.objectsToCsv2(data);
+   let orderData:any = [];
+   let orderItem:any = [];
+   let filepaths:any = [];
+   let id = "";
+   data.forEach( (field:any) => {
+    let path  = '/orders/approved_orders/'+'order_' + field.order.id + '_order_ref_' + field.order.order_ref_id + '.csv'
+    filepaths.push(path);
+    orderData.push(field.order);
+    id = id+"_"+field.order.id
+    field.orderItems.forEach( (item:any) => {
+      orderItem.push(item)
+    })
+   
+   })
+   const csvOrderTableDataCsv = this.objectsToCsv2(orderData);
+   const orderItemTableDataListCsv = this.objectsToCsv2(orderItem);
+   const orderTableCsvData  = csvOrderTableDataCsv +"\n" +orderItemTableDataListCsv
+   const orderTableFilePath = '/orders/checkout_orders/'+'order'+id+'.csv';
+   await this.dropboxService.uploadFile(orderTableFilePath, orderTableCsvData).then(async (response:any) => {
+    console.log('File uploaded:', response);
+   let  resw = await this.dropboxService.deleteFile(filepaths);
+   console.log(resw);
+   setTimeout(() => {   this.refreshApprovedOrder(); }, 3000); 
+
+    //delete the approved orders
+
+  }).catch((error) => {
+    this.dropboxService.updateFile(orderTableFilePath, orderTableCsvData).then((response:any) => {
+      console.log('File updated:', response);
+      this.dropboxService.deleteFile(filepaths);
+      setTimeout(() => {   this.refreshApprovedOrder(); }, 3000); 
+    }).catch((error) => {
+      
+      console.error('Error uploading file:', error);
+    });
+    
+    console.error('Error uploading file:', error);
+  });
+
+  }
+
+
 }
