@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, isDevMode } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -9,6 +9,20 @@ import { NavBarComponent } from './nav-bar/nav-bar.component';
 import { FooterComponent } from './footer/footer.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
+import { ItemsCartComponent } from './items-cart/items-cart.component';
+import { BookingOrderComponent } from './booking-order/booking-order.component';
+import { SharedService } from './service/shared-service';
+import { GraphQLModule } from './graphql.module';
+import { HttpClientModule } from '@angular/common/http';
+import { DatePipe } from '@angular/common';
+import { CaptainPageComponent } from './captain-page/captain-page.component';
+import { KitchenPageComponent } from './kitchen-page/kitchen-page.component';
+import { WebSocketService } from './service/WebSocket.service';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { PaymentComponent } from './payment/payment.component';
+import { PaymentLoginComponent } from './payment-login/payment-login.component';
+import { PosInvoiceComponent } from './pos-invoice/pos-invoice.component';
+
 
 
 @NgModule({
@@ -18,15 +32,29 @@ import { FormsModule } from '@angular/forms';
     ItemsMenuComponent,
     NavBarComponent,
     FooterComponent,
-
+    ItemsCartComponent,
+    BookingOrderComponent,
+    CaptainPageComponent,
+    KitchenPageComponent,
+    PaymentComponent,
+    PaymentLoginComponent,
+    PosInvoiceComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    FormsModule
+    FormsModule,
+    GraphQLModule,
+    HttpClientModule,
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      // Register the ServiceWorker as soon as the application is stable
+      // or after 30 seconds (whichever comes first).
+      registrationStrategy: 'registerWhenStable:30000'
+    })
   ],
-  providers: [],
+  providers: [SharedService,DatePipe],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

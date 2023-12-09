@@ -1,17 +1,45 @@
-import { AfterViewInit, Component } from '@angular/core';
-
+import { AfterViewInit, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { CartItemDto } from '../dtos/CartItemDto';
+import { SharedService } from '../service/shared-service';
+import * as menuListJsonData from 'src/app/sampleResponse/menu-list.json';
 @Component({
   selector: 'app-items-menu',
   templateUrl: './items-menu.component.html',
   styleUrls: ['./items-menu.component.scss']
 })
-export class ItemsMenuComponent implements AfterViewInit {
+export class ItemsMenuComponent implements AfterViewInit,OnInit {
 
+  constructor(private sharedService: SharedService) {}
+  showMenu:any  = false
+  ngOnInit(): void {
+    this.populateMenuList();
+  }
+  menuListData: any  = menuListJsonData;
+  menuCourseList : any = [];
+  menuItemsList: any = [];
+  menuList:any;
+  cartItemDto: CartItemDto = new CartItemDto;
+  selectedItem:any;
+  quantity: number = 1;
+  isCap:any;
+  tableNumber:any
   ngAfterViewInit() {
+     this.isCap = sessionStorage.getItem('isCap');
+    this.tableNumber =  sessionStorage.getItem('table' );
+
     setTimeout(() => {
       const loadEvent = new Event('load');
       window.dispatchEvent(loadEvent);
     }, 20);
+
+    setTimeout(() => {
+      this.showMenu = this.sharedService.getShowMenuFlagData();
+  
+      this.sharedService.getShowMenuFlagDataObservable().subscribe((data) => {
+        this.showMenu = data;
+      })
+  
+    })
   }
   handleCustomEvent(event: Event): void {
     console.log('Handling customEvent in AppComponent');
@@ -27,17 +55,22 @@ export class ItemsMenuComponent implements AfterViewInit {
 
   showModal = false;
 
-  openModal() {
-    document.body.style.overflow = 'hidden';
+  openModal(item: any) {
+    
     this.showModal = true;
+    this.selectedItem = item;
+    this.quantity =1;
+    document.body.style.overflow = 'hidden';
   }
 
   closeModal() {
-    document.body.style.overflow = 'auto';
+  
     this.showModal = false;
+    this.selectedItem = undefined;
+    document.body.style.overflow = 'auto';
   }
 
-  quantity: number = 1;
+
 
   increment() {
     this.quantity++;
@@ -48,4 +81,37 @@ export class ItemsMenuComponent implements AfterViewInit {
       this.quantity--;
     }
   }
+
+populateMenuList()
+{
+
+  this.menuList = this.menuListData.menu;
+  this.menuList.forEach((course: any) => {
+    let value = {
+      type:  course.course.type,
+      class: ".filter-" + course.course.type,
+  
+    };
+    this.menuCourseList?.push(value)
+    let menuItems = course.course.items
+    menuItems.forEach((item: any) => {
+       let menuItem = item;
+       menuItem.class = "filter-" +  course.course.type
+      this.menuItemsList.push(menuItem);
+    })
+   
+    
+  });
+  console.log("menuList" + this.menuList);
+  console.log("menuItemsList" + this.menuItemsList);
+}
+
+  sendDataToParent(quantity:any) {
+   
+    this.cartItemDto = this.selectedItem 
+    this.cartItemDto.quantity = quantity
+    this.sharedService.setItemToCartData(this.cartItemDto!);
+    this.closeModal(); 
+  }
+
 }

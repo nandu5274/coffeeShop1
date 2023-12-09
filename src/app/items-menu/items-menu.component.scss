@@ -21,6 +21,10 @@
     border-radius: .5rem 0 0 .5rem;
 }
 
+.menu-item-click{
+  cursor: pointer;
+}
+
 .feature{
 
     float: left;
@@ -46,6 +50,21 @@
     margin-top: 0px;
     margin-bottom: 0px;
     
+}
+.prepare-btn {
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  display: inline-block;
+  padding: 12px 30px;
+  border-radius: 50px;
+  transition: 0.3s;
+  line-height: 1;
+  color: white;
+  border: 2px solid #cda45e;
+  margin: 16px 0px 7px 1px;
+  float: right;
 }
 
 .cuisine{
@@ -163,6 +182,16 @@ font-family: open-sans, Arial, Helvetica, sans-serif;
      background-color: rgb(224, 224, 224);
  }
 
+ .invalid-route{
+  text-align: center;
+    font-size: x-large;
+  margin: 0;
+  margin: 0;
+  font-size: 36px;
+  font-weight: 700;
+  font-family: "Playfair Display", serif;
+  color: #cda45e;
+ }
 
  .modal {
     backdrop-filter: blur(5px); 
@@ -186,6 +215,25 @@ font-family: open-sans, Arial, Helvetica, sans-serif;
     border: azure;
    
   }
+  .buttons {
+    display: flex; /* Display the buttons in a single row */
+    justify-content: space-between; /* Space the buttons apart horizontally */
+    margin-top: 20px;
+  }
+  
+  .buttons button {
+    background-color: #f44336;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    flex: 1; /* Allow the buttons to share the available space equally */
+    margin-right: 10px; /* Add a small margin between buttons */
+  }
+
+  
+
 
   .quantity-input {
     position: relative;
@@ -212,7 +260,11 @@ font-family: open-sans, Arial, Helvetica, sans-serif;
     width: 30px; /* Adjust the width as needed */
   }
 
-  
+  .table{
+    max-width: fit-content;
+    margin: 11px 0px 0px 15px;
+    max-height: 35px;
+  }
   
   
   
@@ -273,4 +325,26 @@ font-family: open-sans, Arial, Helvetica, sans-serif;
        cursor:pointer;
      }
  
+  }
+  .Menu-row{
+    display: flex; 
+    flex-direction: row;
+  }
+
+  @media screen and (max-width: 750px) {
+    .Menu-row{
+      display: flex; 
+      flex-direction: column;
+    }
+  }
+  .header-align{
+    display: flex;  
+    text-align: center;
+
+  }
+
+  @media screen and (max-width: 510px) {
+    .header-align{
+      display: block;  text-align: center
+    }
   }
