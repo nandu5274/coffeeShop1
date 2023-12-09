@@ -21,7 +21,12 @@ export class ItemsMenuComponent implements AfterViewInit,OnInit {
   cartItemDto: CartItemDto = new CartItemDto;
   selectedItem:any;
   quantity: number = 1;
+  isCap:any;
+  tableNumber:any
   ngAfterViewInit() {
+     this.isCap = sessionStorage.getItem('isCap');
+    this.tableNumber =  sessionStorage.getItem('table' );
+
     setTimeout(() => {
       const loadEvent = new Event('load');
       window.dispatchEvent(loadEvent);
@@ -108,6 +113,5 @@ populateMenuList()
     this.sharedService.setItemToCartData(this.cartItemDto!);
     this.closeModal(); 
   }
-
 
 }

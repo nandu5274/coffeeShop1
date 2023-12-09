@@ -17,6 +17,7 @@ export class CaptainPageComponent implements AfterViewInit {
   messages: string[] = [];
   Status: any = ""
   showSpinner: Boolean = false;
+  showMenuOrderModal:  Boolean = false;
   approvedShowSpinner: Boolean = false;
   count: any = 0;
   private sound: Howl;
@@ -538,6 +539,31 @@ export class CaptainPageComponent implements AfterViewInit {
   });
 
   }
+
+
+  isTableNUmberUndefined(): boolean {
+    return this.tableNumber == null; 
+  }
+  openOrderMenuModal() {
+    sessionStorage.removeItem('table')
+    sessionStorage.removeItem('tableSet')
+    this.showMenuOrderModal = true
+  }
+  tableNumber: any
+
+  closeOrderMenuModal() {
+    this.showMenuOrderModal = false
+  }
+
+  openMenuPage()
+  {
+    sessionStorage.setItem('table', this.tableNumber);
+    sessionStorage.setItem('tableSet', '1');
+    sessionStorage.setItem('isCap', 'true');
+    this.sharedService.setShowMenuFlag(1)
+    this.sharedService.navigateToMenu('menu');
+  }
+
 
 
 }

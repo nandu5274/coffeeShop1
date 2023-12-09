@@ -2,10 +2,32 @@
 <section id="menu" class="menu section-bg" style="padding-top: 9em;">
   <div class="container" data-aos="fade-up">
 
-    <div  *ngIf="showMenu"  class="section-title">
+    <div  *ngIf="showMenu"  class="section-title" style="padding-top: 1em;">
       <h2>Menu</h2>
-      <p>Check Our Tasty Menu</p>
+      <div  class="refresh Menu-row">
+        <div style="    margin-bottom: 0.5em;">
+          <p class="header-align">Check Our Tasty Menu 
+             <a style="    display: block;">
+             <img src="assets/img/table.png" class="table"  alt=""> 
+          <a style="font-family: sans-serif; font-size: smaller; font-weight: 500;"> : {{tableNumber}}</a>
+        </a>
+          </p>
+         
+        </div>
+    
+
+        <div *ngIf="isCap === 'true'" class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
+          <button style=" background-color: #d49b3b; color: #11100e;" routerLink="/cap">cap</button>
+        
+        </div>
+      </div>
+     
     </div>
+
+
+
+
+
 <!-- 
     <div class="row" data-aos="fade-up" data-aos-delay="100">
       <div class="col-lg-12 d-flex justify-content-center">
@@ -201,7 +223,7 @@
           <input type="text" [(ngModel)]="quantity" />
           <button (click)="increment()">+</button>
         </div>
-        <div class="cta">
+        <div class="cta"  *ngIf="isCap === 'true'" >
           <button type="button" (click)="sendDataToParent(quantity)">add to Bowl</button>
         </div>
       </div>

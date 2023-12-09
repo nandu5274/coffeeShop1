@@ -19,6 +19,10 @@ import { CaptainPageComponent } from './captain-page/captain-page.component';
 import { KitchenPageComponent } from './kitchen-page/kitchen-page.component';
 import { WebSocketService } from './service/WebSocket.service';
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { PaymentComponent } from './payment/payment.component';
+import { PaymentLoginComponent } from './payment-login/payment-login.component';
+import { PosInvoiceComponent } from './pos-invoice/pos-invoice.component';
+
 
 
 @NgModule({
@@ -32,6 +36,9 @@ import { ServiceWorkerModule } from '@angular/service-worker';
     BookingOrderComponent,
     CaptainPageComponent,
     KitchenPageComponent,
+    PaymentComponent,
+    PaymentLoginComponent,
+    PosInvoiceComponent,
   ],
   imports: [
     BrowserModule,

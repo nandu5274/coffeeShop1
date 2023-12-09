@@ -114,6 +114,14 @@
     text-align: -webkit-center;
     background: #11100e;
   }
+
+  button:disabled,
+  button[disabled]{
+    border: 1px solid #999999 !important;
+    background-color: #cccccc !important;
+    color: #666666 !important;
+    cursor: not-allowed !important;
+  }
   
   .circle {
     background-color: #d49b3b;

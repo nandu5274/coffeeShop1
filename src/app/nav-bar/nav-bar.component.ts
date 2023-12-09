@@ -26,6 +26,7 @@ isOtherItemsActive:boolean = false;
 orderProcessingStatus:any='';
 response!:ResponseDto;
 previousUrl:any;
+showSpinner:Boolean = false
 showMenu:boolean = false
 ngOnInit(){
   const sessionCartDataList = sessionStorage.getItem('cartDataList');
@@ -51,6 +52,7 @@ ngOnInit(){
 }, 20 * 60 * 1000);  // 20 minutes in milliseconds
 
  this.route.queryParams.subscribe((queryParams: any) => {
+  this.showSpinner = true
   // Access arbitrary query parameters from the URL
   const param1 = queryParams['table'];
   const tableSet = sessionStorage.getItem('tableSet')
@@ -67,7 +69,7 @@ ngOnInit(){
     sessionStorage.removeItem('table');
     this.showMenu = false;
   }
-  
+  this.showSpinner = false
 });
 }
 

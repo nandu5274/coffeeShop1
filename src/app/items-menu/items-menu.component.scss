@@ -215,6 +215,25 @@ font-family: open-sans, Arial, Helvetica, sans-serif;
     border: azure;
    
   }
+  .buttons {
+    display: flex; /* Display the buttons in a single row */
+    justify-content: space-between; /* Space the buttons apart horizontally */
+    margin-top: 20px;
+  }
+  
+  .buttons button {
+    background-color: #f44336;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    flex: 1; /* Allow the buttons to share the available space equally */
+    margin-right: 10px; /* Add a small margin between buttons */
+  }
+
+  
+
 
   .quantity-input {
     position: relative;
@@ -241,7 +260,11 @@ font-family: open-sans, Arial, Helvetica, sans-serif;
     width: 30px; /* Adjust the width as needed */
   }
 
-  
+  .table{
+    max-width: fit-content;
+    margin: 11px 0px 0px 15px;
+    max-height: 35px;
+  }
   
   
   
@@ -302,4 +325,26 @@ font-family: open-sans, Arial, Helvetica, sans-serif;
        cursor:pointer;
      }
  
+  }
+  .Menu-row{
+    display: flex; 
+    flex-direction: row;
+  }
+
+  @media screen and (max-width: 750px) {
+    .Menu-row{
+      display: flex; 
+      flex-direction: column;
+    }
+  }
+  .header-align{
+    display: flex;  
+    text-align: center;
+
+  }
+
+  @media screen and (max-width: 510px) {
+    .header-align{
+      display: block;  text-align: center
+    }
   }

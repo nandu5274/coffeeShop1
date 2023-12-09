@@ -100,7 +100,7 @@ export class ItemsCartComponent implements OnInit {
     cartItem.forEach((item: CartItemDto) => {
       this.orderAmount = this.orderAmount + item.totalCartCost
     })
-    this.additionAmount = (this.orderAmount * 18) / 100;
+    this.additionAmount = (this.orderAmount * 5) / 100;
     this.totalAmount = this.orderAmount + this.additionAmount
     if (this.totalAmount > 0) {
       this.orderButtonDisabled = false;
