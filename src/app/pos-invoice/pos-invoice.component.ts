@@ -13,7 +13,6 @@ export class PosInvoiceComponent implements OnChanges {
   }
 
   invoiceData:any = {};
-
   @Input() printData: any;
 
   ngOnChanges(changes: SimpleChanges) {
@@ -27,11 +26,40 @@ export class PosInvoiceComponent implements OnChanges {
   {
     this.invoiceData.date = this.sharedService.updateCurrentDateInIST();
     this.invoiceData.tokenNumbers = this.getTokenNumbersFromData(this.printData)
+    this.invoiceData.tableNo = this.printData.order[0].table_no
+    this.invoiceData.billNo = this.printData.order[0].billNo
+    this.invoiceData.items = this.printData.orderItems
+    this.invoiceData.actualAmount =  this.formatStringWithTwoDecimalPlaces(this.getActualAmount(this.printData.orderItems))
+    this.invoiceData.sgst =   (this.invoiceData.actualAmount * 2.5) / 100;
+    this.invoiceData.sgst = this.formatStringWithTwoDecimalPlaces( this.invoiceData.sgst );
+    this.invoiceData.cgst =  (this.invoiceData.actualAmount * 2.5) / 100;
+    this.invoiceData.cgst = this.formatStringWithTwoDecimalPlaces( this.invoiceData.cgst );
+    this.invoiceData.GrandTotal =   parseFloat(this.invoiceData.actualAmount)
+      +   parseFloat(this.invoiceData.sgst) +   parseFloat(this.invoiceData.cgst );
+      this.invoiceData.GrandTotal =  this.formatStringWithTwoDecimalPlaces(    this.invoiceData.GrandTotal )
   }
   
   getTokenNumbersFromData(data:any)
   {
+     return data.order.map((obj: any) => obj.id).join(',');
+  }
 
+  formatStringWithTwoDecimalPlaces(value :any): string {
+    const numberValue = parseFloat(value);
+    const formattedNumber = numberValue.toFixed(2);
+    return formattedNumber;
+  }
+
+
+  getActualAmount(orderItems: any) {
+    let orderCost = 0;
+
+    orderItems.forEach((item: any) => {
+      let itemCost = item.item_quantity * item.item_cost
+      orderCost = orderCost + itemCost
+
+    })
+    return orderCost;
   }
   printPage(): void {
     
@@ -60,8 +88,8 @@ export class PosInvoiceComponent implements OnChanges {
       
       td.description,
       th.description {
-          width: 75px;
-          max-width: 75px;
+          width: 60px;
+          max-width: 60px;
       }
       
       td.quantity,
@@ -73,8 +101,8 @@ export class PosInvoiceComponent implements OnChanges {
       
       td.price,
       th.price {
-          width: 40px;
-          max-width: 40px;
+          width: 24px;
+          max-width: 24px;
           word-break: break-all;
       }
       

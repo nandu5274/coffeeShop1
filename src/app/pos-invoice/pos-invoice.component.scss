@@ -13,8 +13,8 @@ table {
 
 td.description,
 th.description {
-    width: 75px;
-    max-width: 75px;
+    width: 60px;
+    max-width: 60px;
 }
 
 td.quantity,
@@ -26,8 +26,8 @@ th.quantity {
 
 td.price,
 th.price {
-    width: 40px;
-    max-width: 40px;
+    width: 24px;
+    max-width: 24px;
     word-break: break-all;
 }
 
@@ -62,4 +62,16 @@ img {
     .hidden-print * {
         display: none !important;
     }
+}
+.btn {
+    background-color: #cda45e;
+    color: #000000;
+    font-style: inherit;
+    font-size: inherit;
+    border: none;
+    padding: 6px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    flex: 1;
+    margin-right: 10px;
 }

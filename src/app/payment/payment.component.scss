@@ -301,7 +301,16 @@ input:checked + .slider:before {
     z-index: 9999; /* Ensure it's above other content */
     backdrop-filter: blur(10px); 
   }
-  
+  .bnts{
+    background-color: #f44336;
+    color: #fff;
+    border: none;
+    padding: 6px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    flex: 1; /* Allow the buttons to share the available space equally */
+    margin-right: 10px; /* Add a small margin between buttons */
+  }
   .spinner {
     border: 6px solid #f3f3f3;
     border-top: 6px solid #d49b3b;

@@ -167,6 +167,7 @@ export class PaymentComponent implements AfterViewInit {
   {
     this.openPopup();
       this.printValue = invoiceData
+
   }
 
 
@@ -186,6 +187,7 @@ export class PaymentComponent implements AfterViewInit {
       order.filePath = file.name
       order.order = (await respo).headers1
       order.orderItems = (await respo).headers2
+      order.paidDetails = (await respo).headers3
       this.paidOrderList.push(order);
       console.log("respo - ", (await respo).headers1)
     }
@@ -224,7 +226,11 @@ export class PaymentComponent implements AfterViewInit {
     }
   }
 
-
+  formatStringWithTwoDecimalPlaces(value :any): string {
+    const numberValue = parseFloat(value);
+    const formattedNumber = numberValue.toFixed(2);
+    return formattedNumber;
+  }
 
   updatedFiles: any[] = [];
   async getUpdatedCheckOutOrders() {
@@ -365,7 +371,7 @@ selectedOrder:any;
    let paymentType:any = {};
    let fileName:any = data.filePath
    paymentType.paid_amount = this.amount;
-   paymentType.actual_amount = this.getActualAmount(data.orderItems);
+   paymentType.actual_amount = this.formatStringWithTwoDecimalPlaces(this.getActualAmount(data.orderItems));
    paymentType.mode = this.paymentMode
    paymentType.period =this.sharedService.updateCurrentDateTimeInIST();
 
@@ -409,7 +415,7 @@ selectedOrder:any;
       orderCost = orderCost + itemCost
 
     })
-    return orderCost + (orderCost * 5) / 100;;
+    return orderCost + (orderCost * 5) / 100;
   }
 
   closePaymentTypePopup() {

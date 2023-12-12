@@ -498,6 +498,8 @@ export class CaptainPageComponent implements AfterViewInit {
 
   async moveOrderToCheckOut(data:any) {
     this.approvedShowSpinner = true;
+    const currentDate = new Date();
+    const formattedDate = this.datePipe.transform(currentDate, 'yyyyMMddHHmm');
    const value =  this.objectsToCsv2(data);
    let orderData:any = [];
    let orderItem:any = [];
@@ -507,6 +509,7 @@ export class CaptainPageComponent implements AfterViewInit {
     let path  = '/orders/approved_orders/'+'order_' + field.order.id + '_order_ref_' + field.order.order_ref_id + '.csv'
     filepaths.push(path);
     orderData.push(field.order);
+    orderData[0].billNo = formattedDate;
     id = id+"_"+field.order.id
     field.orderItems.forEach( (item:any) => {
       orderItem.push(item)
