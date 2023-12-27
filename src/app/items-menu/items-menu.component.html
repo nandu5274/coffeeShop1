@@ -55,7 +55,7 @@
       <div   *ngFor="let menuItem of menuItemsList"  class="col-lg-6 menu-item menu-item-click"  [class]="menuItem.class" (click)="openModal(menuItem)">
         <img [src]="menuItem.imagePath" class="menu-img" alt="">
         <div class="menu-content">
-          <a>{{menuItem.name}}</a><span>&#8377; {{menuItem.cost}}</span>
+          <a>{{menuItem.name}} <img [src]="menuItem.typePath" style="width: 14px; margin: 0px 2px 0px 2px;"> </a><span>&#8377; {{menuItem.cost}}</span>
         </div>
         <div class="menu-ingredients">
           {{menuItem.ingredients}}
@@ -200,13 +200,9 @@
         </div>
         <div class="dish">
           <h1 class="item-name">{{selectedItem.name}} </h1>
-
+       
         </div>
-        <div class="rating">
-          <p>
-            <span class="fa fa-star checked"></span> {{selectedItem.rating}}
-          </p>
-        </div>
+  
 
         <div class="description"   style="width: -webkit-fill-available;
         height: 70px;">

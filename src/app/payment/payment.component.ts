@@ -6,6 +6,7 @@ import { SharedService } from '../service/shared-service';
 import { SingleFileOrderDto } from '../dtos/singleFileOrderDto';
 import Papa from 'papaparse';
 import { PaidFileOrderDto } from '../dtos/paidFileOrderDto';
+import { DataService } from '../service/data.service';
 
 @Component({
   selector: 'app-payment',
@@ -21,7 +22,7 @@ export class PaymentComponent implements AfterViewInit {
   showPaidSpinner: boolean = false;
   printValue:any
   constructor(private webSocketService: WebSocketService, private datePipe: DatePipe, private dropboxService: DropboxService,
-    private sharedService: SharedService) {
+    private sharedService: SharedService, private dataService: DataService) {
     this.initializePushNotifications();
     this.sound = new Howl({
       src: ['assets/audio/order_waiting.mp3'],
@@ -57,7 +58,7 @@ export class PaymentComponent implements AfterViewInit {
   }
 
   playSound() {
-    this.sound.play();
+    //this.sound.play();
   }
 
   schedulePushNotification(message: any) {
@@ -92,7 +93,7 @@ export class PaymentComponent implements AfterViewInit {
 
   approveOrderBYpopup(msg: any) {
     if (typeof msg === "string") {
-      if (msg.includes("approval")) {
+      if (msg.includes("payment")) {
         this.playSound()
         if (this.showSpinner == false) {
           this.getUpdatedCheckOutOrders();
@@ -362,6 +363,32 @@ selectedOrder:any;
 
   }
 
+  async sendMailPaymentOrder(data:any) {
+
+   const value =  this.objectsToCsv2(data);
+
+   let paymentType:any = {};
+   let request: any = {};
+   let attachment :any = {};
+   let fileName:any = data.filePath
+   paymentType.paid_amount = this.amount;
+   paymentType.actual_amount = this.formatStringWithTwoDecimalPlaces(this.getActualAmount(data.orderItems));
+   paymentType.mode = this.paymentMode
+   paymentType.period =this.sharedService.updateCurrentDateTimeInIST();
+
+   const csvOrderTableDataCsv = this.objectsToCsv2(data.order);
+   const orderItemTableDataListCsv = this.objectsToCsv2(data.orderItems);
+   const paymentTypeListCsv = this.objectsToCsv2([paymentType]);
+   const orderTableCsvData  = paymentTypeListCsv+"\n" +csvOrderTableDataCsv +"\n" +orderItemTableDataListCsv
+   const orderTableFilePath ='/orders/paid_orders/'+fileName;
+   attachment.content = orderTableCsvData
+   attachment.fileName = fileName
+   request.recipient = "cafekubera2223@gmail.com";
+   request.msgBody = "Hey! In\nThis is a message from the cafe kubera order payment completed \n\nThanks";
+   request.subject = "details for the orders - "+  data.order.map((obj: any) => obj.id).join(',') +" for  the table "+ data.order[0].table_no+" on " + paymentType.period;
+   request.attachment = attachment;
+    this.dataService.postData(request).subscribe();
+  }
 
   async moveOrderToPaid(data:any) {
     this.showSpinner = true;
@@ -384,6 +411,7 @@ selectedOrder:any;
     console.log('File uploaded:', response);
     let checkOutOrder = "/orders/checkout_orders/"+fileName
    let  resw = await this.dropboxService.deleteFile([checkOutOrder]);
+   this.sendMailPaymentOrder(data);
    console.log(resw);
    setTimeout(() => {  this.closePaymentTypePopup();  this.refreshOrder(); }, 3000); 
 

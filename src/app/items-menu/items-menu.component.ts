@@ -86,7 +86,9 @@ populateMenuList()
 {
 
   this.menuList = this.menuListData.menu;
+ 
   this.menuList.forEach((course: any) => {
+    console.log( course.course.type);
     let value = {
       type:  course.course.type,
       class: ".filter-" + course.course.type,
@@ -95,6 +97,7 @@ populateMenuList()
     this.menuCourseList?.push(value)
     let menuItems = course.course.items
     menuItems.forEach((item: any) => {
+      console.log(item.name);
        let menuItem = item;
        menuItem.class = "filter-" +  course.course.type
       this.menuItemsList.push(menuItem);

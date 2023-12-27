@@ -79,7 +79,7 @@ navigateToMenu(nav:any) {
   {
     this.isMenuActive = true
     this.router.navigate(['/' + nav], { fragment: nav });
-   const elements = document.querySelectorAll(`[href="#hero"], [href="#about"], [href="#specials"], [href="#events"], [href="#chefs"], [href="#gallery"]`);
+   const elements = document.querySelectorAll(`[href="#hero"], [href="#about"], [href="#specials"], [href="#events"], [href="#chefs"], [href="#gallery"], [href="#contact"]`);
    elements.forEach((element) => {
     element.classList.remove('active');
   });

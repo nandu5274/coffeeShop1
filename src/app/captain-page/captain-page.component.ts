@@ -525,7 +525,7 @@ export class CaptainPageComponent implements AfterViewInit {
    let  resw = await this.dropboxService.deleteFile(filepaths);
    console.log(resw);
    setTimeout(() => {   this.refreshApprovedOrder(); }, 3000); 
-
+   this.sendMessageToWebSocket('payment');
     //delete the approved orders
 
   }).catch((error) => {
@@ -533,6 +533,7 @@ export class CaptainPageComponent implements AfterViewInit {
       console.log('File updated:', response);
       this.dropboxService.deleteFile(filepaths);
       setTimeout(() => {   this.refreshApprovedOrder(); }, 3000); 
+      this.sendMessageToWebSocket('payment');
     }).catch((error) => {
       
       console.error('Error uploading file:', error);
