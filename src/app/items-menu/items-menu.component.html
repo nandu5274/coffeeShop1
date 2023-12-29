@@ -52,13 +52,13 @@
 
     <div   *ngIf="showMenu" class="row menu-container" data-aos="fade-up" data-aos-delay="200">
     
-      <div   *ngFor="let menuItem of menuItemsList"  class="col-lg-6 menu-item menu-item-click"  [class]="menuItem.class" (click)="openModal(menuItem)">
+      <div   *ngFor="let menuItem of menuItemsList; index as i"  class="col-lg-6 menu-item menu-item-click"  [class]="menuItem.class" (click)="openModal(menuItem)">
         <img [src]="menuItem.imagePath" class="menu-img" alt="">
         <div class="menu-content">
           <a>{{menuItem.name}} <img [src]="menuItem.typePath" style="width: 14px; margin: 0px 2px 0px 2px;"> </a><span>&#8377; {{menuItem.cost}}</span>
         </div>
-        <div class="menu-ingredients">
-          {{menuItem.ingredients}}
+        <div class="menu-ingredients" style="font-size: 21px !important;">
+          {{menuItem.id}}
         </div>
       </div>
 
@@ -206,9 +206,9 @@
 
         <div class="description"   style="width: -webkit-fill-available;
         height: 70px;">
-          <p>
+          <!-- <p>
             {{selectedItem.description}}
-          </p>
+          </p> -->
 
         </div>
         <div class="amount">

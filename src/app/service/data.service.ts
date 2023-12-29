@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class DataService {
   private apiUrl = 'https://kuber-backup.onrender.com/email/sendPaidOrder';
+  //private apiUrl = 'http://localhost:8080/email/sendPaidOrder';
 
   constructor(private http: HttpClient) {}
 

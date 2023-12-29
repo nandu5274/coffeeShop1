@@ -96,8 +96,16 @@
             <p>Paid orders</p>
             <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
               <button style=" background-color: #d49b3b; color: #11100e;" (click) = "refreshPaidOrder()">Refresh</button>
-            
+             <a>
+              paid_amount = {{TotalPaidAmount}}
+              
+             </a>
+             <a>
+              actual_amount = {{TotalActualAmount}}
+              
+             </a>
             </div>
+          
           
           </div>
          
@@ -138,10 +146,15 @@
                 <div>
                  
 
+                
                     <div class="paid-amount">
                       <div style="    display: flex; justify-content: space-between;">
-                      <a  style=" font-family: sans-serif !important; font-size: medium "> Amount  </a>
-                      <a  style=" font-family: sans-serif !important; font-size: medium; color: #cda45e;"> {{waitingApprovalOrder.paidDetails[0].actual_amount}}  </a>
+                        <a  style=" font-family: sans-serif !important; font-size: medium "> Amount  </a>
+                        <a  style=" font-family: sans-serif !important; font-size: medium; color: #cda45e;"> {{waitingApprovalOrder.paidDetails[0].actual_amount}}  </a>
+                      </div>
+                      <div style="    display: flex; justify-content: space-between;">
+                      <a  style=" font-family: sans-serif !important; font-size: medium "> Paid  </a>
+                      <a  style=" font-family: sans-serif !important; font-size: medium; color: #cda45e;"> {{waitingApprovalOrder.paidDetails[0].paid_amount}}  </a>
                     </div>
                       <div style="    display: flex; justify-content: space-between;">
                         <a  style=" font-family: sans-serif !important; font-size:medium; "> Mode </a>
@@ -182,7 +195,6 @@
 
 
 <div class="main-content">
-  <button (click)="openPopup()">Invoice</button>
 
   <div class="popup-overlay" *ngIf="isPopupOpen" (click)="closePopup()">
     <div class="popup-content">

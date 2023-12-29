@@ -21,6 +21,8 @@ export class PaymentComponent implements AfterViewInit {
   showSpinner: boolean = false;
   showPaidSpinner: boolean = false;
   printValue:any
+  TotalPaidAmount:any = 0;
+  TotalActualAmount:any = 0;
   constructor(private webSocketService: WebSocketService, private datePipe: DatePipe, private dropboxService: DropboxService,
     private sharedService: SharedService, private dataService: DataService) {
     this.initializePushNotifications();
@@ -158,6 +160,8 @@ export class PaymentComponent implements AfterViewInit {
       order.paidDetails = (await respo).headers3
       this.paidOrderList.push(order);
       console.log("respo - ", (await respo).headers1)
+      this.TotalPaidAmount = this.TotalPaidAmount+ parseFloat(order.paidDetails[0].paid_amount);
+      this.TotalActualAmount = this.TotalActualAmount+ parseFloat(order.paidDetails[0].actual_amount);
     }
     this.paidOrderList.sort((a, b) => a.order.id - b.order.id);
     this.paidOrderList.reverse()

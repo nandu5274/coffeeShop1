@@ -20,7 +20,8 @@ export class BookingOrderComponent {
   closeModal() {
     document.body.style.overflow = 'auto';
     this.bookingshowModal = false;
-    this.sharedService.navigateToMenu('hero');
+   // this.sharedService.navigateToMenu('hero');
+   window.location.reload();
   }
   toggleModal(): void {
     this.showloader = !this.showloader;
