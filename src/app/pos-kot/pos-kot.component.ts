@@ -1,20 +1,21 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { SharedService } from '../service/shared-service';
 
 @Component({
-  selector: 'app-pos-invoice',
-  templateUrl: './pos-invoice.component.html',
-  styleUrls: ['./pos-invoice.component.scss']
+  selector: 'app-pos-kot',
+  templateUrl: './pos-kot.component.html',
+  styleUrls: ['./pos-kot.component.scss']
 })
-export class PosInvoiceComponent implements OnChanges {
+export class PosKotComponent {
+
 
   constructor(
     private sharedService: SharedService) {
   }
 
   invoiceData:any = {};
-  updateOrderItem:any = [];
   @Input() printData: any;
+  @Output() messageEvent = new EventEmitter<string>();
 
   ngOnChanges(changes: SimpleChanges) {
     // This method will be called whenever the @Input property changes
@@ -22,32 +23,17 @@ export class PosInvoiceComponent implements OnChanges {
      this.populateInvoice()
     }
   }
-   updateOrderItemPrices(orderItems:any)
-  {
-    orderItems.forEach((item: any) => {
-     
-      item.item_gst_cost = Math.ceil(item.item_cost - item.item_cost * 0.05);
-      this.updateOrderItem.push(item);
-    })
 
-  }
   populateInvoice()
   {
-    this.invoiceData.date = this.sharedService.updateCurrentDateInIST();
-    this.invoiceData.tokenNumbers = this.getTokenNumbersFromData(this.printData)
-    this.invoiceData.tableNo = this.printData.order[0].table_no
-    this.invoiceData.billNo = this.printData.order[0].billNo
-    this.updateOrderItemPrices(this.printData.orderItems);
-    this.invoiceData.items = this.updateOrderItem
-    this.invoiceData.actualAmount =  this.formatStringWithTwoDecimalPlaces(this.getActualAmount(this.printData.orderItems))
-    this.invoiceData.sgst =   (this.invoiceData.actualAmount * 2.5) / 100;
-    this.invoiceData.sgst = this.formatStringWithTwoDecimalPlaces( this.invoiceData.sgst );
-    this.invoiceData.cgst =  (this.invoiceData.actualAmount * 2.5) / 100;
-    this.invoiceData.cgst = this.formatStringWithTwoDecimalPlaces( this.invoiceData.cgst );
-    this.invoiceData.GrandTotal =  this.invoiceData.GrandTotal =   parseFloat(this.invoiceData.actualAmount)
-    +   parseFloat(this.invoiceData.sgst) +   parseFloat(this.invoiceData.cgst );
+    this.invoiceData.date =  this.printData.created_at;
+  
+    this.invoiceData.tokenNumbers = "";
+    this.invoiceData.tableNo = this.printData.table_no
+    this.invoiceData.billNo = ""
+    this.invoiceData.items = this.printData.order_items
+    this.invoiceData.orderNo = this.printData.id
     
-      this.invoiceData.GrandTotal =  this.formatStringWithTwoDecimalPlaces(    this.invoiceData.GrandTotal)
   }
   
   getTokenNumbersFromData(data:any)
@@ -66,7 +52,7 @@ export class PosInvoiceComponent implements OnChanges {
     let orderCost = 0;
 
     orderItems.forEach((item: any) => {
-      let itemCost = item.item_quantity * item.item_gst_cost
+      let itemCost = item.item_quantity * item.item_cost
       orderCost = orderCost + itemCost
 
     })
@@ -163,10 +149,15 @@ export class PosInvoiceComponent implements OnChanges {
     
     // Trigger the print dialog for the new window
     printWindow?.print();
+    this.sendMessage();
   }
 
   test()
   {
     console.log("printData", this.printData);
+  }
+
+  sendMessage() {
+    this.messageEvent.emit('kot');
   }
 }

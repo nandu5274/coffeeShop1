@@ -447,7 +447,7 @@ selectedOrder:any;
       orderCost = orderCost + itemCost
 
     })
-    return orderCost + (orderCost * 5) / 100;
+    return orderCost;
   }
 
   closePaymentTypePopup() {

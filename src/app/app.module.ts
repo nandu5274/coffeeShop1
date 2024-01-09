@@ -22,6 +22,8 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { PaymentComponent } from './payment/payment.component';
 import { PaymentLoginComponent } from './payment-login/payment-login.component';
 import { PosInvoiceComponent } from './pos-invoice/pos-invoice.component';
+import { PosKotComponent } from './pos-kot/pos-kot.component';
+import { TimeAgoPipe } from './common/time-ago.pipe';
 
 
 
@@ -39,6 +41,8 @@ import { PosInvoiceComponent } from './pos-invoice/pos-invoice.component';
     PaymentComponent,
     PaymentLoginComponent,
     PosInvoiceComponent,
+    PosKotComponent,
+    TimeAgoPipe
   ],
   imports: [
     BrowserModule,

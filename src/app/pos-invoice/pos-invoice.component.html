@@ -50,7 +50,7 @@
                         <td class="quantity" style="
                         text-align: -webkit-center">{{item.item_quantity}}</td>
                         <!-- <td class="price">99999</td> -->
-                        <td class="price">{{item.item_quantity * item.item_cost}}</td>
+                        <td class="price">{{item.item_quantity * item.item_gst_cost}}</td>
                     </tr>
                 </tbody>
             </table>
@@ -64,7 +64,7 @@
                     <a>Sub Total</a>
                     <a>{{invoiceData.actualAmount}}</a>
                 </div>
-
+                <hr class = "hr">
 
                 <div style="    display: flex;
                 justify-content: space-between;">
@@ -81,8 +81,6 @@
                     <a>SGST 2.5%</a>
                     <a>{{invoiceData.sgst}}</a>
                 </div>
-                <hr class = "hr">
-
                 <div style="    display: flex;
                 justify-content: space-between;">
                     <a></a>

@@ -3,6 +3,7 @@ import { Apollo } from 'apollo-angular';
 import { gql } from 'graphql-tag';
 import { ResponseDto } from '../dtos/responseDto';
 import { SharedService } from './shared-service';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -32,6 +33,7 @@ export class GraphqlService {
             item_cost
             item_quantity
             order_ref_id
+            status
           }
         }
       }
@@ -62,4 +64,186 @@ export class GraphqlService {
       }
     );
   }
+
+
+   
+  // Method to save data to both tables and associate them
+  getOrderItemDetails(orderIds: number[]): any {
+    return this.apollo.query({
+      query: gql`
+      query GetOrderDetails($orderIds: [Int!]!) {
+        kubera_order_item(where: { id: { _in: $orderIds } }) {
+          id
+    item_name
+    item_quantity
+    order_id
+    status
+    order {
+      id
+      table_no
+    }
+    created_at
+        }
+      }
+      
+      `,
+      variables: {
+        orderId: orderIds, // replace 'id' with the actual field you want to query
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': '1YgBZ03vEHJxek3JftBf8yg57IVJeWzBKMvO1tYs4x6UQuOeGGSkznWRCHl0nlq8',
+        },
+      },
+    })
+    .subscribe(
+      (data: any) => {
+        this.responseDto.status = 'success';
+        this.responseDto.data = data;
+        // Handle the response here
+        this.sharedService.setOrderProcessingResponse(this.responseDto);
+        console.log(data);
+      },
+      (error) => {
+        this.responseDto.status = 'error';
+        this.sharedService.setOrderProcessingResponse(this.responseDto);
+        console.error('Query error:', error);
+      }
+    );
+  }
+
+  getOrderItems(orderIds: any): Observable<any> {
+    const query = gql`
+    query GetOrderItems($orderIds: [Int!]!) @cached {
+      kubera_order_item(order_by: {created_at: desc}, where: { order_id: { _in: $orderIds } }) {
+          id
+          item_name
+          item_quantity
+          order_id
+          status
+          order {
+            id
+            table_no
+          }
+          created_at
+        }
+      }
+    `;
+
+    return this.apollo.query({
+      query,
+      variables: {
+        orderIds,
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': '1YgBZ03vEHJxek3JftBf8yg57IVJeWzBKMvO1tYs4x6UQuOeGGSkznWRCHl0nlq8',
+        },
+      },
+    });
+  }
+
+  getOrderItemsByOrderID(orderIds: any): Observable<any> {
+    const query = gql`
+    query GetOrderItems($orderIds: [Int!]!) {
+      kubera_order(order_by: {created_at: desc}, where: { id: { _in: $orderIds } }) {
+        id
+        order_items {
+          id
+          item_name
+          item_quantity
+          status
+          created_at
+          order_id
+        }
+        table_no
+        created_at
+        order_status
+      }
+      }
+    `;
+
+    return this.apollo.query({
+      query,
+      variables: {
+        orderIds,
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': '1YgBZ03vEHJxek3JftBf8yg57IVJeWzBKMvO1tYs4x6UQuOeGGSkznWRCHl0nlq8',
+        },
+      },
+    });
+  }
+
+
+
+  updateOrderItem(itemId: any, status: any): any {
+    const mutation = gql`
+      mutation UpdateKuberaOrderItem($itemId: Int!, $status: String!) {
+        update_kubera_order_item(
+          where: { id: { _eq: $itemId } }
+          _set: { status: $status }
+        ) {
+          returning {
+            created_at
+            id
+            item_cost
+            item_description
+            item_name
+            item_quantity
+            status
+            order_id
+          }
+        }
+      }
+    `;
+
+    return this.apollo.mutate({
+      mutation,
+      variables: {
+        itemId,
+        status,
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': '1YgBZ03vEHJxek3JftBf8yg57IVJeWzBKMvO1tYs4x6UQuOeGGSkznWRCHl0nlq8',
+        },
+      },
+    });
+  }
+  
+
+
+  updateOrderStatus(itemId: any, order_status: any): any {
+    const mutation = gql`
+      mutation update_kubera_order($itemId: Int!, $order_status: String!) {
+        update_kubera_order(
+          where: { id: { _eq: $itemId } }
+          _set: { order_status: $order_status }
+        ) {
+          returning {
+            created_at
+            id
+            order_status
+          }
+        }
+      }
+    `;
+
+    return this.apollo.mutate({
+      mutation,
+      variables: {
+        itemId,
+        order_status,
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': '1YgBZ03vEHJxek3JftBf8yg57IVJeWzBKMvO1tYs4x6UQuOeGGSkznWRCHl0nlq8',
+        },
+      },
+    });
+  }
+
+
 }

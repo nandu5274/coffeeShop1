@@ -368,6 +368,21 @@ convertToIST(date: Date): string {
 }
 
 
+convertToIST12(date: Date): string {
+  const options = {
+    timeZone: 'Asia/Kolkata',
+    hour12: true,
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric'
+  };
+  
+  // Convert to IST (Asia/Kolkata)
+  return date.toLocaleString('en-US', { timeZone: 'Asia/Kolkata',  hour12: true  });
+}
+
+
+
 formatDateTime(dateString: string): string {
   const options = {
     year: 'numeric' as const,
@@ -421,5 +436,29 @@ updateCurrentDateInIST() {
 
   return formattedTime;
 }
+
+
+updateCurrentDateInIST12() {
+  let istTime:any
+  const localTime = new Date();
+
+  // Check if the current time is in IST
+ let isCurrentTimeInIST = this.isTimeInIST(localTime);
+
+  // Convert to IST if not in IST
+  if (!isCurrentTimeInIST) {
+    istTime= this.convertToIST12(localTime);
+  }
+  else
+  {
+    istTime = localTime.toLocaleString();
+  }
+
+  let formattedTime = this.formatDate(istTime);
+
+  return formattedTime;
+}
+
+
 
 }

@@ -267,7 +267,15 @@ font-family: open-sans, Arial, Helvetica, sans-serif;
     width: auto;
   }
   
-  
+  .itemgst {
+    display: flex;
+    position: relative;
+    font-family: sans-serif;
+    font-size: small;
+    /* font-weight: 500; */
+    color: #d49b3b;
+   
+  }
   
   
   @media only screen and (max-width: 600px) {
@@ -325,6 +333,16 @@ font-family: open-sans, Arial, Helvetica, sans-serif;
         transition-duration: 0.4s;
        cursor:pointer;
      }
+
+     .itemgst {
+      display: flex;
+      position: relative;
+      font-family: sans-serif;
+      font-size: small;
+      /* font-weight: 500; */
+      color: #d49b3b;
+     justify-content: center;
+    }
  
   }
   .Menu-row{

@@ -1,0 +1,58 @@
+
+
+<body class="printable-content" style="    color: black; text-align: -webkit-center;
+background: white;    padding: 5px;">
+    <div class="ticket">
+        <div style="display: flex;">
+
+    <div style="    width: 100%;">
+        <p class="centered">
+      
+            
+            <a style="    font-size: x-large;
+            font-weight: 900;">KOT : {{invoiceData.orderNo}}</a>
+         
+    </div>
+</div>
+            <hr class = "hr">
+            <div style="    justify-content: space-between;
+            display: flex; flex-direction: column;">
+            <div style="    display: flex;
+            justify-content: space-between;">
+                <a style="
+                   text-align: start;
+    width: 50%;
+    font-size: larger;">Date: {{invoiceData.date}}</a>
+                <a style="
+                font-size: large;">Table No:  {{invoiceData.tableNo}}</a>
+            </div>
+
+            </div>
+        <table style="width: inherit;">
+            <thead  style="text-align: left;">
+                <tr>
+                    <th class="description">Item</th>
+                    <th class="quantity" style="
+                    text-align: -webkit-center">quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr  *ngFor="let item of invoiceData.items " >
+                    <td  style="font-size: large;"  class="description">{{item.item_name}}</td>
+                    <td class="quantity" style="
+                    text-align: -webkit-center; font-size: x-large;">{{item.item_quantity}}</td>
+                   
+                </tr>
+            </tbody>
+        </table>
+        <hr class = "hr">
+   
+   
+    
+    </div>
+
+  
+</body>
+
+<button (click) = "printPage()" class="btn">print</button>
+

@@ -8,6 +8,8 @@ import { DatePipe } from '@angular/common';
 import { DropboxService } from '../service/dropbox.service';
 import { SharedService } from '../service/shared-service';
 import { SingleFileOrderDto } from '../dtos/singleFileOrderDto';
+import { GraphqlService } from '../service/graphql.service';
+import { TimerService } from '../service/timer.service';
 @Component({
   selector: 'app-captain-page',
   templateUrl: './captain-page.component.html',
@@ -17,15 +19,19 @@ export class CaptainPageComponent implements AfterViewInit {
   messages: string[] = [];
   Status: any = ""
   showSpinner: Boolean = false;
-  showMenuOrderModal:  Boolean = false;
+  showMenuOrderModal: Boolean = false;
   approvedShowSpinner: Boolean = false;
   count: any = 0;
   private sound: Howl;
   ApprovalOrderList: SingleFileOrderDto[] = [];
   ApprovedOrderList: SingleFileOrderDto[] = [];
+  orderItemsStatusList: any = [];
+  orderItemsStatusLisRes: any;
+  orderItemsStatus: any = {};
   ApprovedOrderListMap!: Map<string, SingleFileOrderDto[]>;
   popmessgae: any = ""
-  constructor(private webSocketService: WebSocketService, private datePipe: DatePipe, private dropboxService: DropboxService,
+  constructor(private webSocketService: WebSocketService, private datePipe: DatePipe, private timerService: TimerService,
+    private dropboxService: DropboxService, private graphqlService: GraphqlService,
     private sharedService: SharedService) {
     this.initializePushNotifications();
     this.sound = new Howl({
@@ -33,6 +39,8 @@ export class CaptainPageComponent implements AfterViewInit {
     });
   }
   logs: string[] = [];
+  items!: any[];
+  timer$!: Observable<number>;
   ngOnInit() {
     this.getApprovedOrders();
     console.log = (message: string) => {
@@ -49,6 +57,8 @@ export class CaptainPageComponent implements AfterViewInit {
       console.log("message", message)
       this.messages.push(message);
     });
+
+    this.timer$ = this.timerService.getTimer();
 
 
 
@@ -79,6 +89,8 @@ export class CaptainPageComponent implements AfterViewInit {
 
 
   showModal = false;
+
+  showOrderModal = false;
 
   openModal(item: any) {
 
@@ -122,7 +134,7 @@ export class CaptainPageComponent implements AfterViewInit {
 
   approveOrderBYpopup(msg: any) {
     if (typeof msg === "string") {
-      if (msg.includes("approval")) {
+      if (msg.includes("approval") || msg.includes("kitchen")) {
         this.playSound()
         if (this.showSpinner == false) {
           this.getUpdatedApprovalWaitingOrders();
@@ -433,6 +445,7 @@ export class CaptainPageComponent implements AfterViewInit {
     this.ApprovedOrderList.reverse()
     this.converteLIstTomap(this.ApprovedOrderList);
     this.approvedShowSpinner = false;
+
   }
 
   updatedApprovedOrderFiles: any[] = [];
@@ -460,6 +473,7 @@ export class CaptainPageComponent implements AfterViewInit {
     this.ApprovedOrderList.reverse()
     this.converteLIstTomap(this.ApprovedOrderList);
     this.approvedShowSpinner = false;
+    this.getOrderItemStatus(this.ApprovedOrderList);
   }
   converteLIstTomap(ApprovedOrderList: any) {
     //   const yourMap: Map<number, SingleFileOrderDto> = new Map(ApprovedOrderList.map((obj:SingleFileOrderDto ) => [obj.order.table_no, obj]));
@@ -488,6 +502,7 @@ export class CaptainPageComponent implements AfterViewInit {
 
   refreshApprovedOrder() {
     this.getUpdatedApprovedOrders()
+
   }
   isSticky: boolean = false;
   @HostListener('window:scroll', ['$event'])
@@ -496,57 +511,57 @@ export class CaptainPageComponent implements AfterViewInit {
     this.isSticky = window.scrollY > 100;
   }
 
-  async moveOrderToCheckOut(data:any) {
+  async moveOrderToCheckOut(data: any) {
     this.approvedShowSpinner = true;
     const currentDate = new Date();
     const formattedDate = this.datePipe.transform(currentDate, 'yyyyMMddHHmm');
-   const value =  this.objectsToCsv2(data);
-   let orderData:any = [];
-   let orderItem:any = [];
-   let filepaths:any = [];
-   let id = "";
-   data.forEach( (field:any) => {
-    let path  = '/orders/approved_orders/'+'order_' + field.order.id + '_order_ref_' + field.order.order_ref_id + '.csv'
-    filepaths.push(path);
-    orderData.push(field.order);
-    orderData[0].billNo = formattedDate;
-    id = id+"_"+field.order.id
-    field.orderItems.forEach( (item:any) => {
-      orderItem.push(item)
-    })
-   
-   })
-   const csvOrderTableDataCsv = this.objectsToCsv2(orderData);
-   const orderItemTableDataListCsv = this.objectsToCsv2(orderItem);
-   const orderTableCsvData  = csvOrderTableDataCsv +"\n" +orderItemTableDataListCsv
-   const orderTableFilePath = '/orders/checkout_orders/'+'order'+id+'.csv';
-   await this.dropboxService.uploadFile(orderTableFilePath, orderTableCsvData).then(async (response:any) => {
-    console.log('File uploaded:', response);
-   let  resw = await this.dropboxService.deleteFile(filepaths);
-   console.log(resw);
-   setTimeout(() => {   this.refreshApprovedOrder(); }, 3000); 
-   this.sendMessageToWebSocket('payment');
-    //delete the approved orders
+    const value = this.objectsToCsv2(data);
+    let orderData: any = [];
+    let orderItem: any = [];
+    let filepaths: any = [];
+    let id = "";
+    data.forEach((field: any) => {
+      let path = '/orders/approved_orders/' + 'order_' + field.order.id + '_order_ref_' + field.order.order_ref_id + '.csv'
+      filepaths.push(path);
+      orderData.push(field.order);
+      orderData[0].billNo = formattedDate;
+      id = id + "_" + field.order.id
+      field.orderItems.forEach((item: any) => {
+        orderItem.push(item)
+      })
 
-  }).catch((error) => {
-    this.dropboxService.updateFile(orderTableFilePath, orderTableCsvData).then((response:any) => {
-      console.log('File updated:', response);
-      this.dropboxService.deleteFile(filepaths);
-      setTimeout(() => {   this.refreshApprovedOrder(); }, 3000); 
+    })
+    const csvOrderTableDataCsv = this.objectsToCsv2(orderData);
+    const orderItemTableDataListCsv = this.objectsToCsv2(orderItem);
+    const orderTableCsvData = csvOrderTableDataCsv + "\n" + orderItemTableDataListCsv
+    const orderTableFilePath = '/orders/checkout_orders/' + 'order' + id + '.csv';
+    await this.dropboxService.uploadFile(orderTableFilePath, orderTableCsvData).then(async (response: any) => {
+      console.log('File uploaded:', response);
+      let resw = await this.dropboxService.deleteFile(filepaths);
+      console.log(resw);
+      setTimeout(() => { this.refreshApprovedOrder(); }, 3000);
       this.sendMessageToWebSocket('payment');
+      //delete the approved orders
+
     }).catch((error) => {
-      
+      this.dropboxService.updateFile(orderTableFilePath, orderTableCsvData).then((response: any) => {
+        console.log('File updated:', response);
+        this.dropboxService.deleteFile(filepaths);
+        setTimeout(() => { this.refreshApprovedOrder(); }, 3000);
+        this.sendMessageToWebSocket('payment');
+      }).catch((error) => {
+
+        console.error('Error uploading file:', error);
+      });
+
       console.error('Error uploading file:', error);
     });
-    
-    console.error('Error uploading file:', error);
-  });
 
   }
 
 
   isTableNUmberUndefined(): boolean {
-    return this.tableNumber == null; 
+    return this.tableNumber == null;
   }
   openOrderMenuModal() {
     sessionStorage.removeItem('table')
@@ -559,8 +574,7 @@ export class CaptainPageComponent implements AfterViewInit {
     this.showMenuOrderModal = false
   }
 
-  openMenuPage()
-  {
+  openMenuPage() {
     sessionStorage.setItem('table', this.tableNumber);
     sessionStorage.setItem('tableSet', '1');
     sessionStorage.setItem('isCap', 'true');
@@ -568,6 +582,177 @@ export class CaptainPageComponent implements AfterViewInit {
     this.sharedService.navigateToMenu('menu');
   }
 
+  iskotPopupOpen = false;
 
+  selectedOrder: any;
+  openPopup(): void {
+    this.iskotPopupOpen = true;
+  }
+
+  printValue: any
+  showInvoice(invoiceData: any) {
+    this.openPopup();
+    this.printValue = invoiceData
+
+  }
+
+  closePopup(): void {
+    this.iskotPopupOpen = false;
+  }
+
+  getOrderItemStatus(apporvedList: any) {
+    if (apporvedList.length > 0) {
+      this.showSpinner = true;
+      let orderIds = apporvedList.map((item: any) => item.order.id);
+      this.graphqlService.getOrderItemsByOrderID(orderIds).subscribe(
+        (result) => {
+          this.orderItemsStatusList = [];
+          this.orderItemsStatusLisRes = result.data.kubera_order
+
+          this.orderItemsStatusLisRes.forEach((item: any) => {
+            let value: any = {};
+            Object.assign(value, item);
+            value.created_at = this.convertToIST(item.created_at)
+            this.orderItemsStatusList.push(value);
+
+          });
+          console.log(result.data); // This will contain the data you queried
+          this.showSpinner = false;
+        },
+        (error) => {
+          console.error('Error fetching data:', error);
+          this.showSpinner = false;
+        }
+
+
+
+      );
+    } else {
+      this.orderItemsStatusList = [];
+    }
+  }
+
+  updateOrderItem(orderItem: any, Status: any) {
+    this.showSpinner = true;
+    this.graphqlService.updateOrderItem(orderItem.id, Status).subscribe(
+      (result: any) => {
+        let orderItemResponse = result.data.update_kubera_order_item.returning[0];
+        this.orderItemsStatusList.forEach((order: any) => {
+          if (order.id == orderItemResponse.order_id) {
+            order.order_items = order.order_items.map((item: any) => {
+              if (item.id == orderItemResponse.id) {
+                // Create a new object with updated properties
+                return { ...item, status: orderItemResponse.status };
+              }
+              return item;
+            });
+            // Optionally, you might want to break out of the loop if the ID is unique
+            return;
+          }
+        });
+        this.showSpinner = false;
+        console.log(result.data); // This will contain the data you queried
+      },
+      (error: any) => {
+        this.showSpinner = false;
+        console.error('Error fetching data:', error);
+      }
+    );
+  }
+
+  updateOrderStatuskot(orderId: any, Status: any) {
+    this.showSpinner = true;
+  this.graphqlService.updateOrderStatus(orderId, Status).subscribe(
+    (result: any) => {
+      let orderItemResponse = result.data.update_kubera_order.returning[0];
+      this.orderItemsStatusList = this.orderItemsStatusList.map((order: any) => {
+        if (order.id === orderItemResponse.id) {
+          return { ...order, order_status: orderItemResponse.order_status };
+        } else {
+          return order;
+        }
+      });
+      this.showSpinner = false;
+      console.log(result.data); // This will contain the data you queried
+    },
+    (error: any) => {
+      this.showSpinner = false;
+      console.error('Error fetching data:', error);
+    }
+  );
+  }
+
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'Done':
+        return 'status-done';
+      case 'progress':
+        return 'status-pending';
+      case 'Cancel':
+        return 'status-cancel';
+      // Add more cases if needed
+      default:
+        return ''; // Default class when status doesn't match any case
+    }
+  }
+
+
+  convertToIST(utcDate: string): string {
+    const date = new Date(utcDate);
+    let istDate = this.datePipe.transform(date, 'yyyy-MM-dd HH:mm:ss', 'IST');
+    istDate = this.convertTo12HourFormat(istDate!);
+    return istDate || '';
+  }
+
+  toggleModal(): void {
+    this.showOrderModal = !this.showOrderModal;
+    this.toggleBodyScroll(this.showOrderModal);
+  }
+
+  convertTo12HourFormat(time: string): string {
+    const timeArray = time.split(' ');
+    const [datePart, timePart] = timeArray;
+    const [hours, minutes, seconds] = timePart.split(':');
+
+    let period = 'AM';
+    let hours12 = parseInt(hours, 10);
+
+    if (hours12 >= 12) {
+      period = 'PM';
+      if (hours12 > 12) {
+        hours12 -= 12;
+      }
+    }
+
+    const twelveHourFormat = `${datePart} ${hours12}:${minutes}:${seconds} ${period}`;
+    return twelveHourFormat;
+  }
+
+  @HostListener('window:keyup.esc')
+  onEscKeyup() {
+    if (this.showOrderModal) {
+      this.toggleModal();
+    }
+  }
+
+  private toggleBodyScroll(shouldEnable: boolean): void {
+    const body = document.body;
+    if (shouldEnable) {
+      body.classList.add('right-modal-open');
+    } else {
+      body.classList.remove('right-modal-open');
+    }
+  }
+
+  updateOrderStatus(event: any, object: any) {
+    if (event == 'kot') {
+
+      if(object.order_status == 'approval_waiting' )
+      {
+          this.updateOrderStatuskot(object.id, "Done")
+      }
+
+    }
+  }
 
 }

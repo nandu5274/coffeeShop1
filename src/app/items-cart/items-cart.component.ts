@@ -100,8 +100,8 @@ export class ItemsCartComponent implements OnInit {
     cartItem.forEach((item: CartItemDto) => {
       this.orderAmount = this.orderAmount + item.totalCartCost
     })
-    this.additionAmount = (this.orderAmount * 5) / 100;
-    this.totalAmount = this.orderAmount + this.additionAmount
+    this.additionAmount = 0;
+    this.totalAmount = this.orderAmount 
     if (this.totalAmount > 0) {
       this.orderButtonDisabled = false;
     } else {
@@ -179,6 +179,7 @@ export class ItemsCartComponent implements OnInit {
         item_description: item.description,
         item_quantity: item.quantity,
         item_cost: item.cost,
+        status: 'progress'
       }
       dataList.push(orderItemTableData);
     })
@@ -245,6 +246,7 @@ export class ItemsCartComponent implements OnInit {
   generateAndUploadToApprovalWaiting(csvOrderTableData:any, orderItemTableDataList:any, id:any, order_ref_id:any){
     const orderTableFilePath = '/orders/approval_waiting_orders/'+'order_'+id+'_order_ref_'+order_ref_id+'.csv';
     csvOrderTableData.id = id;
+    csvOrderTableData.order_created_time=this.sharedService.updateCurrentDateTimeInIST()
     const csvOrderTableDataCsv = this.objectsToCsv2([csvOrderTableData]);
     const orderItemTableDataListCsv = this.objectsToCsv2(orderItemTableDataList);
     const orderTableCsvData  = csvOrderTableDataCsv +"\n" +orderItemTableDataListCsv
