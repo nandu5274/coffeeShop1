@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1708166450029,
+  "timestamp": 1708371543436,
   "index": "https://nandu5274.github.io/coffeeShop1/index.html",
   "assetGroups": [
     {
@@ -13,7 +13,7 @@
       "urls": [
         "https://nandu5274.github.io/coffeeShop1/favicon.ico",
         "https://nandu5274.github.io/coffeeShop1/index.html",
-        "https://nandu5274.github.io/coffeeShop1/main.35167f747124e42a.js",
+        "https://nandu5274.github.io/coffeeShop1/main.1e78d2baac071bb7.js",
         "https://nandu5274.github.io/coffeeShop1/manifest.webmanifest",
         "https://nandu5274.github.io/coffeeShop1/polyfills.942d049d5e170e85.js",
         "https://nandu5274.github.io/coffeeShop1/runtime.70a93a6d34744d57.js",
@@ -199,6 +199,7 @@
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/oreo-shake.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/panner-butter-masala.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/panner.jpg",
+        "https://nandu5274.github.io/coffeeShop1/assets/img/menu/parcel.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/pasta-salad-nonveg.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/pasta_salad.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/peri-peri.jpg",
@@ -499,6 +500,7 @@
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/oreo-shake.jpg": "d6022611dff87537ae0c5d48cacba48a10d3defe",
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/panner-butter-masala.jpg": "3e29430c4762dd853aa1f614ab8e82edae5521bf",
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/panner.jpg": "8d45a0f246b426d6b98ea811b707adc3f0dc7e3e",
+    "https://nandu5274.github.io/coffeeShop1/assets/img/menu/parcel.jpg": "f748669e57db66411c387be2fb270d28dd134167",
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/pasta-salad-nonveg.jpg": "4694384fd79e72ec1db19849b8d2655547fe408f",
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/pasta_salad.jpg": "f175ac07e363b3e4bb03d88d3f313ec4a3fc2dd2",
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/peri-peri.jpg": "a4f3577dc14a5779c852e5c324fc918123f05f5b",
@@ -624,8 +626,8 @@
     "https://nandu5274.github.io/coffeeShop1/assets/vendor/swiper/swiper-bundle.min.js": "f4dc8d46086739c58121185b2d0f4e190710f11b",
     "https://nandu5274.github.io/coffeeShop1/assets/vendor/swiper/swiper-bundle.min.js.map": "8476a6a709730180c88f23d341d400ee50aad267",
     "https://nandu5274.github.io/coffeeShop1/favicon.ico": "22f6a4a3bcaafafb0254e0f2fa4ceb89e505e8b2",
-    "https://nandu5274.github.io/coffeeShop1/index.html": "79666b2048369e3f39515815853f9f4a3301f19d",
-    "https://nandu5274.github.io/coffeeShop1/main.35167f747124e42a.js": "8c6dabd311cc2c5ac12255e3f4c1c311f1b50205",
+    "https://nandu5274.github.io/coffeeShop1/index.html": "7f949d0963993e75eeaf8e90ee7f7ed812625e15",
+    "https://nandu5274.github.io/coffeeShop1/main.1e78d2baac071bb7.js": "76c1cd26b2dd025d82a5e4d6ea261342c4ff807a",
     "https://nandu5274.github.io/coffeeShop1/manifest.webmanifest": "d60dcd6811325a69a3c68475d205b1288b2003a4",
     "https://nandu5274.github.io/coffeeShop1/polyfills.942d049d5e170e85.js": "dff8f1fa9600d7f5460ea3a321897c2caf575fc3",
     "https://nandu5274.github.io/coffeeShop1/runtime.70a93a6d34744d57.js": "a175440d402209cf47f1da72f14d5aabe0ed4093",
