@@ -155,6 +155,7 @@ export class ItemsCartComponent implements OnInit {
     let orderTableData = {
       order_status: 'approval_waiting',
       table_no: sessionStorage.getItem('table'),
+      table_place: sessionStorage.getItem('tablePlace'),
       order_ref_id: rdm_order_ref_id,
       order_summary_amount: this.orderAmount,
       order_additional_service_amount: this.additionAmount,
@@ -168,6 +169,7 @@ export class ItemsCartComponent implements OnInit {
       order_summary_amount: this.orderAmount,
       order_additional_service_amount: this.additionAmount,
       order_total_amount: this.totalAmount,
+      table_place: sessionStorage.getItem('tablePlace'),
     }
 
    let csvOrderItemsTableData = dataList;

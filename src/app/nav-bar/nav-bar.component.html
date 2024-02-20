@@ -1,5 +1,8 @@
  <!-- ======= Top Bar ======= -->
 
+
+ 
+
  <div  *ngIf="showSpinner"  class="spinner-overlay">
   <div class="spinner"></div>
 </div>
@@ -92,3 +95,14 @@
 
     <app-booking-order  [orderProcessingStatus]="orderProcessingStatus" [response] = "response"></app-booking-order>
   </header><!-- End Header -->
+
+  <!-- Info Alert Message -->
+  <div *ngIf="infoMessage" >
+    <div *ngFor="let message of infoMessages; let i = index" class="alert info" >
+      <span>{{ message }}</span>
+      <button (click)="closeInfoMessage(i)">×</button>
+    </div>
+  </div>
+
+  <!-- Button to Trigger Info Alert -->
+

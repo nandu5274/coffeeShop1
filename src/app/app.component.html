@@ -1,3 +1,43 @@
-<app-nav-bar></app-nav-bar>
-<router-outlet></router-outlet>
-<app-footer></app-footer>
+<div class="main-container">
+  <!-- <div  *ngIf="showModal" class="modal">
+    <div class="modal-content">
+      <button (click) = "closeModal()" style="width: 9em;
+      align-self: center;     position: fixed;" class=" pop-up-btm">close</button>
+   
+      <div class="test" style=" height: 86vh;
+      padding: 2em;
+      
+      overflow-y: auto;"
+     >
+        <div>
+        
+          <ul style="text-align: -webkit-center;">
+                <a style=" display: block;
+                max-width:230px;
+                max-height:95px;
+                width: auto;
+                height: auto;"></a>
+                <img [src]="imageUrl" alt="Responsive Image" class="imag-size">
+            
+          </ul>
+        </div>
+      </div>
+  
+    </div>
+  </div>
+   -->
+  
+  <!-- <div class="container" #container>
+    <div class="heart" *ngFor="let heart of hearts; let i = index" [style.left.px]="heart.left" [style.animation-duration.s]="heart.duration"></div>
+  </div> 
+   -->
+    <app-nav-bar></app-nav-bar>
+
+    <router-outlet></router-outlet>
+
+    <app-footer></app-footer>
+
+
+
+  </div>
+

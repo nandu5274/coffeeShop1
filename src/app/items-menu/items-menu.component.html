@@ -9,10 +9,11 @@
           <p class="header-align">Check Our Tasty Menu 
              <a style="    display: block;">
              <img src="assets/img/table.png" class="table"  alt=""> 
-          <a style="font-family: sans-serif; font-size: smaller; font-weight: 500;"> : {{tableNumber}}</a>
+          <a style="font-family: sans-serif; font-size: smaller; font-weight: 500;"> : {{tablePlace}} {{tableNumber}}</a>
         </a>
           </p>
-          <a class = "itemgst"> Item price showing below is including the GST </a>
+          <a class = "itemgst"> *Item price showing below is including the GST </a>
+          <a class = "itemgst"> *Images displayed below are meant for reference.</a>
         </div>
     
 
@@ -51,16 +52,17 @@
     </div>
 
     <div   *ngIf="showMenu" class="row menu-container" data-aos="fade-up" data-aos-delay="200">
-    
-      <div   *ngFor="let menuItem of menuItemsList; index as i"  class="col-lg-6 menu-item menu-item-click"  [class]="menuItem.class" (click)="openModal(menuItem)">
+
+      <div   *ngFor="let menuItem of filteredMenuItems; index as i"  class="col-lg-6 menu-item menu-item-click"  [class]="menuItem.class" (click)="openModal(menuItem)">
         <img [src]="menuItem.imagePath" class="menu-img" alt="">
         <div class="menu-content">
           <a>{{menuItem.name}} <img [src]="menuItem.typePath" style="width: 14px; margin: 0px 2px 0px 2px;"> </a><span>&#8377; {{menuItem.cost}}</span>
         </div>
         <div class="menu-ingredients" style="font-size: 21px !important;">
-          {{menuItem.id}}
+         
         </div>
       </div>
+
 
     
 

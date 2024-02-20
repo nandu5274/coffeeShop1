@@ -96,7 +96,8 @@
             <p>Paid orders</p>
             <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
               <button style=" background-color: #d49b3b; color: #11100e;" (click) = "refreshPaidOrder()">Refresh</button>
-             <a>
+            <div>
+              <a>
               paid_amount = {{TotalPaidAmount}}
               
              </a>
@@ -104,6 +105,7 @@
               actual_amount = {{TotalActualAmount}}
               
              </a>
+            </div>
             </div>
           
           
@@ -120,7 +122,7 @@
                 <div class="content">
                  <div class="table">
                   <a  style=" font-family: sans-serif !important; font-size: x-large; ">Table : {{waitingApprovalOrder.order[0].table_no}}</a>
-                  <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e;"> {{waitingApprovalOrder.order.id}}</a>
+                  <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e;"> {{waitingApprovalOrder.order[0].id}}</a>
                  </div>
                  
       

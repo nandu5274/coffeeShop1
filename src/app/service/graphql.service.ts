@@ -27,6 +27,7 @@ export class GraphqlService {
           order_additional_service_amount
           order_total_amount
           table_no
+          table_place
           order_items {
             item_name
             item_description
@@ -81,6 +82,7 @@ export class GraphqlService {
     order {
       id
       table_no
+      table_place
     }
     created_at
         }
@@ -124,6 +126,7 @@ export class GraphqlService {
           order {
             id
             table_no
+            table_place
           }
           created_at
         }
@@ -157,6 +160,7 @@ export class GraphqlService {
           order_id
         }
         table_no
+        table_place
         created_at
         order_status
       }
@@ -165,6 +169,7 @@ export class GraphqlService {
 
     return this.apollo.query({
       query,
+      fetchPolicy: 'network-only', 
       variables: {
         orderIds,
       },

@@ -1,0 +1,200 @@
+<div  *ngIf="showSpinner"  class="spinner-overlay">
+    <div class="spinner"></div>
+  </div>
+  
+  <div  *ngIf="approvedShowSpinner"  class="spinner-overlay">
+    <div class="spinner"></div>
+  </div>
+  
+  
+  <section id="menu" class="menu section-bg" style="padding-top: 9em;">
+    <div class="tabs"   [class.sticky-tabs]="isSticky">
+      <div class="tab tab-btn " (click)="selectTab('waiting_order')" [class.active]="selectedTab === 'waiting_order'" >waiting order</div>
+      <div class="tab tab-btn " (click)="selectTab('Accepted_order')" [class.active]="selectedTab === 'Accepted_order'">Accepted order</div>
+    </div>
+    
+    <div class="tab-content">
+      <div *ngIf="selectedTab === 'waiting_order'"  >
+  
+        <div class="container" data-aos="fade-up">
+  
+          <div class="section-title" style="padding-top: 1em;">
+            <h2>Approval</h2>
+            <div  style="display: flex; flex-direction: row;" class="refresh">
+              <p>Approve the orders</p>
+              <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
+                <button style=" background-color: #d49b3b; color: #11100e;" >order</button>
+                <button style=" background-color: #d49b3b; color: #11100e;" >Refresh</button>
+             
+                <button style=" background-color: #d49b3b; color: #11100e;" >show c</button>
+             
+              </div>
+            
+            </div>
+           
+          </div>
+      
+      
+          <div  data-aos="fade-up" data-aos-delay="100">
+            <div class="col-lg-12 d-flex justify-content-center">
+              <div class="card-container">
+      
+      
+                <div class="card" *ngFor="let waitingApprovalOrder of ApprovalOrderList">
+                  <div class="content">
+                   <div class="table">
+                    <a  style=" font-family: sans-serif !important; font-size: x-large; ">T: {{waitingApprovalOrder.order.table_no}}</a>
+                    <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e;"> {{waitingApprovalOrder.order.id}}</a>
+               
+                   </div>
+                   
+        
+                    <div style="text-align: center;">
+                      <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e; ">Items</a>
+                     
+                     </div>
+                           
+                    <div style="text-align: center;">
+                      <a  style=" font-family: sans-serif !important; font-size: medium; color: #ffc107; ">{{waitingApprovalOrder.order.order_created_time}}</a>
+                     </div>
+                    
+                     <hr>
+                    <ul  class="item-list">
+                      <li *ngFor="let waitingApprovalOrderItem of waitingApprovalOrder.orderItems">
+                        <div style="display: flex;
+                        place-content: space-between;">
+                          <a> {{waitingApprovalOrderItem.item_name}} </a>
+                     
+                          <a> {{waitingApprovalOrderItem.item_quantity }} </a>
+                        </div>
+                        
+                      </li>
+                    </ul>
+                    <hr>
+                    <div class="cost">
+                      <span>Order summary:</span>
+                      <span>&#8377;{{waitingApprovalOrder.order.order_summary_amount  | number:'1.2-2'}}</span>
+                    </div>
+                    <div class="additional">
+                      <span>Additional Service:</span>
+                      <span>&#8377;{{waitingApprovalOrder.order.order_additional_service_amount  | number:'1.2-2'}}</span>
+                    </div>
+                    <div class= "total">
+                      <span>Total Amount :</span>
+                      <span>&#8377;{{waitingApprovalOrder.order.order_total_amount  | number:'1.2-2'}}</span>
+                    </div>
+                    <div class="buttons">
+                      <button style="background-color: #198754!important" >Approve</button>
+                      
+                      <button>Cancel</button>
+                    </div>
+                  </div>
+                </div>     
+                <!-- Add more cards here -->
+              </div>
+          </div>
+        </div>
+      
+      
+        
+      </div>
+  
+      <!-- tab 1 ending -->
+  
+      </div>
+      <div *ngIf="selectedTab === 'Accepted_order'" >
+  
+  
+  
+  
+  
+        <div class="container" data-aos="fade-up">
+  
+          <div class="section-title" style="padding-top: 1em;">
+            <h2>Approved</h2>
+            <div  style="display: flex; flex-direction: row;" class="refresh">
+              <p>Approved orders</p>
+              <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
+                <button style=" background-color: #d49b3b; color: #11100e;" >Refresh</button>
+                <button style=" background-color: #d49b3b; color: #11100e;" >show c</button>
+                <button style=" background-color: #d49b3b; color: #11100e;"    >orders</button>
+              </div>
+            
+            </div>
+           
+          </div>
+      
+      
+          <div  data-aos="fade-up" data-aos-delay="100">
+                
+      <div  #expandedDiv   *ngFor="let entry of ApprovedOrderListMap | keyvalue" class="expand_border" >
+        <div class="expand-container"  >
+          <div>
+            <p class="table-num" > Table: {{ entry.key }}</p>
+          </div>
+          <div> 
+            <div class="buttons" style="margin: 0px;">
+              <button style="background-color: #198754!important; margin: auto;" >Checkout</button>
+            </div>
+          </div>
+      
+         
+        </div>
+  
+            <div class="col-lg-12 d-flex justify-content-center order-container"  [ngClass]="{'expanded': entry.value[0].order.isExpanded}">
+              <div class="card-container"  >
+  
+  
+        <div class="card" *ngFor="let waitingApprovalOrder of entry.value">
+          <div class="content">
+           <div class="table">
+            <a  style=" font-family: sans-serif !important; font-size: x-large; ">T: {{waitingApprovalOrder.order.table_no}}</a>
+            <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e;"> {{waitingApprovalOrder.order.id}}</a>
+           </div>
+           
+  
+            <div style="text-align: center;">
+              <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e; ">Items</a>
+             </div>
+             <div style="text-align: center;">
+              <a  style=" font-family: sans-serif !important; font-size: medium; color: #ffc107; ">{{waitingApprovalOrder.order.order_created_time}}</a>
+             </div>
+             <hr>
+            <ul  class="item-list">
+              <li *ngFor="let waitingApprovalOrderItem of waitingApprovalOrder.orderItems">
+                <div style="display: flex;
+                place-content: space-between;">
+                  <a> {{waitingApprovalOrderItem.item_name}} </a>
+                  <a> {{waitingApprovalOrderItem.item_cost}} </a>
+                  <a> {{waitingApprovalOrderItem.item_quantity }} </a>
+                </div>
+                
+              </li>
+            </ul>
+            <hr>
+  
+            <div class= "total">
+              <span>Total Amount :</span>
+              <span>&#8377;{{waitingApprovalOrder.order.order_total_amount  | number:'1.2-2'}}</span>
+            </div>
+          
+          </div>
+        </div>     
+      </div>
+              
+                <!-- Add more cards here -->
+              </div>
+          </div>
+        </div>
+      
+      
+        
+      </div>
+  
+  
+      </div>
+      <div *ngIf="selectedTab === 'tab3'" >Content for Tab 3</div>
+    </div>
+    
+      </section>
+  

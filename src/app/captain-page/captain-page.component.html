@@ -6,8 +6,8 @@
   <div class="spinner"></div>
 </div>
 
-<section id="menu" class="menu section-bg" style="padding-top: 9em;">
 
+<section id="menu" class="menu section-bg" style="padding-top: 9em;">
   <div class="tabs"   [class.sticky-tabs]="isSticky">
     <div class="tab tab-btn " (click)="selectTab('waiting_order')" [class.active]="selectedTab === 'waiting_order'" >waiting order</div>
     <div class="tab tab-btn " (click)="selectTab('Accepted_order')" [class.active]="selectedTab === 'Accepted_order'">Accepted order</div>
@@ -43,7 +43,7 @@
               <div class="card" *ngFor="let waitingApprovalOrder of ApprovalOrderList">
                 <div class="content">
                  <div class="table">
-                  <a  style=" font-family: sans-serif !important; font-size: x-large; ">T: {{waitingApprovalOrder.order.table_no}}</a>
+                  <a  style=" font-family: sans-serif !important; font-size: x-large; ">T: {{waitingApprovalOrder.order.table_place}}{{waitingApprovalOrder.order.table_no}}</a>
                   <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e;"> {{waitingApprovalOrder.order.id}}</a>
              
                  </div>
@@ -86,7 +86,7 @@
                   <div class="buttons">
                     <button style="background-color: #198754!important" (click) = "approvedOrder(waitingApprovalOrder.order.id, waitingApprovalOrder.order.order_ref_id)" >Approve</button>
                     
-                    <button>Cancel</button>
+                    <button (click) = "declineOrder(waitingApprovalOrder.order.id, waitingApprovalOrder.order.order_ref_id)">Cancel</button>
                   </div>
                 </div>
               </div>     
@@ -148,7 +148,7 @@
       <div class="card" *ngFor="let waitingApprovalOrder of entry.value">
         <div class="content">
          <div class="table">
-          <a  style=" font-family: sans-serif !important; font-size: x-large; ">T: {{waitingApprovalOrder.order.table_no}}</a>
+          <a  style=" font-family: sans-serif !important; font-size: x-large; ">T: {{waitingApprovalOrder.order.table_place }}  {{waitingApprovalOrder.order.table_no}}</a>
           <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e;"> {{waitingApprovalOrder.order.id}}</a>
          </div>
          
@@ -222,7 +222,7 @@
 </div>
 
 
-<div  *ngIf="showMenuOrderModal" class="modal">
+<div  *ngIf="showMenuOrderModal" class="modal" style=" z-index: 999999;">
   <div class="modal-content">
     <div class="main-content" style="width: fit-content; align-self: center; margin: 1em;">
       <div class="popup-overlay" >
@@ -233,7 +233,19 @@
           <div style="    margin: 1em;">
             Table : <input type = "number"  [(ngModel)]="tableNumber" (ngModelChange)="isTableNUmberUndefined()">
           </div>
+          <div style="    margin: 1em;">
+            <a>
+              place : 
+            </a>
+          
+            <div>
+              <select [(ngModel)]="tablePlace" class="my-select">
+                <option *ngFor="let option of options" [value]="option">{{ option }}</option>
+              </select>
+            </div>
 
+
+          </div>
      
           <div class="buttons">
             <button  [disabled]="isTableNUmberUndefined()" style="background-color: #198754" (click) = "openMenuPage()">Order</button>
@@ -254,7 +266,12 @@
   <div class="cart-header" style="    cursor: pointer;
   display: flex;
   justify-content: space-between;">
-    <a class = "cart-header-title" style="font-size: xx-large;">Order Details</a>
+    <a class = "cart-header-title" style="font-size: xx-large;">Order Details
+    <a>
+      <button style="     font-size: large; background-color: #d49b3b; color: #11100e;" (click) = "refreshOrderStatus()">Refresh</button>
+    </a>
+    </a>
+
     <a (click)="toggleModal()" class="prepare-btn cart-close-btn" > X </a>
   </div>
 <div>
@@ -273,7 +290,7 @@
   justify-content: space-between;
   margin: 0.5em 0em;">
     <a>
-      Table  : {{order.table_no}}
+      Table  : {{order.table_place}}  {{order.table_no}}
      </a>
      
       <a>
@@ -320,6 +337,7 @@
        
         <th>Item Status</th>
         <th>Update</th>
+        <th>PickUp</th>
         <th>Cancel</th>
         <!-- Add more headers as needed -->
       </tr>
@@ -336,6 +354,12 @@
           <button style=" background-color: #d49b3b; color: #11100e;"    (click)="updateOrderItem(item,'Done')">Done</button>
           </div>
         </td>
+        <td > 
+          <div *ngIf="item.status === 'progress'">
+          <button style=" background-color: #d49b3b; color: #11100e;"    (click)="pickupOrder(item,'Done',order.table_no)">Pick</button>
+          </div>
+        </td>
+  
   
           <td>
             <div *ngIf="item.status === 'progress'">
@@ -354,8 +378,8 @@
 
 
 
-<div class="main-content" style="position: relative;
-z-index: 9999;">
+<div class="main-content" style="position: relative;z-index: 9999;
+">
 
   <div class="popup-overlay" *ngIf="iskotPopupOpen" (click)="closePopup()">
     <div class="popup-content">
@@ -365,3 +389,5 @@ z-index: 9999;">
     </div>
   </div>
 </div>
+
+

@@ -5,6 +5,7 @@ import { ItemsMenuComponent } from './items-menu/items-menu.component';
 import { CaptainPageComponent } from './captain-page/captain-page.component';
 import { KitchenPageComponent } from './kitchen-page/kitchen-page.component';
 import { PaymentComponent } from './payment/payment.component';
+import { StockComponent } from './stock/stock.component';
 
 const routes: Routes = [
   { path: '', component: HomePageComponent },
@@ -12,6 +13,7 @@ const routes: Routes = [
   { path: 'cap', component: CaptainPageComponent },
   { path: 'kit', component: KitchenPageComponent },
   { path: 'payment', component: PaymentComponent },
+  { path: 'stock', component: StockComponent },
 ];
 
 @NgModule({

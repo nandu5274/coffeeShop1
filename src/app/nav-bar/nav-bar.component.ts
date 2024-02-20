@@ -2,6 +2,7 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ResponseDto } from '../dtos/responseDto';
 import { SharedService } from '../service/shared-service';
+import { WebSocketService } from '../service/WebSocket.service';
 
 @Component({
   selector: 'app-nav-bar',
@@ -17,7 +18,7 @@ export class NavBarComponent implements OnInit  {
     node.type = 'text/javascript';
     document.getElementsByTagName('head')[0].appendChild(node);
 }
-constructor(private router: Router,  private route: ActivatedRoute, private sharedService:SharedService) {}
+constructor(private router: Router,  private route: ActivatedRoute, private sharedService:SharedService, private webSocketService: WebSocketService, ) {}
 
 
 isMenuActive: boolean = false; // Set it to true to make it initially active
@@ -71,7 +72,25 @@ ngOnInit(){
   }
   this.showSpinner = false
 });
+
+
+this.webSocketService.getMessageSubject().subscribe((event) => {
+  // Handle incoming WebSocket messages here
+  const message = event.data;
+  this.triggerPopupMessage(message)
+  console.log("message", message)
+
+});
+
+
 }
+
+
+triggerPopupMessage(mesg: any) {
+ 
+//this.addInfoMessage(mesg);
+}
+
 
 navigateToMenu(nav:any) {
   
@@ -105,7 +124,6 @@ navigateToMenu(nav:any) {
 }
 
 showModal: boolean = false;
-
 
 
 toggleModal(): void {
@@ -144,4 +162,29 @@ captureOrderProcessingResponse(response:any)
 {
 this.response = response;
 }
+
+
+
+infoMessage: string | null = null;
+
+// Display info alert message
+showInfoMessage(msg:any): void {
+  this.infoMessage = msg;
+}
+
+
+
+infoMessages: string[] = [];
+
+  addInfoMessage(message: string): void {
+    this.infoMessage = message;
+    this.infoMessages.push(message);
+  }
+
+  closeInfoMessage(index: number): void {
+    this.infoMessage = null;
+    this.infoMessages.splice(index, 1);
+  }
+
+  
 }

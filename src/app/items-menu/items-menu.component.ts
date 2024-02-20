@@ -8,6 +8,7 @@ import * as menuListJsonData from 'src/app/sampleResponse/menu-list.json';
   styleUrls: ['./items-menu.component.scss']
 })
 export class ItemsMenuComponent implements AfterViewInit,OnInit {
+  filteredMenuItems: any;
 
   constructor(private sharedService: SharedService) {}
   showMenu:any  = false
@@ -23,9 +24,11 @@ export class ItemsMenuComponent implements AfterViewInit,OnInit {
   quantity: number = 1;
   isCap:any;
   tableNumber:any
+  tablePlace:any;
   ngAfterViewInit() {
      this.isCap = sessionStorage.getItem('isCap');
     this.tableNumber =  sessionStorage.getItem('table' );
+    this.tablePlace = sessionStorage.getItem('tablePlace' );
 
     setTimeout(() => {
       const loadEvent = new Event('load');
@@ -107,6 +110,7 @@ populateMenuList()
   });
   console.log("menuList" + this.menuList);
   console.log("menuItemsList" + this.menuItemsList);
+  this.filteredMenuItems =  [...this.menuItemsList]; 
 }
 
   sendDataToParent(quantity:any) {
@@ -115,6 +119,38 @@ populateMenuList()
     this.cartItemDto.quantity = quantity
     this.sharedService.setItemToCartData(this.cartItemDto!);
     this.closeModal(); 
+  }
+
+  showVegItems() {
+    this.filteredMenuItems =  this.menuItemsList; 
+    // Filter and display only veg items
+    this.filteredMenuItems = this.menuItemsList.filter((item:any) => item.type === "V");
+  }
+
+  showNonVegItems() {
+    this.filteredMenuItems =  this.menuItemsList; 
+    // Filter and display only non-veg items
+    this.filteredMenuItems = this.menuItemsList.filter((item:any) => item.type == "NV");
+  }
+
+
+  showVeg: boolean = false;
+  showNonVeg: boolean = false;
+
+  // Function to toggle visibility of vegetarian items
+  toggleVegItems() {
+    this.showVeg = !this.showVeg;
+    if (this.showVeg && this.showNonVeg) {
+      this.showNonVeg = false; // Make sure only one type of items is shown at a time
+    }
+  }
+
+  // Function to toggle visibility of non-vegetarian items
+  toggleNonVegItems() {
+    this.showNonVeg = !this.showNonVeg;
+    if (this.showVeg && this.showNonVeg) {
+      this.showVeg = false; // Make sure only one type of items is shown at a time
+    }
   }
 
 }

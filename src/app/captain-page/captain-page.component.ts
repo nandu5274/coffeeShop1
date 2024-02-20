@@ -10,6 +10,9 @@ import { SharedService } from '../service/shared-service';
 import { SingleFileOrderDto } from '../dtos/singleFileOrderDto';
 import { GraphqlService } from '../service/graphql.service';
 import { TimerService } from '../service/timer.service';
+
+
+
 @Component({
   selector: 'app-captain-page',
   templateUrl: './captain-page.component.html',
@@ -134,6 +137,10 @@ export class CaptainPageComponent implements AfterViewInit {
 
   approveOrderBYpopup(msg: any) {
     if (typeof msg === "string") {
+      if(msg.includes("pickup"))
+      {
+
+      }
       if (msg.includes("approval") || msg.includes("kitchen")) {
         this.playSound()
         if (this.showSpinner == false) {
@@ -253,6 +260,7 @@ export class CaptainPageComponent implements AfterViewInit {
     this.showSpinner = true;
     const folderPath = '/orders/approval_waiting_orders/'; // Replace with the desired folder path
     this.files = await this.dropboxService.getFilesInFolder(folderPath);
+    this.files.shift()
     for (const file of this.files) {
       file.data = await this.dropboxService.getFileData(file.path_display);
       const respo = this.sharedService.parseNestedCsvToObject(file.data.fileBlob)
@@ -274,9 +282,11 @@ export class CaptainPageComponent implements AfterViewInit {
     this.showSpinner = true;
     const folderPath = '/orders/approval_waiting_orders/'; // Replace with the desired folder path
     this.updatedFiles = await this.dropboxService.getFilesInFolder(folderPath);
+    this.updatedFiles.shift()
     // added only newly added files
     const addedNewFiles = this.updatedFiles.filter(item1 => !this.files.some(item2 => item2["name"] === item1["name"]));
     const removeOldFiles = this.files.filter(item1 => !this.updatedFiles.some(item2 => item2["name"] === item1["name"]));
+   
     for (const file of addedNewFiles) {
       file.data = await this.dropboxService.getFileData(file.path_display);
       const respo = this.sharedService.parseNestedCsvToObject(file.data.fileBlob)
@@ -431,6 +441,7 @@ export class CaptainPageComponent implements AfterViewInit {
     this.approvedShowSpinner = true;
     const folderPath = '/orders/approved_orders/'; // Replace with the desired folder path
     this.approvedFiles = await this.dropboxService.getFilesInFolder(folderPath);
+    this.approvedFiles.shift()
     for (const file of this.approvedFiles) {
       file.data = await this.dropboxService.getFileData(file.path_display);
       const respo = this.sharedService.parseNestedCsvToObject(file.data.fileBlob)
@@ -454,6 +465,7 @@ export class CaptainPageComponent implements AfterViewInit {
     this.approvedShowSpinner = true;
     const folderPath = '/orders/approved_orders/'; // Replace with the desired folder path
     this.updatedApprovedOrderFiles = await this.dropboxService.getFilesInFolder(folderPath);
+    this.updatedApprovedOrderFiles.shift();
     // added only newly added files
     const addedNewFiles = this.updatedApprovedOrderFiles.filter(item1 => !this.approvedFiles.some(item2 => item2["name"] === item1["name"]));
     const removeOldFiles = this.approvedFiles.filter(item1 => !this.updatedApprovedOrderFiles.some(item2 => item2["name"] === item1["name"]));
@@ -480,7 +492,17 @@ export class CaptainPageComponent implements AfterViewInit {
 
 
     const yourMap: Map<string, SingleFileOrderDto[]> = ApprovedOrderList.reduce((map: any, obj: SingleFileOrderDto) => {
-      const key = obj.order.table_no;
+      let key = '';
+      if(obj.order.table_place  != undefined)
+      {
+         key = obj.order.table_place + obj.order.table_no ;
+      }
+   
+    else
+    {
+       key = obj.order.table_no ;
+    }
+ 
 
       // If the key doesn't exist in the map, initialize it with an empty array
       if (!map.has(key)) {
@@ -498,7 +520,11 @@ export class CaptainPageComponent implements AfterViewInit {
 
     console.log(yourMap);
   }
-
+  refreshOrderStatus()
+  {this.showSpinner = true
+    this.getOrderItemStatus(this.ApprovedOrderList)
+   
+  }
 
   refreshApprovedOrder() {
     this.getUpdatedApprovedOrders()
@@ -566,6 +592,7 @@ export class CaptainPageComponent implements AfterViewInit {
   openOrderMenuModal() {
     sessionStorage.removeItem('table')
     sessionStorage.removeItem('tableSet')
+    sessionStorage.removeItem('tablePlace')
     this.showMenuOrderModal = true
   }
   tableNumber: any
@@ -576,6 +603,7 @@ export class CaptainPageComponent implements AfterViewInit {
 
   openMenuPage() {
     sessionStorage.setItem('table', this.tableNumber);
+    sessionStorage.setItem('tablePlace', this.tablePlace);
     sessionStorage.setItem('tableSet', '1');
     sessionStorage.setItem('isCap', 'true');
     this.sharedService.setShowMenuFlag(1)
@@ -682,6 +710,12 @@ export class CaptainPageComponent implements AfterViewInit {
   );
   }
 
+  pickupOrder(orderId: any, Status: any, table_no:any) {
+
+    this.sendMessageToWebSocket("\n test");
+  }
+
+
   getStatusClass(status: string): string {
     switch (status) {
       case 'Done':
@@ -753,6 +787,19 @@ export class CaptainPageComponent implements AfterViewInit {
       }
 
     }
+  }
+
+  tablePlace: string = '';
+  showDropdown: boolean = false;
+  options: string[] = [ 'GI', 'GO', 'FO', 'FI', 'PG','PF','C'];
+
+  toggleDropdown() {
+    this.showDropdown = !this.showDropdown;
+  }
+
+  selectOption(option: string) {
+    this.tablePlace = option;
+    this.showDropdown = false;
   }
 
 }

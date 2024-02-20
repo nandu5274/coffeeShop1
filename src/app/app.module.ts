@@ -24,6 +24,7 @@ import { PaymentLoginComponent } from './payment-login/payment-login.component';
 import { PosInvoiceComponent } from './pos-invoice/pos-invoice.component';
 import { PosKotComponent } from './pos-kot/pos-kot.component';
 import { TimeAgoPipe } from './common/time-ago.pipe';
+import { StockComponent } from './stock/stock.component';
 
 
 
@@ -42,7 +43,8 @@ import { TimeAgoPipe } from './common/time-ago.pipe';
     PaymentLoginComponent,
     PosInvoiceComponent,
     PosKotComponent,
-    TimeAgoPipe
+    TimeAgoPipe,
+    StockComponent
   ],
   imports: [
     BrowserModule,

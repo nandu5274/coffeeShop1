@@ -48,7 +48,7 @@ export class PaymentComponent implements AfterViewInit {
     });
 
     this.getCheckOutOrders();
-    this.getPaidOrders();
+    //this.getPaidOrders();
 
     console.log("caption")
   }
@@ -126,6 +126,7 @@ export class PaymentComponent implements AfterViewInit {
     this.showSpinner = true;
     const folderPath = '/orders/checkout_orders/'; // Replace with the desired folder path
     this.files = await this.dropboxService.getFilesInFolder(folderPath);
+    this.files.shift() 
     for (const file of this.files) {
       file.data = await this.dropboxService.getFileData(file.path_display);
       const respo = this.sharedService.parseNestedCsvToObjectDynamicHeader(file.data.fileBlob)
@@ -138,6 +139,10 @@ export class PaymentComponent implements AfterViewInit {
     }
     this.checkOutOrderList.sort((a, b) => a.order.id - b.order.id);
     this.checkOutOrderList.reverse()
+    this.checkOutOrderList.forEach(order => {
+      let conItems = this.combineOrderItemsQuantities(order.orderItems)
+      order.orderItems = conItems
+    })
     this.showSpinner = false;
   }
 
@@ -150,6 +155,7 @@ export class PaymentComponent implements AfterViewInit {
     this.showPaidSpinner = true;
     const folderPath = '/orders/paid_orders/'; // Replace with the desired folder path
     this.paidFiles = await this.dropboxService.getFilesInFolder(folderPath);
+    this.paidFiles.shift() 
     for (const file of this.paidFiles) {
       file.data = await this.dropboxService.getFileData(file.path_display);
       const respo = this.sharedService.parseNestedCsvToObjectDynamic3THeader(file.data.fileBlob)
@@ -182,6 +188,7 @@ export class PaymentComponent implements AfterViewInit {
     this.showPaidSpinner = true;
     const folderPath = '/orders/paid_orders/'; // Replace with the desired folder path
     this.updatedPaidFiles = await this.dropboxService.getFilesInFolder(folderPath);
+    this.updatedPaidFiles.shift() 
     // added only newly added files
     const addedNewFiles = this.updatedPaidFiles.filter(item1 => !this.paidFiles.some(item2 => item2["name"] === item1["name"]));
     const removeOldFiles = this.paidFiles.filter(item1 => !this.updatedPaidFiles.some(item2 => item2["name"] === item1["name"]));
@@ -195,6 +202,8 @@ export class PaymentComponent implements AfterViewInit {
       order.paidDetails = (await respo).headers3
       this.paidOrderList.push(order);
       console.log("respo - ", (await respo).headers1)
+      this.TotalPaidAmount = this.TotalPaidAmount+ parseFloat(order.paidDetails[0].paid_amount);
+      this.TotalActualAmount = this.TotalActualAmount+ parseFloat(order.paidDetails[0].actual_amount);
     }
     addedNewFiles.forEach(value => this.paidFiles.push(value))
     removeOldFiles.forEach(value => this.removePaidItem(value))
@@ -243,6 +252,7 @@ export class PaymentComponent implements AfterViewInit {
     this.showSpinner = true;
     const folderPath = '/orders/checkout_orders/'; // Replace with the desired folder path
     this.updatedFiles = await this.dropboxService.getFilesInFolder(folderPath);
+    this.updatedFiles.shift()
     // added only newly added files
     const addedNewFiles = this.updatedFiles.filter(item1 => !this.files.some(item2 => item2["name"] === item1["name"]));
     const removeOldFiles = this.files.filter(item1 => !this.updatedFiles.some(item2 => item2["name"] === item1["name"]));
@@ -309,7 +319,7 @@ export class PaymentComponent implements AfterViewInit {
     if (tabName == 'waiting_order') {
       // this.getUpdatedApprovalWaitingOrders();
     } else if (tabName == 'Accepted_order') {
-      //this.getUpdatedApprovedOrders();
+      this.getUpdatedPaidOrders();
     }
   }
 
@@ -405,7 +415,7 @@ selectedOrder:any;
    paymentType.actual_amount = this.formatStringWithTwoDecimalPlaces(this.getActualAmount(data.orderItems));
    paymentType.mode = this.paymentMode
    paymentType.period =this.sharedService.updateCurrentDateTimeInIST();
-
+   delete data.order[0].table_place;
    const csvOrderTableDataCsv = this.objectsToCsv2(data.order);
    const orderItemTableDataListCsv = this.objectsToCsv2(data.orderItems);
    const paymentTypeListCsv = this.objectsToCsv2([paymentType]);

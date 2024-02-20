@@ -394,7 +394,7 @@ transform: translateX(0);
 
   }
   
-      
+  
 .right-modal {
   overflow: scroll;
   z-index: 141;
@@ -413,11 +413,9 @@ transform: translateX(0);
   z-index: 9999;
 }
 
+    
     }
-
-
-  
-
+    
     .main-content {
       padding: 20px;
     }
@@ -441,4 +439,46 @@ transform: translateX(0);
       padding: 10px;
       border-radius: 8px;
       text-align: center;
+    }
+
+
+    .custom-input {
+      padding: 5px;
+      border: 1px solid #ccc;
+    }
+    
+    .custom-dropdown {
+      list-style-type: none;
+      padding: 0;
+      display: none;
+      border: 1px solid #ccc;
+    }
+    
+    .custom-option {
+      cursor: pointer;
+    }
+    
+    .custom-dropdown.active {
+      display: block;
+    }
+
+    .my-dropdown {
+      list-style-type: none;
+      padding: 0;
+   
+      border: 1px solid #ccc;
+      background-color: #fff; /* Add background color here */
+    }
+    
+    .my-option {
+      cursor: pointer;
+    }
+    
+    .my-dropdown.active {
+      display: block;
+    }
+
+    .my-select {
+      padding: 5px;
+      border: 1px solid #ccc;
     }
