@@ -362,20 +362,15 @@ export class CaptainPageComponent implements AfterViewInit {
     let approvedDestinationPath = '/orders/approved_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv'
     let res: any = "";
 
-    res = await this.dropboxService.copyFile(sourcePath, kitchenDestinationPath, "kitchen")
+   // res = await this.dropboxService.copyFile(sourcePath, kitchenDestinationPath, "kitchen")
     console.log('Move file response:', res);
-
-
-    if (res.includes("successful")) {
       res = await this.dropboxService.moveFile(sourcePath, approvedDestinationPath);
       this.sendMessageToWebSocket('kitchen')
       setTimeout(() => {
         this.refreshOrder()
       }, 1000); // 5 minutes in milliseconds
 
-    } else {
-      //retry button
-    }
+   
 
   }
 

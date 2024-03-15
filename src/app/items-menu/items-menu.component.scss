@@ -367,3 +367,18 @@ font-family: open-sans, Arial, Helvetica, sans-serif;
       display: block;  text-align: center
     }
   }
+  .shine-text {
+    font-size: 50px;
+    font-weight: bold;
+    color: transparent;
+    text-align: center;
+    background: linear-gradient(45deg, #ffc83d, #3333ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: shine 1s infinite alternate;
+}
+
+@keyframes shine {
+    0% { color: #fff; text-shadow: 0 0 2px #fff, 0 0 4px #fff, 0 0 6px #fff, 0 0 8px #ffc83d, 0 0 14px #ffc83d, 0 0 16px #ffc83d, 0 0 20px #ffc83d, 0 0 30px #ffc83d; }
+    100% { color: #fff; text-shadow: 0 0 1px #fff, 0 0 2px #fff, 0 0 3px #fff, 0 0 4px #ffc83d, 0 0 7px #ffc83d, 0 0 8px #ffc83d, 0 0 10px #ffc83d, 0 0 15px #ffc83d; }
+}

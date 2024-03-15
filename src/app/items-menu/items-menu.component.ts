@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { CartItemDto } from '../dtos/CartItemDto';
 import { SharedService } from '../service/shared-service';
 import * as menuListJsonData from 'src/app/sampleResponse/menu-list.json';
@@ -94,10 +94,23 @@ populateMenuList()
     console.log( course.course.type);
     let value = {
       type:  course.course.type,
+      emj: course.course.typemoji,
       class: ".filter-" + course.course.type,
   
     };
-    this.menuCourseList?.push(value)
+    if( value.type == 'Add-ons')
+    {
+      this.isCap =  sessionStorage.getItem('isCap');
+      if(this.isCap )
+      {
+        this.menuCourseList?.push(value)
+      }
+     
+    }else
+    {
+      this.menuCourseList?.push(value)
+    }
+   
     let menuItems = course.course.items
     menuItems.forEach((item: any) => {
       console.log(item.name);
@@ -153,4 +166,20 @@ populateMenuList()
     }
   }
 
+  @ViewChild('menuContainer') menuContainer!: ElementRef;
+
+
+
+  scrollToMenuContainer() {
+    if (this.menuContainer) {
+      this.menuContainer.nativeElement.scrollIntoView({ behavior: 'smooth' });
+      this.moveMenuContainerUp();
+    }
+  }
+  moveMenuContainerUp() {
+    if (this.menuContainer) {
+      const currentScrollTop = this.menuContainer.nativeElement.scrollTop;
+      this.menuContainer.nativeElement.scrollTop = currentScrollTop + 80;
+    }
+  }
 }

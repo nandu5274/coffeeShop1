@@ -254,10 +254,32 @@ export class DropboxService {
 
     while (retries < maxRetries) {
       try {
-        this.dbx = new Dropbox({ accessToken: sessionStorage.getItem('access_token')! });
-        response = await this.dbx.filesListFolder({ path: folderPath , recursive: true});
-        console.log(`getFilesInFolder successfully: ${folderPath}`);
-        return response.result.entries; // Exit the function if the upload is successful
+
+
+
+
+
+        // this.dbx = new Dropbox({ accessToken: sessionStorage.getItem('access_token')! });
+        // response = await this.dbx.filesListFolder({ path: folderPath , recursive: true});
+        // console.log(`getFilesInFolder successfully: ${folderPath}`);
+        // return response.result.entries; // Exit the function if the upload is successful
+
+
+      this.dbx = new Dropbox({ accessToken: sessionStorage.getItem('access_token')! });
+            let result = await this.dbx.filesListFolder({ path: folderPath, recursive: true });
+            const entries: any[] = [];
+            while (true) {
+                entries.push(...result.result.entries);
+                if (!result.result.has_more) break; // Exit loop if no more entries
+                result = await this.dbx.filesListFolderContinue({ cursor: result.result.cursor });
+            }
+
+            console.log(`getFilesInFolder successfully: ${folderPath}`);
+            return entries; // Exit the function if the upload is successful
+
+
+
+            
       } catch (error: any) {
         console.error(`Error getFilesInFolder: ${error}`);
         lastError = error;

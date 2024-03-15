@@ -25,6 +25,7 @@ export class AppComponent implements OnInit  {
       this.loadScript("assets/js/main.js");
       this.generateHearts();
     //  this.openModal('d')
+    //this.updateImageBasedOnScreenSize();
     }
   
     ngAfterViewInit(): void {
@@ -79,7 +80,7 @@ export class AppComponent implements OnInit  {
     }
 
    
-  showModal = false;
+  showModal = true;
 
   showOrderModal = false;
 
@@ -105,10 +106,10 @@ this.updateImageBasedOnScreenSize()
     const screenWidth = window.innerWidth;
     if (screenWidth < 768) {
       // Set image for small screens
-      this.imageUrl = 'assets/img/event/valm.jpg';
+      this.imageUrl = 'assets/img/event/ons.jpg';
     } else {
       // Set image for larger screens
-      this.imageUrl = 'assets/img/event/valc.jpg';
+      this.imageUrl = 'assets/img/event/onsc.jpeg';
     }
   }
   }

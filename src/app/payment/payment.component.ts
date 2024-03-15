@@ -22,6 +22,8 @@ export class PaymentComponent implements AfterViewInit {
   showPaidSpinner: boolean = false;
   printValue:any
   TotalPaidAmount:any = 0;
+  TotalCashAmount:any = 0;
+  TotalOnlineAMpunt:any = 0;
   TotalActualAmount:any = 0;
   constructor(private webSocketService: WebSocketService, private datePipe: DatePipe, private dropboxService: DropboxService,
     private sharedService: SharedService, private dataService: DataService) {
@@ -134,6 +136,7 @@ export class PaymentComponent implements AfterViewInit {
       order.filePath = file.name
       order.order = (await respo).headers1
       order.orderItems = (await respo).headers2
+      //order.orderItems =     order.orderItems.filter((item: any) => item.item_quantity !== "0");
       this.checkOutOrderList.push(order);
       console.log("respo - ", (await respo).headers1)
     }
@@ -168,6 +171,12 @@ export class PaymentComponent implements AfterViewInit {
       console.log("respo - ", (await respo).headers1)
       this.TotalPaidAmount = this.TotalPaidAmount+ parseFloat(order.paidDetails[0].paid_amount);
       this.TotalActualAmount = this.TotalActualAmount+ parseFloat(order.paidDetails[0].actual_amount);
+      if(order.paidDetails[0].mode == "cash")
+      {
+        this.TotalCashAmount = this.TotalCashAmount+ parseFloat(order.paidDetails[0].paid_amount);
+      }else{
+        this.TotalOnlineAMpunt = this.TotalOnlineAMpunt+ parseFloat(order.paidDetails[0].paid_amount);
+      }
     }
     this.paidOrderList.sort((a, b) => a.order.id - b.order.id);
     this.paidOrderList.reverse()
@@ -204,6 +213,12 @@ export class PaymentComponent implements AfterViewInit {
       console.log("respo - ", (await respo).headers1)
       this.TotalPaidAmount = this.TotalPaidAmount+ parseFloat(order.paidDetails[0].paid_amount);
       this.TotalActualAmount = this.TotalActualAmount+ parseFloat(order.paidDetails[0].actual_amount);
+      if(order.paidDetails[0].mode == "cash")
+      {
+        this.TotalCashAmount = this.TotalCashAmount+ parseFloat(order.paidDetails[0].paid_amount);
+      }else{
+        this.TotalOnlineAMpunt = this.TotalOnlineAMpunt+ parseFloat(order.paidDetails[0].paid_amount);
+      }
     }
     addedNewFiles.forEach(value => this.paidFiles.push(value))
     removeOldFiles.forEach(value => this.removePaidItem(value))
@@ -263,6 +278,7 @@ export class PaymentComponent implements AfterViewInit {
       order.filePath = file.name
       order.order = (await respo).headers1
       order.orderItems = (await respo).headers2
+      //order.orderItems =     order.orderItems.filter((item: any) => item.item_quantity !== "0");
       this.checkOutOrderList.push(order);
       console.log("respo - ", (await respo).headers1)
     }
@@ -457,7 +473,7 @@ selectedOrder:any;
       orderCost = orderCost + itemCost
 
     })
-    return orderCost;
+    return orderCost + (orderCost * 5) / 100;
   }
 
   closePaymentTypePopup() {
@@ -479,11 +495,128 @@ selectedOrder:any;
   }
 
 
+
+
+  isPasswordPopupOpen:any = false
+  username:any
+  editOrder:any
+  editableOrder:any
+  openEditOrderPasswordPopup(order:any)
+  {
+    this.username = "";
+      this.isPasswordPopupOpen = true
+      this.editOrder = order;
+
+  }
+
+  closePasswordPopup()
+  {
+      this.isPasswordPopupOpen = false
+      this.editOrder = undefined;
+  }
+  checkAdminLogin()
+  {
+  
+    if(this.username == 'ck@2223')
+    {
+      console.log("sucess")
+      this.openEditOrderPopup()
+    }
+    else{
+      console.log("error")
+    }
+  }
+
+
+  isEditOrderPopUpOpen:any = false
+  editMode: boolean[] = [];
+  openEditOrderPopup()
+  {
+  
+    this.downloadCheckOutFileByFileName(this.editOrder.filePath);
+  
+
+
+  }
+
+  closePEditOrderPopUp()
+  {
+    this.isEditOrderPopUpOpen = false
+  }
+
+  async downloadCheckOutFileByFileName(path:any)
+  {
+    this.showSpinner = true;
+    let file:any;
+    file = await this.dropboxService.getFileData("/orders/checkout_orders/"+path);
+    const respo = this.sharedService.parseNestedCsvToObjectDynamicHeader(file.fileBlob)
+    let order: SingleFileOrderDto = new SingleFileOrderDto();
+    order.filePath = file.name
+    order.order = (await respo).headers1
+    order.orderItems = (await respo).headers2
+    this.editableOrder = order
+
+    this.editMode = new Array(this.editableOrder.orderItems.length).fill(false);
+    this.showSpinner = false;
+    this.isPasswordPopupOpen = false
+    this.isEditOrderPopUpOpen = true
+  }
+
+
+  toggleEditMode(index: number): void {
+    this.editMode[index] = !this.editMode[index];
+    
+  }
+
   objectsToCsv2(objects: any[]): string {
     const csv = Papa.unparse(objects, {
       header: true
     });
     return csv;
   }
+  objectsToCsv(objects: any[]): string {
+    const csv = Papa.unparse(objects);
+    return csv;
+  }
+  async updateEditOrder()
+  {
+    this.showSpinner = true;
+    const csvOrderTableDataCsv = this.objectsToCsv2(this.editableOrder.order);
+    const orderItemTableDataListCsv = this.objectsToCsv2(this.editableOrder.orderItems);
+    const orderTableCsvData = csvOrderTableDataCsv + "\n" + orderItemTableDataListCsv
+    const orderTableFilePath = '/orders/checkout_orders/' + this.editOrder.filePath;
+    await this.dropboxService.updateFile(orderTableFilePath, orderTableCsvData).then(async (response: any) => {
+      console.log('File uploaded:', response);
+      //delete the approved orders
+      this.showSpinner = false;
+        this.fetchNewOrder(this.editOrder.filePath);
+    }).catch((error) => {
+      this.dropboxService.updateFile(orderTableFilePath, orderTableCsvData).then((response: any) => {
+        console.log('File updated:', response);
+        this.showSpinner = false;
+      }).catch((error) => {
+        this.showSpinner = false;
+        console.error('Error uploading file:', error);
+      });
+      this.showSpinner = false;
+      console.error('Error uploading file:', error);
+    });
+
+  }
+
+  fetchNewOrder(filePath:any)
+  {
+    const fileIndex = this.files.findIndex(order => order.name === filePath);
+    if (fileIndex !== -1) {
+      this.files.splice(fileIndex, 1);
+    }
+    const index = this.checkOutOrderList.findIndex(order => order.filePath === filePath);
+    if (index !== -1) {
+      this.checkOutOrderList.splice(index, 1);
+    }
+    this.isEditOrderPopUpOpen = false;
+    this.refreshOrder();
+  }
+
 
 }

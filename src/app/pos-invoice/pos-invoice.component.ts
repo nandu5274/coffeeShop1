@@ -26,10 +26,15 @@ export class PosInvoiceComponent implements OnChanges {
   {
     orderItems.forEach((item: any) => {
      
-      item.item_gst_cost = Math.ceil(item.item_cost - item.item_cost * 0.05);
+      item.item_gst_cost = Math.ceil(item.item_cost);
       this.updateOrderItem.push(item);
     })
 
+  }
+  zeroQuantityRemovedOrderItems:any
+  zeroQuantityRemovedOrder()
+  {
+this.zeroQuantityRemovedOrderItems = this.printData.orderItems.filter((item: any) => item.item_quantity !== 0);
   }
   populateInvoice()
   {
@@ -38,7 +43,9 @@ export class PosInvoiceComponent implements OnChanges {
     this.invoiceData.tableNo = this.printData.order[0].table_no
     this.invoiceData.billNo = this.printData.order[0].billNo
     this.updateOrderItemPrices(this.printData.orderItems);
-    this.invoiceData.items = this.updateOrderItem
+    this.zeroQuantityRemovedOrder()
+
+    this.invoiceData.items = this.zeroQuantityRemovedOrderItems
     this.invoiceData.actualAmount =  this.formatStringWithTwoDecimalPlaces(this.getActualAmount(this.printData.orderItems))
     this.invoiceData.sgst =   (this.invoiceData.actualAmount * 2.5) / 100;
     this.invoiceData.sgst = this.formatStringWithTwoDecimalPlaces( this.invoiceData.sgst );
@@ -54,10 +61,11 @@ export class PosInvoiceComponent implements OnChanges {
   {
      return data.order.map((obj: any) => obj.id).join(',');
   }
-
+  
   formatStringWithTwoDecimalPlaces(value :any): string {
     const numberValue = parseFloat(value);
     const formattedNumber = numberValue.toFixed(2);
+  
     return formattedNumber;
   }
 
@@ -169,4 +177,5 @@ export class PosInvoiceComponent implements OnChanges {
   {
     console.log("printData", this.printData);
   }
+
 }

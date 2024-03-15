@@ -45,7 +45,7 @@
                 <div class="content">
                  <div class="table">
                   <a  style=" font-family: sans-serif !important; font-size: x-large; ">Table : {{waitingApprovalOrder.order[0].table_no}}</a>
-                  <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e;"> {{waitingApprovalOrder.order.id}}</a>
+                  <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e; cursor: pointer;" (click) = "openEditOrderPasswordPopup(waitingApprovalOrder)"> EDIT</a>
                  </div>
                  
       
@@ -95,16 +95,28 @@
           <div  style="display: flex; flex-direction: row;" class="refresh">
             <p>Paid orders</p>
             <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
-              <button style=" background-color: #d49b3b; color: #11100e;" (click) = "refreshPaidOrder()">Refresh</button>
-            <div>
+              <button style=" background-color: #d49b3b; color: #11100e;     height: -webkit-fill-available;" (click) = "refreshPaidOrder()">Refresh</button>
+            <div style=" display: flex;
+            flex-direction: column;">
+          
+            <a>
+              cash = {{TotalCashAmount   | number:'1.2-2'}}
+             </a>
+             <a>
+              online = {{TotalOnlineAMpunt | number:'1.2-2'}}
+             </a>
+
               <a>
-              paid_amount = {{TotalPaidAmount}}
+              paid_amount = {{TotalPaidAmount  | number:'1.2-2'}}
               
              </a>
              <a>
-              actual_amount = {{TotalActualAmount}}
-              
+              actual_amount = {{TotalActualAmount  | number:'1.2-2'}}
              </a>
+             <a>
+              difference = {{TotalActualAmount - TotalPaidAmount  | number:'1.2-2'}}
+             </a>
+
             </div>
             </div>
           
@@ -240,3 +252,78 @@
     </div>
   </div>
 </div>
+
+
+<div class="main-content"  *ngIf="isPasswordPopupOpen">
+
+  <div class="popup-overlay" >
+    <div class="popup-content" style="background: #1a1814;">
+      
+
+      
+      <section id="menu" class="menu section-bg" style="padding: 0px;">
+        <div class="login-container">
+         
+
+          <form>
+            <div class="form-group " >
+              <label for="username">Admin Password:</label>
+              <input type="password" id="username" name="username" class = "username" [(ngModel)]="username" required>
+            </div>
+            <div>
+            <button type="button"  class = "login-btn" (click)="checkAdminLogin()"  >Login</button>
+            <button type="button"  class = "login-btn" (click)="closePasswordPopup()" >Close</button>
+    
+          </div>
+          </form>
+          </div>
+        </section>
+
+
+     
+    </div>
+  </div>
+</div>
+
+
+
+<div class="main-content"  *ngIf="isEditOrderPopUpOpen">
+
+  <div class="popup-overlay" >
+    <div class="popup-content" style="background: #1a1814;">
+      
+
+      
+      <section id="menu" class="menu section-bg" style="padding: 0px;    max-height: 30em;
+      overflow: overlay;">
+        
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Item Quantity</th>
+              <th>Item Cost</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of editableOrder.orderItems; let i = index">
+              <td>{{ item.item_name }}</td>
+              <td>
+                <span *ngIf="!editMode[i]" class="non-editable">{{ item.item_quantity }}</span>
+                <input *ngIf="editMode[i]" class="editable" type="number" style="width: 62px;" [(ngModel)]="editableOrder.orderItems[i].item_quantity">
+              </td>
+              <td>{{ item.item_cost }}</td>
+              <td><button (click)="toggleEditMode(i)">{{ editMode[i] ? 'Save' : 'Edit' }}</button></td>
+            </tr>
+          </tbody>
+        </table>
+
+        </section>
+        <button type="button"  class = "login-btn" (click)="updateEditOrder()" >Save</button>
+        <button type="button"  class = "login-btn" (click)="closePEditOrderPopUp()" >Close</button>
+     
+    </div>
+  </div>
+</div>
+

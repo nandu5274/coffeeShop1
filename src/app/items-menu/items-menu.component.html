@@ -6,14 +6,17 @@
       <h2>Menu</h2>
       <div  class="refresh Menu-row">
         <div style="    margin-bottom: 0.5em;">
-          <p class="header-align">Check Our Tasty Menu 
+          <p class="header-align">Check Our  Menu 
              <a style="    display: block;">
              <img src="assets/img/table.png" class="table"  alt=""> 
           <a style="font-family: sans-serif; font-size: smaller; font-weight: 500;"> : {{tablePlace}} {{tableNumber}}</a>
         </a>
           </p>
-          <a class = "itemgst"> *Item price showing below is including the GST </a>
+   
           <a class = "itemgst"> *Images displayed below are meant for reference.</a>
+          <a class = "itemgst" style="text-align: center; color: lemonchiffon;"> 
+            </a>
+
         </div>
     
 
@@ -45,21 +48,29 @@
     <div   *ngIf="showMenu" class="row" data-aos="fade-up" data-aos-delay="100">
       <div class="col-lg-12 d-flex justify-content-center">
         <ul id="menu-flters">
-          <li data-filter="*" class="filter-active">All</li>
-        <li *ngFor="let menuCourse of menuCourseList" [attr.data-filter]="menuCourse.class">{{menuCourse.type}}</li>
+          <li data-filter="*" class="filter-active"  (click)="scrollToMenuContainer()">All</li>
+        <li *ngFor="let menuCourse of menuCourseList" [attr.data-filter]="menuCourse.class" #menuListItem  (click)="scrollToMenuContainer()">{{menuCourse.type}}
+           <a style="position: relative; 
+           font-size: larger;
+          "  #menuContainer >
+          {{menuCourse.emj}}
+        </a>  </li>
         </ul>
       </div>
     </div>
 
-    <div   *ngIf="showMenu" class="row menu-container" data-aos="fade-up" data-aos-delay="200">
+    <div   *ngIf="showMenu" class="row menu-container" data-aos="fade-up" data-aos-delay="200"  >
 
       <div   *ngFor="let menuItem of filteredMenuItems; index as i"  class="col-lg-6 menu-item menu-item-click"  [class]="menuItem.class" (click)="openModal(menuItem)">
         <img [src]="menuItem.imagePath" class="menu-img" alt="">
         <div class="menu-content">
           <a>{{menuItem.name}} <img [src]="menuItem.typePath" style="width: 14px; margin: 0px 2px 0px 2px;"> </a><span>&#8377; {{menuItem.cost}}</span>
+        
         </div>
         <div class="menu-ingredients" style="font-size: 21px !important;">
-         
+          <div class="feature"  *ngIf="menuItem.mustTry" >
+            <p class="shine-text">MUST TRY</p>
+          </div>
         </div>
       </div>
 
