@@ -40,7 +40,6 @@ export class PaymentComponent implements AfterViewInit {
 
   ngOnInit() {
 
-
     this.webSocketService.getMessageSubject().subscribe((event) => {
       // Handle incoming WebSocket messages here
       const message = event.data;
@@ -153,6 +152,7 @@ export class PaymentComponent implements AfterViewInit {
 
   paidFiles: any[] = [];
   paidOrderList: PaidFileOrderDto[] = [];
+  saleDate:any
   async getPaidOrders() {
     this.paidOrderList = []
     this.showPaidSpinner = true;
@@ -171,6 +171,7 @@ export class PaymentComponent implements AfterViewInit {
       console.log("respo - ", (await respo).headers1)
       this.TotalPaidAmount = this.TotalPaidAmount+ parseFloat(order.paidDetails[0].paid_amount);
       this.TotalActualAmount = this.TotalActualAmount+ parseFloat(order.paidDetails[0].actual_amount);
+      
       if(order.paidDetails[0].mode == "cash")
       {
         this.TotalCashAmount = this.TotalCashAmount+ parseFloat(order.paidDetails[0].paid_amount);
@@ -181,6 +182,11 @@ export class PaymentComponent implements AfterViewInit {
     this.paidOrderList.sort((a, b) => a.order.id - b.order.id);
     this.paidOrderList.reverse()
     this.showPaidSpinner = false;
+    if( this.paidOrderList.length > 0)
+    {
+      this.saleDate = this.sharedService.convertDateTimeToDateString( this.paidOrderList[0].paidDetails[0].period);
+    }
+   
   }
 
   showInvoice(invoiceData:any)
@@ -228,6 +234,11 @@ export class PaymentComponent implements AfterViewInit {
       let conItems = this.combineOrderItemsQuantities(order.orderItems)
       order.orderItems = conItems
     })
+    if( this.paidOrderList.length > 0)
+    {
+      this.saleDate = this.sharedService.convertDateTimeToDateString( this.paidOrderList[0].paidDetails[0].period);
+    }
+   
     this.showPaidSpinner = false;
 
   }

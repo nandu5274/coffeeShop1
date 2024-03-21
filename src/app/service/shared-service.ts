@@ -460,5 +460,21 @@ updateCurrentDateInIST12() {
 }
 
 
+ convertDateTimeToDateString(datetimeString:any) {
+  var parts1 = datetimeString.split("--");
+    
+    // Extract date and time components
+    var datePart = parts1[0];
+    
+
+
+    const parts = datePart.split('-');
+
+    // Rearrange the components to match the desired format
+    const formattedDateString = parts[1] + '-' + parts[0] + '-' + parts[2];
+
+    return formattedDateString;
+   
+}
 
 }

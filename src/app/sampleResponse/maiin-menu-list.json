@@ -1272,7 +1272,7 @@
           },
           {
             "id": 304,
-            "name": "Bolognese spaghetti red sauce",
+            "name": "Bolognese chicken spaghetti red sauce",
             "description": "fav testy dish",
             "ingredients": "  Lorem, deren, trataro, filede, neradae",
             "cost": 399,
@@ -2444,20 +2444,7 @@
             "typePath": "assets/img/menu/veg.png"
           },
 
-          {
-            "id": 152,
-            "name": "High protine Salad",
-            "description": "A delicate crab cake served on a toasted roll with lettuce and tartar sauce",
-            "ingredients": "Fresh spinach, crisp romaine, tomatoes, and Greek olives",
-            "cost": 249,
-            "imagePath": "assets/img/menu/greek-salad.jpg",
-            "rating": 4,
-            "available": "y",
-            "type": "NV",
-            "mustTry": true,
-            "typePath": "assets/img/menu/veg.png"
-          },
-         
+     
           {
             "id": 153,
             "name": "IsLand Egg Salad",
@@ -2782,192 +2769,6 @@
         ]
       }
     },
-    {
-      "course": {
-        "type": "Women'sDaySPL",
-        "typemoji": "👸",
-        "items": [
-          {
-            "id": 53,
-            "name": "Classic margherita pizza - Regular",
-            "description": "fav testy dish",
-            "ingredients": "Grilled chicken with provolone, artichoke hearts, and roasted red pesto",
-            "cost": 289,
-            "imagePath": "assets/img/menu/classic-margherita-pizza.jpg",
-            "rating": 4,
-            "available": "y",
-            "type": "NV",
-            "mustTry": false,
-            "typePath": "assets/img/menu/veg.png"
-          },
-          
-          {
-            "id": 55,
-            "name": "Veg Farmhouse pizza - Regular",
-            "description": "A delicate crab cake served on a toasted roll with lettuce and tartar sauce",
-            "ingredients": "Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll",
-            "cost": 289,
-            "imagePath": "assets/img/menu/Farmhouse.jpg",
-            "rating": 4,
-            "available": "y",
-            "type": "NV",
-            "mustTry": true,
-            "typePath": "assets/img/menu/veg.png"
-          },
-          
-          {
-            "id": 57,
-            "name": "Mushroom and corn pizza - Regular",
-            "description": "A delicate crab cake served on a toasted roll with lettuce and tartar sauce",
-            "ingredients": "Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll",
-            "cost": 289,
-            "imagePath": "assets/img/menu/mashroom-corn.jpg",
-            "rating": 4,
-            "available": "y",
-            "type": "NV",
-            "mustTry": false,
-            "typePath": "assets/img/menu/veg.png"
-          },
-          
-          {
-            "id": 59,
-            "name": "Veg Delight pizza - Regular",
-            "description": "fav testy dish",
-            "ingredients": "  Lorem, deren, trataro, filede, neradae",
-            "cost": 269,
-            "imagePath": "assets/img/menu/veg-Delight-pizza.jpg",
-            "rating": 4,
-            "available": "y",
-            "type": "veg",
-            "mustTry": false,
-            "typePath": "assets/img/menu/veg.png"
-          },
-          
-          {
-            "id": 61,
-            "name": "paneer tikka pizza - Regular",
-            "description": "fav testy dish",
-            "ingredients": "  Lorem, deren, trataro, filede, neradae",
-            "cost": 299,
-            "imagePath": "assets/img/menu/pizza-tikka.jpg",
-            "rating": 4,
-            "available": "y",
-            "type": "veg",
-            "mustTry": false,
-            "typePath": "assets/img/menu/veg.png"
-          },
-         
-          {
-            "id": 63,
-            "name": "BBQ chicken pizza - Regular",
-            "description": "fav testy dish",
-            "ingredients": " Lorem, deren, trataro, filede, neradae",
-            "cost": 310,
-            "imagePath": "assets/img/menu/BBQ-pizza.jpg",
-            "rating": 4,
-            "available": "y",
-            "type": "veg",
-            "mustTry": false,
-            "typePath": "assets/img/menu/non-veg.png"
-          },
-          
-          {
-            "id": 65,
-            "name": "peri peri chicken pizza - Regular",
-            "description": "fav testy dish",
-            "ingredients": " Lorem, deren, trataro, filede, neradae",
-            "cost": 310,
-            "imagePath": "assets/img/menu/periperi-pizza.jpg",
-            "rating": 4,
-            "available": "y",
-            "type": "veg",
-            "mustTry": true,
-            "typePath": "assets/img/menu/non-veg.png"
-          },
-          {
-            "id": 69,
-            "name": "chicken tikka pizza - Regular",
-            "description": "fav testy dish",
-            "ingredients": " Lorem, deren, trataro, filede, neradae",
-            "cost": 310,
-            "imagePath": "assets/img/menu/d-chesse.jpg",
-            "rating": 4,
-            "available": "y",
-            "type": "veg",
-            "mustTry": false,
-            "typePath": "assets/img/menu/non-veg.png"
-          },
-          {
-            "id": 137,
-            "name": "mint mojito",
-            "description": "fav testy dish",
-            "ingredients": "Lorem, deren, trataro, filede, nerada",
-            "cost": 189,
-            "imagePath": "assets/img/menu/mint-mojito.jpg",
-            "rating": 4,
-            "available": "y",
-            "type": "NV",
-            "mustTry": true,
-            "typePath": ""
-          },
-          {
-            "id": 138,
-            "name": "Water melon mojito",
-            "description": "fav testy dish",
-            "ingredients": "Fresh spinach with mushrooms, hard boiled egg, and warm bacon vinaigrette",
-            "cost": 189,
-            "imagePath": "assets/img/menu/watermelon.jpg",
-            "rating": 4,
-            "available": "y",
-            "type": "veg",
-            "mustTry": false,
-            "typePath": ""
-          },
-         
-          {
-            "id": 139,
-            "name": "Blue Curacao Mojito",
-            "description": "fav testy dish",
-            "ingredients": "Fresh spinach with mushrooms, hard boiled egg, and warm bacon vinaigrette",
-            "cost": 189,
-            "imagePath": "assets/img/menu/BlueCuracaoMojito.jpg",
-            "rating": 4,
-            "available": "y",
-            "type": "veg",
-            "mustTry": true,
-            "typePath": ""
-          },
-          {
-            "id": 140,
-            "name": "Rose mojito",
-            "description": "fav testy dish",
-            "ingredients": "Fresh spinach with mushrooms, hard boiled egg, and warm bacon vinaigrette",
-            "cost": 189,
-            "imagePath": "assets/img/menu/rose.jpg",
-            "rating": 4,
-            "available": "y",
-            "type": "veg",
-            "mustTry": false,
-            "typePath": ""
-          },
-          {
-            "id": 142,
-            "name": "Pan Mojito",
-            "description": "fav testy dish",
-            "ingredients": "Fresh spinach with mushrooms, hard boiled egg, and warm bacon vinaigrette",
-            "cost": 189,
-            "imagePath": "assets/img/menu/pina-colada.jpg",
-            "rating": 4,
-            "available": "y",
-            "type": "veg",
-            "mustTry": false,
-            "typePath": ""
-          }
- 
-        ]
-      }
-    },
-
 
 
     {

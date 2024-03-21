@@ -905,19 +905,7 @@
           "type": "Pizzas",
           "typemoji": "🍕",
           "items": [
-            {
-              "id": 53,
-              "name": "Classic margherita pizza - Regular",
-              "description": "fav testy dish",
-              "ingredients": "Grilled chicken with provolone, artichoke hearts, and roasted red pesto",
-              "cost": 289,
-              "imagePath": "assets/img/menu/classic-margherita-pizza.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "NV",
-              "mustTry": false,
-              "typePath": "assets/img/menu/veg.png"
-            },
+           
             {
               "id": 54,
               "name": "Classic margherita pizza - Medium",
@@ -931,19 +919,7 @@
               "mustTry": false,
               "typePath": "assets/img/menu/veg.png"
             },
-            {
-              "id": 55,
-              "name": "Veg Farmhouse pizza - Regular",
-              "description": "A delicate crab cake served on a toasted roll with lettuce and tartar sauce",
-              "ingredients": "Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll",
-              "cost": 289,
-              "imagePath": "assets/img/menu/Farmhouse.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "NV",
-              "mustTry": true,
-              "typePath": "assets/img/menu/veg.png"
-            },
+         
             {
               "id": 56,
               "name": "Veg Formhouse pizza - Medium",
@@ -956,19 +932,7 @@
               "type": "NV",
               "typePath": "assets/img/menu/veg.png"
             },
-            {
-              "id": 57,
-              "name": "Mushroom and corn pizza - Regular",
-              "description": "A delicate crab cake served on a toasted roll with lettuce and tartar sauce",
-              "ingredients": "Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll",
-              "cost": 289,
-              "imagePath": "assets/img/menu/mashroom-corn.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "NV",
-              "mustTry": false,
-              "typePath": "assets/img/menu/veg.png"
-            },
+
             {
               "id": 58,
               "name": "Mushroom and corn pizza - Medium",
@@ -982,19 +946,7 @@
               "mustTry": false,
               "typePath": "assets/img/menu/veg.png"
             },
-            {
-              "id": 59,
-              "name": "Veg Delight pizza - Regular",
-              "description": "fav testy dish",
-              "ingredients": "  Lorem, deren, trataro, filede, neradae",
-              "cost": 269,
-              "imagePath": "assets/img/menu/veg-Delight-pizza.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "veg",
-              "mustTry": false,
-              "typePath": "assets/img/menu/veg.png"
-            },
+
             {
               "id": 60,
               "name": "Veg Delight pizza - Medium",
@@ -1008,19 +960,7 @@
               "mustTry": false,
               "typePath": "assets/img/menu/veg.png"
             },
-            {
-              "id": 61,
-              "name": "paneer tikka pizza - Regular",
-              "description": "fav testy dish",
-              "ingredients": "  Lorem, deren, trataro, filede, neradae",
-              "cost": 299,
-              "imagePath": "assets/img/menu/pizza-tikka.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "veg",
-              "mustTry": false,
-              "typePath": "assets/img/menu/veg.png"
-            },
+
             {
               "id": 62,
               "name": "paneer tikka pizza-Medium",
@@ -1034,19 +974,7 @@
               "mustTry": true,
               "typePath": "assets/img/menu/veg.png"
             },
-            {
-              "id": 63,
-              "name": "BBQ chicken pizza - Regular",
-              "description": "fav testy dish",
-              "ingredients": " Lorem, deren, trataro, filede, neradae",
-              "cost": 310,
-              "imagePath": "assets/img/menu/BBQ-pizza.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "veg",
-              "mustTry": false,
-              "typePath": "assets/img/menu/non-veg.png"
-            },
+
             {
               "id": 64,
               "name": "BBQ chicken pizza - Medium",
@@ -1060,19 +988,7 @@
               "mustTry": false,
               "typePath": "assets/img/menu/non-veg.png"
             },
-            {
-              "id": 65,
-              "name": "peri peri chicken pizza - Regular",
-              "description": "fav testy dish",
-              "ingredients": " Lorem, deren, trataro, filede, neradae",
-              "cost": 310,
-              "imagePath": "assets/img/menu/periperi-pizza.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "veg",
-              "mustTry": true,
-              "typePath": "assets/img/menu/non-veg.png"
-            },
+
             {
               "id": 66,
               "name": "peri peri chicken pizza - Medium",
@@ -1086,19 +1002,7 @@
               "mustTry": false,
               "typePath": "assets/img/menu/non-veg.png"
             },
-            {
-              "id": 67,
-              "name": "Double cheese chicken pizza - Regular",
-              "description": "fav testy dish",
-              "ingredients": " Lorem, deren, trataro, filede, neradae",
-              "cost": 310,
-              "imagePath": "assets/img/menu/d-chesse.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "veg",
-              "mustTry": false,
-              "typePath": "assets/img/menu/non-veg.png"
-            },
+
             {
               "id": 68,
               "name": "Double cheese chicken pizza - Medium",
@@ -1112,19 +1016,7 @@
               "mustTry": true,
               "typePath": "assets/img/menu/non-veg.png"
             },
-            {
-              "id": 69,
-              "name": "chicken tikka pizza - Regular",
-              "description": "fav testy dish",
-              "ingredients": " Lorem, deren, trataro, filede, neradae",
-              "cost": 310,
-              "imagePath": "assets/img/menu/d-chesse.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "veg",
-              "mustTry": false,
-              "typePath": "assets/img/menu/non-veg.png"
-            },
+
             {
               "id": 70,
               "name": "chicken tikka pizza - Medium",
