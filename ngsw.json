@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1711980883336,
+  "timestamp": 1712132897188,
   "index": "https://nandu5274.github.io/coffeeShop1/index.html",
   "assetGroups": [
     {
@@ -13,7 +13,7 @@
       "urls": [
         "https://nandu5274.github.io/coffeeShop1/favicon.ico",
         "https://nandu5274.github.io/coffeeShop1/index.html",
-        "https://nandu5274.github.io/coffeeShop1/main.2a0a3a4ffef76cdd.js",
+        "https://nandu5274.github.io/coffeeShop1/main.ce2cc1b41132e58d.js",
         "https://nandu5274.github.io/coffeeShop1/manifest.webmanifest",
         "https://nandu5274.github.io/coffeeShop1/polyfills.942d049d5e170e85.js",
         "https://nandu5274.github.io/coffeeShop1/runtime.70a93a6d34744d57.js",
@@ -275,6 +275,7 @@
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/veg-clear.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/veg-fried-momo.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/veg-grill.jpg",
+        "https://nandu5274.github.io/coffeeShop1/assets/img/menu/veg-hot-sour.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/veg-kolhapuri.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/veg-momo.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/veg-paneer-Burger.jpg",
@@ -629,6 +630,7 @@
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/veg-clear.jpg": "a83d538fc9b4271325a3a9641e5845dd184f4250",
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/veg-fried-momo.jpg": "86330e4ee1d78ae3390d9ef85892ee60357ae3d2",
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/veg-grill.jpg": "18b87fb00e9da696c5c526cd9f4b609dda4a272d",
+    "https://nandu5274.github.io/coffeeShop1/assets/img/menu/veg-hot-sour.jpg": "8af8c0ad00acca2084bf6a541cb4e02fe58fd01d",
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/veg-kolhapuri.jpg": "6637234ccd5b437836332668af2e030a619e26b9",
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/veg-momo.jpg": "f4b0a6f0b4ddc1db02801296010b79d6f18686fe",
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/veg-paneer-Burger.jpg": "d8fb18b76593ed1ebc3003c0dcf240619b915917",
@@ -732,8 +734,8 @@
     "https://nandu5274.github.io/coffeeShop1/assets/vendor/swiper/swiper-bundle.min.js": "f4dc8d46086739c58121185b2d0f4e190710f11b",
     "https://nandu5274.github.io/coffeeShop1/assets/vendor/swiper/swiper-bundle.min.js.map": "8476a6a709730180c88f23d341d400ee50aad267",
     "https://nandu5274.github.io/coffeeShop1/favicon.ico": "22f6a4a3bcaafafb0254e0f2fa4ceb89e505e8b2",
-    "https://nandu5274.github.io/coffeeShop1/index.html": "fa99489e8e92e453bdd0fdb50e78d4cc1743c6a2",
-    "https://nandu5274.github.io/coffeeShop1/main.2a0a3a4ffef76cdd.js": "d7ec4ea701a50250a87e5fd0333a1bfc5c16d7c5",
+    "https://nandu5274.github.io/coffeeShop1/index.html": "f92c4b65f54e845f12f2099fc4a97472d1e6290d",
+    "https://nandu5274.github.io/coffeeShop1/main.ce2cc1b41132e58d.js": "075f881fe39483cf5f7bb687da336aae178c682f",
     "https://nandu5274.github.io/coffeeShop1/manifest.webmanifest": "d60dcd6811325a69a3c68475d205b1288b2003a4",
     "https://nandu5274.github.io/coffeeShop1/polyfills.942d049d5e170e85.js": "dff8f1fa9600d7f5460ea3a321897c2caf575fc3",
     "https://nandu5274.github.io/coffeeShop1/runtime.70a93a6d34744d57.js": "a175440d402209cf47f1da72f14d5aabe0ed4093",
