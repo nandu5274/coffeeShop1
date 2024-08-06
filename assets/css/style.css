@@ -9,10 +9,22 @@
 /*--------------------------------------------------------------
 # General
 --------------------------------------------------------------*/
+@use '@angular/material' as mat;
+@use '@angular/material/button' as matButton;
+@use '@angular/material/input' as matInput;
+
 body {
   font-family: "Open Sans", sans-serif;
   background: #0c0b09;
   color: #fff;
+}
+
+.mat-button {
+  @include matButton.button-theme(mat.$light-theme);
+}
+
+.mat-form-field {
+  @include matInput.input-theme(mat.$light-theme);
 }
 
 a {
