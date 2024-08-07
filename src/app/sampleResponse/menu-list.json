@@ -3560,6 +3560,32 @@
           "typemoji": "🧁",
           "items": [
             {
+              "id":600867,
+              "name": "Apricot Delight",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 139,
+              "imagePath": "assets/img/menu/apricot.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": ""
+            },
+            {
+              "id":600869,
+              "name": "Blueberry Delight",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 139,
+              "imagePath": "assets/img/menu/apricot.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": ""
+            },
+            {
               "id": 230767,
               "name": "Cake Slice",
               "description": "fav testy dish",
@@ -3826,6 +3852,19 @@
               "ingredients": "Lorem, deren, trataro, filede, nerada",
               "cost": 280,
               "imagePath": "assets/img/menu/brwoniesiziler.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": ""
+            },
+            {
+              "id": 30765,
+              "name": "Blue berry cake",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 1000,
+              "imagePath": "assets/img/menu/blueberry.jpg",
               "rating": 4,
               "available": "y",
               "type": "NV",

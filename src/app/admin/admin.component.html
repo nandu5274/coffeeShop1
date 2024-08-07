@@ -1,0 +1,92 @@
+<div *ngIf="showSpinner" class="spinner-overlay">
+  <div class="spinner"></div>
+</div>
+
+<div *ngIf="showPaidSpinner" class="spinner-overlay">
+  <div class="spinner"></div>
+</div>
+<!--   
+  <div  *ngIf="!loggedIn" > <app-login [pageType]="pageType" (loginStatus)="handleLoginStatus($event)"></app-login></div>
+   -->
+
+<div>
+
+  <section id="menu" class="menu section-bg" style="padding-top: 9em;">
+
+    <div class="tabs" [class.sticky-tabs]="isSticky">
+      <div class="tab tab-btn " (click)="selectTab('payments')" [class.active]="selectedTab === 'payments'">Payments 
+      </div>
+
+      <div class="tab tab-btn " (click)="selectTab('inventory')" [class.active]="selectedTab === 'inventory'">Inventory
+      </div>
+    </div>
+
+    <div class="tab-content">
+      <div *ngIf="selectedTab === 'payments'">
+
+        <div class="container" data-aos="fade-up">
+
+          <div class="section-title" style="padding-top: 1em;">
+            <h2>Payment</h2>
+
+            <div  style="display: flex; flex-direction: row;" class="refresh">
+              <p>Kubera Payments</p>
+              <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
+             
+                <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
+                  <button style=" background-color: #d49b3b; color: #11100e;"  (click)="openForm()" >Create</button>
+                  <button style=" background-color: #d49b3b; color: #11100e;"  (click) = "clearFilters()" >orders</button>
+                </div>
+              
+              </div>
+            
+            </div>
+           
+          </div>
+
+          <div>
+
+  
+          <div  style="height: 100%; display: flex; flex-direction: column;" >
+            <ag-grid-angular
+            style="width: 100%; height: 500px;"
+            class="ag-theme-alpine"
+            [defaultColDef]="defaultColDef"
+            [rowData]="rowData"
+            [columnDefs]="columnDefs"
+            (gridReady)="onGridReady()">
+          </ag-grid-angular>
+
+
+          
+        </div>
+          </div>
+      
+   
+      
+        
+      </div>
+  
+      </div>
+
+      <!-- tab 1 ending -->
+     
+      <app-admin-form  [isVisible]="isFormVisible" 
+      (cancel)="closeForm()"  (fromData)="createPaymentDetails($event)"></app-admin-form>
+
+      <div *ngIf="selectedTab === 'inventory'">
+
+hg
+
+
+      </div>
+      <div *ngIf="selectedTab === 'tab3'">Content for Tab 3> </div>
+
+    </div>
+
+
+
+
+  </section>
+
+</div>

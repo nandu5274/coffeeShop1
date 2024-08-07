@@ -49,6 +49,7 @@ export class AppComponent implements OnInit  {
      ngOnInit(): void {
       this.loadScript("assets/js/main.js");
       this.generateHearts();
+      this.getLatestVersion()
     //  this.openModal('d')
 
 //below code is for popups 
@@ -64,7 +65,7 @@ export class AppComponent implements OnInit  {
       if (this.container) {
         this.scrollToBottom();
       }
-      this.getLatestVersion()
+    
     }
 
     getLatestVersion()
@@ -72,7 +73,8 @@ export class AppComponent implements OnInit  {
       this.dataService.getLatestVersion().subscribe((response) => {
         // Handle the response here
         const versionNumber = response.kubera_Account_ui_version[0].verison;
-        console.log("version - ",versionNumber); // Example: log the response
+        console.log("API version - ",versionNumber); 
+        console.log("UI version - ",this.version); // Example: log the response
       this.checkVersion(versionNumber)
       },
       (error) => {
@@ -221,7 +223,7 @@ if (this.step === 0) {
       setTimeout(() => {
         this.reloadMultipleTimes()
      
-      },2000);
+      },100);
    
     }
   }
@@ -229,7 +231,7 @@ if (this.step === 0) {
 
 
   reloadCount = 0;
-  maxReloads = 5;
+  maxReloads = 1;
   reloadMultipleTimes() {
     const reloadCountCon = sessionStorage.getItem('reloadCount');
 
@@ -239,7 +241,7 @@ if (this.step === 0) {
         this.reloadCount++;
         console.log("retry - ",this.reloadCount)
         sessionStorage.setItem("reloadCount",String(this.reloadCount))
-        window.location.reload();
+       // window.location.reload();
   
       }
     }else{

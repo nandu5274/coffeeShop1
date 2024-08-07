@@ -34,22 +34,10 @@
 
     <div  *ngIf="showVersionModal" class="modal">
 
-      <div class="modal-content"  *ngIf="reloadCount<5">
-        <div style="    background-color: #cda45e;
-        color: #1a1814;
-        padding: 15px;
-        border: 1px solid #f2dede;
-        border-radius: 4px;
-        align-items: center;
-        align-self:center;
-        z-index: 99999999;
-        width: fit-content;">
-        Refreshed {{this.reloadCount}} times To get Latest Version
-        </div>
-          
-        </div>
+      
+     
         
-        <div class="modal-content"  *ngIf="reloadCount>=5">
+        <div class="modal-content"  *ngIf="reloadCount>=1">
           <div style="    background-color: #cda45e;
           color: #1a1814;
           padding: 15px;
@@ -59,7 +47,7 @@
           align-self:center;
           z-index: 99999999;
           width: fit-content;">
-          Reached max Retries, close the tab and Re-scan
+        close the browser tab and Re-scan
           </div>
             
           </div>

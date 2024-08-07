@@ -71,6 +71,7 @@
                   <div class="buttons">
                     <button style="background-color: #198754!important" (click) = "showInvoice(waitingApprovalOrder)" >Invoice</button>
                     <button style="background-color: #261987!important" (click) = "paymentDone(waitingApprovalOrder)" >Paid</button>
+                    <button style="background-color: #dc3545!important" (click) = "paymentDoneOwner(waitingApprovalOrder)" >Owner</button>
                   </div>
                 </div>
               </div>  
@@ -96,6 +97,7 @@
             <p>Paid orders</p>
             <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
               <button style=" background-color: #d49b3b; color: #11100e;     height: -webkit-fill-available;" (click) = "refreshPaidOrder()">Refresh</button>
+              <button style=" background-color: #d49b3b; color: #11100e;     height: -webkit-fill-available;" (click) = "refreshPaidOrder()">Show Orders</button>
             <div style=" display: flex;
             flex-direction: column;">
           
@@ -292,6 +294,40 @@
     </div>
   </div>
 </div>
+
+
+
+<div class="main-content"  *ngIf="isOwnerPopupOpen">
+
+  <div class="popup-overlay" >
+    <div class="popup-content" style="background: #1a1814;">
+      
+
+      
+      <section id="menu" class="menu section-bg" style="padding: 0px;">
+        <div class="login-container">
+         
+
+          <form>
+            <div class="form-group " >
+              <label for="username">Admin Password:</label>
+              <input type="password" id="username" name="username" class = "username" [(ngModel)]="username" required>
+            </div>
+            <div>
+            <button type="button"  class = "login-btn" (click)="makeOwnerPaymentCompleted()"  >Login</button>
+            <button type="button"  class = "login-btn" (click)="closeOwnerPasswordPopup()" >Close</button>
+    
+          </div>
+          </form>
+          </div>
+        </section>
+
+
+     
+    </div>
+  </div>
+</div>
+
 
 
 

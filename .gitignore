@@ -9,3 +9,4 @@ src/app/common/constanst.ts
 .DS_Store
 src/.DS_Store
 src/assets/.DS_Store
+dist/

@@ -397,7 +397,20 @@ selectedOrder:any;
     this.isPaymentTypePopupOpen = true;
     this.selectedOrder= order;
   }
+  isOwnerPopupOpen:any = false;
+  paymentDoneOwner(order: any) {
+    this.isOwnerPopupOpen = true;
+    this.selectedOrder= order;
+  }
 
+  makeOwnerPaymentCompleted()
+  {
+    this.moveOrderToOwnerPaid( this.selectedOrder);
+  }
+  closeOwnerPasswordPopup()
+  {
+    this.isOwnerPopupOpen = false;
+  }
   makePaymentCompleted()
   {
 //convert the object tpo csv and save to the paidorder folder 
@@ -431,6 +444,35 @@ selectedOrder:any;
    request.attachment = attachment;
     this.dataService.postData(request).subscribe();
   }
+
+
+  async sendMailAdminPaymentOrder(data:any) {
+
+    const value =  this.objectsToCsv2(data);
+ 
+    let paymentType:any = {};
+    let request: any = {};
+    let attachment :any = {};
+    let fileName:any = data.filePath
+    paymentType.paid_amount = this.amount;
+    paymentType.actual_amount = this.formatStringWithTwoDecimalPlaces(this.getActualAmount(data.orderItems));
+    paymentType.mode = this.paymentMode
+    paymentType.period =this.sharedService.updateCurrentDateTimeInIST();
+ 
+    const csvOrderTableDataCsv = this.objectsToCsv2(data.order);
+    const orderItemTableDataListCsv = this.objectsToCsv2(data.orderItems);
+    const paymentTypeListCsv = this.objectsToCsv2([paymentType]);
+    const orderTableCsvData  = paymentTypeListCsv+"\n" +csvOrderTableDataCsv +"\n" +orderItemTableDataListCsv
+    const orderTableFilePath ='/orders/admin_orders/'+fileName;
+    attachment.content = orderTableCsvData
+    attachment.fileName = fileName
+    request.recipient = "cafekubera2223@gmail.com";
+    request.msgBody = "Hey! In\nThis is a message from the cafe kubera , Admin order payment completed \n\nThanks";
+    request.subject = "!!! ADMIN ORDER - details for the orders - "+  data.order.map((obj: any) => obj.id).join(',') +" for  the table "+ data.order[0].table_no+" on " + paymentType.period;
+    request.attachment = attachment;
+     this.dataService.postData(request).subscribe();
+   }
+ 
 
   async moveOrderToPaid(data:any) {
     this.showSpinner = true;
@@ -476,6 +518,53 @@ selectedOrder:any;
   });
 
   }
+
+
+  async moveOrderToOwnerPaid(data:any) {
+    this.showSpinner = true;
+  
+   const value =  this.objectsToCsv2(data);
+
+   let paymentType:any = {};
+   let fileName:any = data.filePath
+   paymentType.paid_amount = "0";
+   paymentType.actual_amount = this.formatStringWithTwoDecimalPlaces(this.getActualAmount(data.orderItems));
+   paymentType.mode = "online"
+   paymentType.period =this.sharedService.updateCurrentDateTimeInIST();
+   delete data.order[0].table_place;
+   const csvOrderTableDataCsv = this.objectsToCsv2(data.order);
+   const orderItemTableDataListCsv = this.objectsToCsv2(data.orderItems);
+   const paymentTypeListCsv = this.objectsToCsv2([paymentType]);
+   const orderTableCsvData  = paymentTypeListCsv+"\n" +csvOrderTableDataCsv +"\n" +orderItemTableDataListCsv
+   const orderTableFilePath ='/orders/admin_orders/'+fileName;
+   await this.dropboxService.uploadFile(orderTableFilePath, orderTableCsvData).then(async (response:any) => {
+    console.log('File uploaded:', response);
+    let checkOutOrder = "/orders/checkout_orders/"+fileName
+   let  resw = await this.dropboxService.deleteFile([checkOutOrder]);
+   this.sendMailAdminPaymentOrder(data);
+   console.log(resw);
+   setTimeout(() => {  this.closeOwnerPasswordPopup();  this.refreshOrder(); }, 3000); 
+
+    //delete the approved orders
+
+  }).catch((error) => {
+    this.dropboxService.updateFile(orderTableFilePath, orderTableCsvData).then((response:any) => {
+      console.log('File updated:', response);
+      this.dropboxService.deleteFile(["/orders/admin_orders/"+fileName]);
+      setTimeout(() => {  
+        this.closePaymentTypePopup();
+         this.refreshOrder(); 
+        }, 3000); 
+    }).catch((error) => {
+      
+      console.error('Error uploading file:', error);
+    });
+    
+    console.error('Error uploading file:', error);
+  });
+
+  }
+
 
   getActualAmount(orderItems: any) {
     let orderCost = 0;

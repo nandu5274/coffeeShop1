@@ -6,6 +6,7 @@ import { CaptainPageComponent } from './captain-page/captain-page.component';
 import { KitchenPageComponent } from './kitchen-page/kitchen-page.component';
 import { PaymentComponent } from './payment/payment.component';
 import { StockComponent } from './stock/stock.component';
+import { AdminComponent } from './admin/admin.component';
 
 const routes: Routes = [
   { path: '', component: HomePageComponent },
@@ -14,6 +15,7 @@ const routes: Routes = [
   { path: 'kit', component: KitchenPageComponent },
   { path: 'payment', component: PaymentComponent },
   { path: 'stock', component: StockComponent },
+  { path: 'admin', component: AdminComponent },
 ];
 
 @NgModule({

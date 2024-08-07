@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import * as CryptoJS from 'crypto-js';
 import { DropboxService } from '../service/dropbox.service';
 import { SharedService } from '../service/shared-service';
@@ -12,7 +12,7 @@ export class PaymentLoginComponent {
   constructor(private dropboxService: DropboxService, private sharedService: SharedService) { }
 
   @Output() loginStatus: EventEmitter<boolean> = new EventEmitter<boolean>();
-
+  @Input() pageType: string = '';
   username: string = '';
   password: string = '';
   showError: boolean = false;
@@ -24,12 +24,17 @@ export class PaymentLoginComponent {
   loginDetailsData: any;
   showSpinner: Boolean = false;
   login() {
+    this.encryptPassword()
     this.showSpinner = true;
-    const sessionCartDataList = sessionStorage.getItem('loginDetails');
-
+   
+  if(this.pageType == "admin")
+  {
+    sessionStorage.removeItem('loginDetails');
+  }
+  const sessionCartDataList = sessionStorage.getItem('loginDetails');
     if (sessionCartDataList) {
       this.loginDetailsData = JSON.parse(atob(sessionStorage.getItem('loginDetails')!));
-      this.validateUser()
+      this.validateUser(this.pageType)
     } else {
       this.getLoginDetails();
     }
@@ -45,7 +50,7 @@ export class PaymentLoginComponent {
     const key = 'your-secret-key'; // Replace with a secure secret key
     const encrypted = CryptoJS.AES.encrypt(this.password, key).toString();
     this.encryptedPassword = encrypted;
-
+    console.log("this.encryptedPassword ", this.encryptedPassword );
   }
 
   decryptPassword(pas: any) {
@@ -57,13 +62,21 @@ export class PaymentLoginComponent {
 
 
   async getLoginDetails() {
-    const path = '/login_users/logins.csv';
+    let path =''
+    if(this.pageType == "admin")
+    {
+       path = '/login_users/admin_logins.csv';
+    }
+    else
+    {
+       path = '/login_users/logins.csv';
+    }
     this.loginDetails = await this.dropboxService.getFileData(path);
     const respo = this.sharedService.parseCsvText(await this.sharedService.readBlobAsText(this.loginDetails.fileBlob)).then(
       (data) => {
         this.loginDetailsData = data;
         sessionStorage.setItem("loginDetails", btoa(JSON.stringify(this.loginDetailsData)))
-        this.validateUser();
+        this.validateUser(this.pageType);
 
       },
       (error) => {
@@ -72,16 +85,34 @@ export class PaymentLoginComponent {
     );
   }
 
-  validateUser() {
-    const user = this.loginDetailsData.find((u: any) =>
-      u.username === u.username && this.decryptPassword(u.password) === this.password);
-    this.userValidationStatus = !!user;
-    this.loginStatus.emit( this.userValidationStatus);
-    if (!this.userValidationStatus) {
-      this.showError = true;
-    } else {
-      this.showError = false;
+  validateUser(pageType: any) {
+    if(pageType == "admin")
+    {
+      const user = this.loginDetailsData.find((u: any) =>
+        u.username === u.username && this.decryptPassword(u.password) === this.password);
+      this.userValidationStatus = !!user;
+      this.loginStatus.emit( this.userValidationStatus);
+      if (!this.userValidationStatus) {
+        this.showError = true;
+      } else {
+        sessionStorage.removeItem('loginDetails');
+        this.showError = false;
+      }
+      this.showSpinner = false;
+
     }
-    this.showSpinner = false;
-  }
+    else{
+      const user = this.loginDetailsData.find((u: any) =>
+        u.username === u.username && this.decryptPassword(u.password) === this.password);
+      this.userValidationStatus = !!user;
+      this.loginStatus.emit( this.userValidationStatus);
+      if (!this.userValidationStatus) {
+        this.showError = true;
+      } else {
+        this.showError = false;
+      }
+      this.showSpinner = false;
+    }
+    }
+
 }
