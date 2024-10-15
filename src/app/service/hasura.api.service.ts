@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { KUBERA_ACCOUNT_GRAPHQL_API, KUBERA_ACCOUNT_GRAPHQL_KEY, KUBERA_ACCOUNT_GRAPHQL_QUERY_API } from '../common/constanst';
+import { KUBERA_ACCOUNT_GRAPHQL_API, KUBERA_ACCOUNT_GRAPHQL_GET_CONFIG_API, KUBERA_ACCOUNT_GRAPHQL_GET_CONFIG_BY_TYPE_API, KUBERA_ACCOUNT_GRAPHQL_KEY, KUBERA_ACCOUNT_GRAPHQL_QUERY_API, KUBERA_ACCOUNT_GRAPHQL_UPDATE_CONFIG_BY_TYPE_API } from '../common/constanst';
 import { gql } from 'graphql-tag';
 
 @Injectable({
@@ -9,6 +9,9 @@ import { gql } from 'graphql-tag';
 })
 export class HasuraApiService {
   private apiUrl = KUBERA_ACCOUNT_GRAPHQL_API;
+  private getConfigUrl = KUBERA_ACCOUNT_GRAPHQL_GET_CONFIG_API;
+  private getConfigUrlByType = KUBERA_ACCOUNT_GRAPHQL_GET_CONFIG_BY_TYPE_API;
+  private updateConfigByTypeUrl = KUBERA_ACCOUNT_GRAPHQL_UPDATE_CONFIG_BY_TYPE_API;
 
   private graphqlApiUrl = KUBERA_ACCOUNT_GRAPHQL_QUERY_API;
   // private apiUrl = 'http://localhost:8080/email/sendPaidOrder';
@@ -97,6 +100,31 @@ export class HasuraApiService {
 
   }
 
+  getConfigDetails(): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'x-hasura-admin-secret': KUBERA_ACCOUNT_GRAPHQL_KEY // Replace with your authorization header
+    });
+    return this.http.get<any>(this.getConfigUrl, { headers });
+  }
+
+
+  getConfigDetailsByType(type:any): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'x-hasura-admin-secret': KUBERA_ACCOUNT_GRAPHQL_KEY // Replace with your authorization header
+    });
+    return this.http.get<any>(this.getConfigUrlByType + type, { headers });
+  }
+  
+  updateConfigByType(type:any, status:any)
+  {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'x-hasura-admin-secret': KUBERA_ACCOUNT_GRAPHQL_KEY // Replace with your authorization header
+    });
+    return this.http.get<any>(this.updateConfigByTypeUrl+ type + "/"+ status, { headers });
+  }
 
 
 }

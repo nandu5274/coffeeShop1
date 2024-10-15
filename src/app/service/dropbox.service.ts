@@ -96,7 +96,6 @@ export class DropboxService {
     this.http.post('https://api.dropboxapi.com/oauth2/token', params, { headers })
       .subscribe((response: any) => {
         const accessToken = response.access_token;
-        console.log('Access token:', accessToken);
         sessionStorage.setItem('access_token', accessToken)
         // Store the access token securely and use it for API calls
       });
@@ -267,7 +266,16 @@ export class DropboxService {
 
 
       this.dbx = new Dropbox({ accessToken: sessionStorage.getItem('access_token')! });
-            let result = await this.dbx.filesListFolder({ path: folderPath, recursive: true });
+      const reloadCountCon = sessionStorage.getItem('recursive');
+      let recursive = false;
+      if(reloadCountCon=="true")
+      {
+        recursive= true;
+      }
+        
+    
+            let result = await this.dbx.filesListFolder({ path: folderPath, recursive: recursive,  include_deleted:false, limit:100,
+              include_media_info:false});
             const entries: any[] = [];
             while (true) {
                 entries.push(...result.result.entries);
@@ -276,6 +284,11 @@ export class DropboxService {
             }
 
             console.log(`getFilesInFolder successfully: ${folderPath}`);
+            if(recursive)
+            {
+              entries.shift()
+            }
+       
             return entries; // Exit the function if the upload is successful
 
 

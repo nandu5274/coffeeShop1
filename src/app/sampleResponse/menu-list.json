@@ -21,20 +21,6 @@
               "desc": "Golden yolk, tender white, simple delight, breakfast classic, morning favorite"
             },
             {
-              "id": 8813,
-              "name": "Water pouched Egg",
-              "description": "fav testy dish",
-              "ingredients": "  Lorem, deren, trataro, filede, neradae",
-              "cost": 150,
-              "imagePath": "assets/img/menu/poach-egg.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "veg",
-              "mustTry": false,
-              "typePath": "assets/img/menu/non-veg.png",
-              "desc": "delicately cooked to perfection, boasting a velvety texture and rich flavor, a true delight for the senses"
-            },
-            {
               "id": 8808,
               "name": "Plain omelette",
               "description": "fav testy dish",
@@ -132,36 +118,7 @@
               "typePath": "assets/img/menu/non-veg.png",
               "desc": "Made with farm-fresh eggs gently cooked to fluffy perfection, a timeless breakfast classic"
             },
-             
-            {
-              "id": 8804,
-              "name": "Eggless pancakes",
-              "description": "fav testy dish",
-              "ingredients": "  Lorem, deren, trataro, filede, neradae",
-              "cost": 210,
-              "imagePath": "assets/img/menu/Eggless-Pancake.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "veg",
-              "mustTry": false,
-              "typePath": "assets/img/menu/veg.png",
-              "desc": "Made with a light and fluffy batter, cooked to golden perfection, and served with your choice of toppings"
-            },
-            {
-              "id": 8803,
-              "name": "Flavored pancakes",
-              "description": "fav testy dish",
-              "ingredients": "  Lorem, deren, trataro, filede, neradae",
-              "cost": 220,
-              "imagePath": "assets/img/menu/ChocolatePancakes.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "veg",
-              "mustTry": true,
-              "typePath": "assets/img/menu/non-veg.png",
-              "desc": "Made with a light and fluffy batter, cooked to golden perfection, and served with your choice of toppings"
-            },
-
+ 
             {
               "id": 8801,
               "name": "Cheese chilli toast",
@@ -1339,7 +1296,7 @@
               "name": "Water Bottle",
               "description": "fav testy dish",
               "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 25,
+              "cost": 24,
               "imagePath": "assets/img/menu/watter-bottle.jpg",
               "rating": 4,
               "available": "y",
@@ -1425,21 +1382,7 @@
               "mustTry": false,
               "typePath": "assets/img/menu/veg.png"
             },
-            {
-              "id": 151,
-              "name": "Russian Salad",
-              "description": "fav testy dish",
-              "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 249,
-              "imagePath": "assets/img/menu/Russian-Salad.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "NV",
-              "mustTry": false,
-              "typePath": "assets/img/menu/veg.png"
-            },
 
-       
             {
               "id": 153,
               "name": "IsLand Egg Salad",
@@ -1453,32 +1396,8 @@
               "mustTry": false,
               "typePath": "assets/img/menu/non-veg.png"
             },
-            {
-              "id": 154,
-              "name": "Chicken Ginzer Salad",
-              "description": "fav testy dish",
-              "ingredients": "Fresh spinach with mushrooms, hard boiled egg, and warm bacon vinaigrette",
-              "cost": 249,
-              "imagePath": "assets/img/menu/spinach-salad.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "veg",
-              "mustTry": true,
-              "typePath": "assets/img/menu/non-veg.png"
-            },
-            {
-              "id": 155,
-              "name": "Roasted Egg Plant Salad",
-              "description": "fav testy dish",
-              "ingredients": "Fresh spinach with mushrooms, hard boiled egg, and warm bacon vinaigrette",
-              "cost": 249,
-              "imagePath": "assets/img/menu/eggplant.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "veg",
-              "mustTry": false,
-              "typePath": "assets/img/menu/non-veg.png"
-            },
+
+
             {
               "id": 156,
               "name": "Chicken Peanut Salad",
@@ -3079,7 +2998,7 @@
       {
         "course": {
           "type": "Grills",
-          "typemoji": "🍛",
+          "typemoji": "🌭",
           "items": [
 
             {
@@ -3136,6 +3055,87 @@
               "mustTry": true,
               "typePath": "assets/img/menu/non-veg.png"
             }
+            
+          ]
+        }
+      },
+
+      {
+        "course": {
+          "type": "RiceBowl",
+          "typemoji": "🍛",
+          "items": [
+            {
+              "id": 24931,
+              "name": "Mushroom Stroganoff Rice Bowl",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 399,
+              "imagePath": "assets/img/menu/msrc.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "assets/img/menu/veg.png"
+            },
+             
+            {
+              "id": 24934,
+              "name": "cottage cheese Rice Bowl",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 449,
+              "imagePath": "assets/img/menu/crb.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "assets/img/menu/veg.png"
+            },
+            
+            {
+              "id": 24932,
+              "name": "Chicken Stroganoff Rice Bowl",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 399,
+              "imagePath": "assets/img/menu/csrc.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+
+            {
+              "id": 24933,
+              "name": "Harissa Grilled Chicken Rice Bowl",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 449,
+              "imagePath": "assets/img/menu/gcrb.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            
+ 
+            {
+              "id": 24935,
+              "name": "Pesto grilled fish Rice Bowl",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 499,
+              "imagePath": "assets/img/menu/pfrb.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            }
+            
             
           ]
         }
@@ -3831,6 +3831,19 @@
               "typePath": ""
               
             },
+            {
+              "id": 19084,
+              "name": "Loaf cake",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 250,
+              "imagePath": "assets/img/menu/loaf.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": false,
+              "typePath": ""
+            },
 
             {
               "id": 164,
@@ -3922,19 +3935,7 @@
               "mustTry": true,
               "typePath": "assets/img/menu/veg.png"
             },
-            {
-              "id": 2,
-              "name": "Love with Bruschetta",
-              "description": "fav testy dish",
-              "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 310,
-              "imagePath": "assets/img/menu/Bruschetta.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "V",
-              "mustTry": true,
-              "typePath": "assets/img/menu/veg.png"
-            },
+
             {
               "id": 8028,
               "name": "Loaded fries with chicken",

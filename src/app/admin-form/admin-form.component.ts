@@ -32,7 +32,7 @@ export class AdminFormComponent implements OnInit{
   onSubmit(): void {
     if (this.adminForm.valid) {
       
-      console.log(this.adminForm.value);
+   //   console.log(this.adminForm.value);
       
       const value = this.adminForm.value;
       

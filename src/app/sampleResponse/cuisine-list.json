@@ -19,7 +19,7 @@
                 "cuisine": {
                 "type": "Continental",
                 "class": ".filter-Salads" ,
-                "items":["Salads", "Fries", "Breads", "Sandwiches", "Burgers","Pizzas","Pastas","Grills","Bruschetta"]
+                "items":["Salads", "Fries", "Breads", "Sandwiches", "Burgers","Pizzas","Pastas","Grills","RiceBowl","Bruschetta"]
             
                 }
               },

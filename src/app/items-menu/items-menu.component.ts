@@ -170,6 +170,11 @@ populateMenuList()
   });
   console.log("menuList" + this.menuList);
   console.log("menuItemsList" + this.menuItemsList);
+  this.menuItemsList.forEach((element:any) => {
+
+    console.log("name - "+ element.name+ "cost -"+ element.cost )
+    
+  });
   this.filteredMenuItems =  [...this.menuItemsList]; 
   this.OriginaldMenuItems =  [...this.menuCourseList]; 
   this.filteredMenuCourseList=  [...this.menuCourseList]; 

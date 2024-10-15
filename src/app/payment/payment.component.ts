@@ -8,6 +8,7 @@ import Papa from 'papaparse';
 import { PaidFileOrderDto } from '../dtos/paidFileOrderDto';
 import { DataService } from '../service/data.service';
 import { KUBERA_PAYMENT_EDIT_LOGIN_PASSWORD } from '../common/constanst';
+import { HasuraApiService } from '../service/hasura.api.service';
 
 @Component({
   selector: 'app-payment',
@@ -27,7 +28,7 @@ export class PaymentComponent implements AfterViewInit {
   TotalOnlineAMpunt:any = 0;
   TotalActualAmount:any = 0;
   constructor(private webSocketService: WebSocketService, private datePipe: DatePipe, private dropboxService: DropboxService,
-    private sharedService: SharedService, private dataService: DataService) {
+    private sharedService: SharedService, private dataService: DataService, private hasuraDataService: HasuraApiService) {
     this.initializePushNotifications();
     this.sound = new Howl({
       src: ['assets/audio/order_waiting.mp3'],
@@ -53,6 +54,8 @@ export class PaymentComponent implements AfterViewInit {
     //this.getPaidOrders();
 
     console.log("caption")
+
+    this.revokeEditAccess()
   }
 
   triggerPopupMessage(mesg: any) {
@@ -128,7 +131,7 @@ export class PaymentComponent implements AfterViewInit {
     this.showSpinner = true;
     const folderPath = '/orders/checkout_orders/'; // Replace with the desired folder path
     this.files = await this.dropboxService.getFilesInFolder(folderPath);
-    this.files.shift() 
+   // this.files.shift() 
     for (const file of this.files) {
       file.data = await this.dropboxService.getFileData(file.path_display);
       const respo = this.sharedService.parseNestedCsvToObjectDynamicHeader(file.data.fileBlob)
@@ -159,7 +162,7 @@ export class PaymentComponent implements AfterViewInit {
     this.showPaidSpinner = true;
     const folderPath = '/orders/paid_orders/'; // Replace with the desired folder path
     this.paidFiles = await this.dropboxService.getFilesInFolder(folderPath);
-    this.paidFiles.shift() 
+  //  this.paidFiles.shift() 
     for (const file of this.paidFiles) {
       file.data = await this.dropboxService.getFileData(file.path_display);
       const respo = this.sharedService.parseNestedCsvToObjectDynamic3THeader(file.data.fileBlob)
@@ -204,7 +207,7 @@ export class PaymentComponent implements AfterViewInit {
     this.showPaidSpinner = true;
     const folderPath = '/orders/paid_orders/'; // Replace with the desired folder path
     this.updatedPaidFiles = await this.dropboxService.getFilesInFolder(folderPath);
-    this.updatedPaidFiles.shift() 
+   // this.updatedPaidFiles.shift() 
     // added only newly added files
     const addedNewFiles = this.updatedPaidFiles.filter(item1 => !this.paidFiles.some(item2 => item2["name"] === item1["name"]));
     const removeOldFiles = this.paidFiles.filter(item1 => !this.updatedPaidFiles.some(item2 => item2["name"] === item1["name"]));
@@ -279,7 +282,7 @@ export class PaymentComponent implements AfterViewInit {
     this.showSpinner = true;
     const folderPath = '/orders/checkout_orders/'; // Replace with the desired folder path
     this.updatedFiles = await this.dropboxService.getFilesInFolder(folderPath);
-    this.updatedFiles.shift()
+   // this.updatedFiles.shift()
     // added only newly added files
     const addedNewFiles = this.updatedFiles.filter(item1 => !this.files.some(item2 => item2["name"] === item1["name"]));
     const removeOldFiles = this.files.filter(item1 => !this.updatedFiles.some(item2 => item2["name"] === item1["name"]));
@@ -604,9 +607,16 @@ selectedOrder:any;
   editableOrder:any
   openEditOrderPasswordPopup(order:any)
   {
-    this.username = "";
+    if(!this.apiEditStatus)
+    {
+      this.username = "";
       this.isPasswordPopupOpen = true
       this.editOrder = order;
+    }else
+    {
+      this.openEditOrderPopup()
+    }
+
 
   }
 
@@ -627,7 +637,48 @@ selectedOrder:any;
       console.log("error")
     }
   }
-
+   apiEditStatus:any = false
+  editApproval()
+  {
+    
+    if(!this.apiEditStatus)
+      {
+        this.showSpinner = true;
+        this.hasuraDataService.getConfigDetailsByType("edit").subscribe((response) => {
+          // Handle the response here
+          const editStatus = response.kubera_Account_kuber_config[0].status;
+          this.apiEditStatus = editStatus.toLowerCase() === 'true'
+        if(editStatus == "true")
+        {
+          this.showSpinner = false;
+          this.openEditOrderPopup()
+          console.log("trying to the edit access");
+          setTimeout(() => {
+            console.log("removing the edit access");
+            this.revokeEditAccess();
+          }, 120000); // 300000 ms = 5 minutes
+    
+        }else{
+          this.showSpinner = false;
+        }
+    
+        },
+        (error) => {
+          // Handle errors here
+          console.error(error);
+        });
+      }else
+      {
+        this.showSpinner = false;
+        this.openEditOrderPopup()
+      }
+    
+  }
+  revokeEditAccess()
+  {
+    this.apiEditStatus = false;
+    this.hasuraDataService.updateConfigByType("edit", "false").subscribe();
+  }
 
   isEditOrderPopUpOpen:any = false
   editMode: boolean[] = [];

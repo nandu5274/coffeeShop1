@@ -76,7 +76,10 @@
 
       <div *ngIf="selectedTab === 'inventory'">
 
-hg
+        <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
+          <button style=" background-color: #d49b3b; color: #11100e;"  (click)="approveLogin()" >approve login</button>
+          <button style=" background-color: #d49b3b; color: #11100e;"  (click) = "revokeLogin()" >revoke login</button>
+        </div>
 
 
       </div>

@@ -73,9 +73,10 @@ export class AppComponent implements OnInit  {
       this.dataService.getLatestVersion().subscribe((response) => {
         // Handle the response here
         const versionNumber = response.kubera_Account_ui_version[0].verison;
+        const recursiveStatus = response.kubera_Account_ui_version[0].recursive;
         console.log("API version - ",versionNumber); 
         console.log("UI version - ",this.version); // Example: log the response
-      this.checkVersion(versionNumber)
+      this.checkVersion(versionNumber,recursiveStatus)
       },
       (error) => {
         // Handle errors here
@@ -209,17 +210,19 @@ if (this.step === 0) {
     this.showPopup = false;
   }
   showVersionModal:any = false
-  checkVersion(api_version:any)
+  checkVersion(api_version:any, recursiveStatus:any)
   {
     if(this.version === api_version)
     {
       sessionStorage.setItem("reloadCount","0")
-      console.log("latest version");
+      sessionStorage.setItem("recursive",recursiveStatus)
+    //  console.log("latest version");
       this.showVersionModal = false
+
     }else
     {
       this.showVersionModal = true
-      console.log("old version");
+     // console.log("old version");
       setTimeout(() => {
         this.reloadMultipleTimes()
      
@@ -239,7 +242,7 @@ if (this.step === 0) {
       this.reloadCount = Number(reloadCountCon)
       if (this.reloadCount < this.maxReloads) {
         this.reloadCount++;
-        console.log("retry - ",this.reloadCount)
+      //  console.log("retry - ",this.reloadCount)
         sessionStorage.setItem("reloadCount",String(this.reloadCount))
        // window.location.reload();
   

@@ -21,11 +21,14 @@ import { TimerService } from '../service/timer.service';
 export class CaptainPageComponent implements AfterViewInit {
   messages: string[] = [];
   Status: any = ""
+  loggedIn: any = false;
+  pageType: any = "cap";
   showSpinner: Boolean = false;
   showMenuOrderModal: Boolean = false;
   approvedShowSpinner: Boolean = false;
   count: any = 0;
   private sound: Howl;
+  employee_name:any='';
   ApprovalOrderList: SingleFileOrderDto[] = [];
   ApprovedOrderList: SingleFileOrderDto[] = [];
   orderItemsStatusList: any = [];
@@ -45,7 +48,7 @@ export class CaptainPageComponent implements AfterViewInit {
   items!: any[];
   timer$!: Observable<number>;
   ngOnInit() {
-   // this.getApprovedOrders();
+    // this.getApprovedOrders();
     console.log = (message: string) => {
       this.logs.push(message);
       // console.log(message); // Log to the browser console
@@ -66,6 +69,7 @@ export class CaptainPageComponent implements AfterViewInit {
 
 
     console.log("caption")
+    this.loginCap()
   }
 
   sendMessageToWebSocket(msg: any) {
@@ -137,8 +141,7 @@ export class CaptainPageComponent implements AfterViewInit {
 
   approveOrderBYpopup(msg: any) {
     if (typeof msg === "string") {
-      if(msg.includes("pickup"))
-      {
+      if (msg.includes("pickup")) {
 
       }
       if (msg.includes("approval") || msg.includes("kitchen")) {
@@ -260,7 +263,7 @@ export class CaptainPageComponent implements AfterViewInit {
     this.showSpinner = true;
     const folderPath = '/orders/approval_waiting_orders/'; // Replace with the desired folder path
     this.files = await this.dropboxService.getFilesInFolder(folderPath);
-    this.files.shift()
+    //this.files.shift()
     for (const file of this.files) {
       file.data = await this.dropboxService.getFileData(file.path_display);
       const respo = this.sharedService.parseNestedCsvToObject(file.data.fileBlob)
@@ -282,11 +285,11 @@ export class CaptainPageComponent implements AfterViewInit {
     this.showSpinner = true;
     const folderPath = '/orders/approval_waiting_orders/'; // Replace with the desired folder path
     this.updatedFiles = await this.dropboxService.getFilesInFolder(folderPath);
-    this.updatedFiles.shift()
+   // this.updatedFiles.shift()
     // added only newly added files
     const addedNewFiles = this.updatedFiles.filter(item1 => !this.files.some(item2 => item2["name"] === item1["name"]));
     const removeOldFiles = this.files.filter(item1 => !this.updatedFiles.some(item2 => item2["name"] === item1["name"]));
-   
+
     for (const file of addedNewFiles) {
       file.data = await this.dropboxService.getFileData(file.path_display);
       const respo = this.sharedService.parseNestedCsvToObject(file.data.fileBlob)
@@ -362,15 +365,15 @@ export class CaptainPageComponent implements AfterViewInit {
     let approvedDestinationPath = '/orders/approved_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv'
     let res: any = "";
 
-   // res = await this.dropboxService.copyFile(sourcePath, kitchenDestinationPath, "kitchen")
+    // res = await this.dropboxService.copyFile(sourcePath, kitchenDestinationPath, "kitchen")
     console.log('Move file response:', res);
-      res = await this.dropboxService.moveFile(sourcePath, approvedDestinationPath);
-      this.sendMessageToWebSocket('kitchen')
-      setTimeout(() => {
-        this.refreshOrder()
-      }, 1000); // 5 minutes in milliseconds
+    res = await this.dropboxService.moveFile(sourcePath, approvedDestinationPath);
+    this.sendMessageToWebSocket('kitchen')
+    setTimeout(() => {
+      this.refreshOrder()
+    }, 1000); // 5 minutes in milliseconds
 
-   
+
 
   }
 
@@ -436,7 +439,7 @@ export class CaptainPageComponent implements AfterViewInit {
     this.approvedShowSpinner = true;
     const folderPath = '/orders/approved_orders/'; // Replace with the desired folder path
     this.approvedFiles = await this.dropboxService.getFilesInFolder(folderPath);
-    this.approvedFiles.shift()
+  //  this.approvedFiles.shift()
     for (const file of this.approvedFiles) {
       file.data = await this.dropboxService.getFileData(file.path_display);
       const respo = this.sharedService.parseNestedCsvToObject(file.data.fileBlob)
@@ -460,7 +463,7 @@ export class CaptainPageComponent implements AfterViewInit {
     this.approvedShowSpinner = true;
     const folderPath = '/orders/approved_orders/'; // Replace with the desired folder path
     this.updatedApprovedOrderFiles = await this.dropboxService.getFilesInFolder(folderPath);
-    this.updatedApprovedOrderFiles.shift();
+   // this.updatedApprovedOrderFiles.shift();
     // added only newly added files
     const addedNewFiles = this.updatedApprovedOrderFiles.filter(item1 => !this.approvedFiles.some(item2 => item2["name"] === item1["name"]));
     const removeOldFiles = this.approvedFiles.filter(item1 => !this.updatedApprovedOrderFiles.some(item2 => item2["name"] === item1["name"]));
@@ -488,16 +491,14 @@ export class CaptainPageComponent implements AfterViewInit {
 
     const yourMap: Map<string, SingleFileOrderDto[]> = ApprovedOrderList.reduce((map: any, obj: SingleFileOrderDto) => {
       let key = '';
-      if(obj.order.table_place  != undefined)
-      {
-         key = obj.order.table_place + obj.order.table_no ;
+      if (obj.order.table_place != undefined) {
+        key = obj.order.table_place + obj.order.table_no;
       }
-   
-    else
-    {
-       key = obj.order.table_no ;
-    }
- 
+
+      else {
+        key = obj.order.table_no;
+      }
+
 
       // If the key doesn't exist in the map, initialize it with an empty array
       if (!map.has(key)) {
@@ -515,10 +516,10 @@ export class CaptainPageComponent implements AfterViewInit {
 
     console.log(yourMap);
   }
-  refreshOrderStatus()
-  {this.showSpinner = true
+  refreshOrderStatus() {
+    this.showSpinner = true
     this.getOrderItemStatus(this.ApprovedOrderList)
-   
+
   }
 
   refreshApprovedOrder() {
@@ -544,16 +545,16 @@ export class CaptainPageComponent implements AfterViewInit {
     data.forEach((field: any) => {
 
       let path = '/orders/approved_orders/' + 'order_' + field.order.id + '_order_ref_' + field.order.order_ref_id + '.csv'
-        // Check if the path already exists in filepaths array
-  if (!filepaths.includes(path)) {
-      filepaths.push(path);
-      orderData.push(field.order);
-      orderData[0].billNo = formattedDate;
-      id = id + "_" + field.order.id
-      field.orderItems.forEach((item: any) => {
-        orderItem.push(item)
-      })
-    }
+      // Check if the path already exists in filepaths array
+      if (!filepaths.includes(path)) {
+        filepaths.push(path);
+        orderData.push(field.order);
+        orderData[0].billNo = formattedDate;
+        id = id + "_" + field.order.id
+        field.orderItems.forEach((item: any) => {
+          orderItem.push(item)
+        })
+      }
     })
     const csvOrderTableDataCsv = this.objectsToCsv2(orderData);
     const orderItemTableDataListCsv = this.objectsToCsv2(orderItem);
@@ -688,27 +689,27 @@ export class CaptainPageComponent implements AfterViewInit {
 
   updateOrderStatuskot(orderId: any, Status: any) {
     this.showSpinner = true;
-  this.graphqlService.updateOrderStatus(orderId, Status).subscribe(
-    (result: any) => {
-      let orderItemResponse = result.data.update_kubera_order.returning[0];
-      this.orderItemsStatusList = this.orderItemsStatusList.map((order: any) => {
-        if (order.id === orderItemResponse.id) {
-          return { ...order, order_status: orderItemResponse.order_status };
-        } else {
-          return order;
-        }
-      });
-      this.showSpinner = false;
-      console.log(result.data); // This will contain the data you queried
-    },
-    (error: any) => {
-      this.showSpinner = false;
-      console.error('Error fetching data:', error);
-    }
-  );
+    this.graphqlService.updateOrderStatus(orderId, Status).subscribe(
+      (result: any) => {
+        let orderItemResponse = result.data.update_kubera_order.returning[0];
+        this.orderItemsStatusList = this.orderItemsStatusList.map((order: any) => {
+          if (order.id === orderItemResponse.id) {
+            return { ...order, order_status: orderItemResponse.order_status };
+          } else {
+            return order;
+          }
+        });
+        this.showSpinner = false;
+        console.log(result.data); // This will contain the data you queried
+      },
+      (error: any) => {
+        this.showSpinner = false;
+        console.error('Error fetching data:', error);
+      }
+    );
   }
 
-  pickupOrder(orderId: any, Status: any, table_no:any) {
+  pickupOrder(orderId: any, Status: any, table_no: any) {
 
     this.sendMessageToWebSocket("\n test");
   }
@@ -779,9 +780,8 @@ export class CaptainPageComponent implements AfterViewInit {
   updateOrderStatus(event: any, object: any) {
     if (event == 'kot') {
 
-      if(object.order_status == 'approval_waiting' )
-      {
-          this.updateOrderStatuskot(object.id, "Done")
+      if (object.order_status == 'approval_waiting') {
+        this.updateOrderStatuskot(object.id, "Done")
       }
 
     }
@@ -789,7 +789,7 @@ export class CaptainPageComponent implements AfterViewInit {
 
   tablePlace: string = '';
   showDropdown: boolean = false;
-  options: string[] = [ 'GI', 'GO', 'FO', 'FI', 'PG','PF','C'];
+  options: string[] = ['GI', 'GO', 'FO', 'FI', 'PG', 'PF', 'C'];
 
   toggleDropdown() {
     this.showDropdown = !this.showDropdown;
@@ -799,5 +799,46 @@ export class CaptainPageComponent implements AfterViewInit {
     this.tablePlace = option;
     this.showDropdown = false;
   }
+
+
+  handleLoginStatus(status: boolean) {
+    this.loggedIn = status;
+  }
+  loginCap() {
+    let localStorageData = localStorage.getItem("cap_user");
+
+    if (localStorageData) {
+      let user_details = JSON.parse(atob(localStorage.getItem('cap_user')!));
+      this.employee_name = user_details.user_name;
+      let is_user_Session_Expired: any = this.validateUserSession(user_details);
+      if (!is_user_Session_Expired) {
+        this.loggedIn = !is_user_Session_Expired;
+      } else {
+        this.loggedIn = false
+        localStorage.removeItem("cap_user");
+
+      }
+    } else {
+      this.loggedIn = false
+    }
+
+  }
+
+
+  validateUserSession(user_details: any) {
+
+    const givenDateObj = new Date(user_details.renew_date);
+
+    // Adjust for EST to IST time difference (9 hours and 30 minutes)
+    givenDateObj.setTime(givenDateObj.getTime() + (9 * 60 + 30) * 60 * 1000);
+
+    const currentDate = new Date();
+
+    const timeDiff = currentDate.getTime() - givenDateObj.getTime();
+    const hoursDiff = timeDiff / (1000 * 60 * 60);
+    let is_Exceeeded = hoursDiff >= user_details.expire_in;
+    return is_Exceeeded;
+  }
+
 
 }

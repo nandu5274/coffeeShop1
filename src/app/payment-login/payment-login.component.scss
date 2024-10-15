@@ -14,6 +14,14 @@
     border-radius: 5px;
     margin-bottom: 15px;
   }
+
+  .success-banner {
+    background-color: #13d334;
+    color: #070e07;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+  }
   .login {
     font-family: "Poppins", sans-serif !important;
   }
@@ -128,4 +136,61 @@
     cursor: pointer;
     font-size: 18px;
     color: #555;
+  }
+
+
+  .tabs {
+    padding: 0px 0px 0px 9px;
+    display: flex;
+    cursor: pointer;
+    overflow: hidden;
+    justify-content: center;
+  }
+  
+  .tab {
+    padding: 10px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+
+  }
+  .sticky-tabs {
+    padding: 0.5em 0em;
+    background: rgba(0, 0, 0, 0.85);
+    position: fixed;
+    top: 69.1px;
+    width: 100%;
+    z-index: 992;
+    transition: all 0.5s;
+  }
+  
+  .tab.active {
+    background-color: #d49b3b;
+    color: #000;
+  }
+  
+  .tab-content {
+    margin-top: 10px;
+    overflow: hidden;
+    transition: margin-left 0.3s;
+  }
+  
+  .tab-pane {
+    width: 100%;
+    float: left;
+  }
+  
+  .tab-btn {
+
+    border: 2px solid #cda45e;
+    color: #fff;
+    border-radius: 50px;
+    padding: 8px 25px;
+    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    transition: 0.3s;
+    text-align: center;
   }

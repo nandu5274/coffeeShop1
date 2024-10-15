@@ -108,7 +108,7 @@ export class KitchenPageComponent {
     this.showSpinner = true;
     const folderPath = '/orders/kitchen_orders/'; // Replace with the desired folder path
     this.files = await this.dropboxService.getFilesInFolder(folderPath);
-    this.files.shift()
+    //this.files.shift()
     for (const file of this.files) {
       file.data = await this.dropboxService.getFileData(file.path_display);
       const respo = this.sharedService.parseNestedCsvToObject(file.data.fileBlob)
@@ -131,7 +131,7 @@ export class KitchenPageComponent {
     this.showSpinner = true;
     const folderPath = '/orders/kitchen_orders/'; // Replace with the desired folder path
     this.updatedFiles = await this.dropboxService.getFilesInFolder(folderPath);
-    this.updatedFiles.shift()
+ //   this.updatedFiles.shift()
     // added only newly added files
     const addedNewFiles = this.updatedFiles.filter(item1 => !this.files.some(item2 => item2["name"] === item1["name"]));
     const removeOldFiles = this.files.filter(item1 => !this.updatedFiles.some(item2 => item2["name"] === item1["name"]));

@@ -67,7 +67,7 @@ export class AdminComponent {
    
     this.dataService.getKuberaAccountPaymentDetails().subscribe((response) => {
       // Handle the response here
-      console.log("response", response)
+    //  console.log("response", response)
     },
     (error) => {
       // Handle errors here
@@ -112,7 +112,7 @@ export class AdminComponent {
     this.dataService.getKuberaAccountPaymentDetails().subscribe((response) => {
       // Handle the response here
       this.rowData = response.data.kubera_Account_kubera_payments
-      console.log("response", response)
+    //  console.log("response", response)
       this.showSpinner = false;
     },
     (error) => {
@@ -136,11 +136,11 @@ export class AdminComponent {
   createPaymentDetails(data:any)
   {
     this.showSpinner = true;
-    console.log("data - ", data)
+  //  console.log("data - ", data)
     data.status = "PENDING"
     data.use_year = String( data.use_year );
     this.dataService.setKuberaAccountPaymentDetails(data).subscribe((response) => {
-      console.log("createPaymentDetails response", response)
+  //    console.log("createPaymentDetails response", response)
       this.showSpinner = false;
       this.onGridReady();
    
@@ -180,7 +180,21 @@ export class AdminComponent {
     this.gridApi.setFilterModel(null);
     this.gridApi.onFilterChanged();
   }
+  approveLogin()
+  {
+    this.showSpinner = true;
+    this.dataService.updateConfigByType("edit", "true").subscribe((response) => {
+      this.showSpinner = false;
+    })
+  }
 
+  revokeLogin()
+  {
+    this.showSpinner = true;
+    this.dataService.updateConfigByType("edit", "false").subscribe((response) => {
+      this.showSpinner = false;
+    })
+  }
 }
 
 

@@ -144,7 +144,11 @@ export class ItemsCartComponent implements OnInit {
     this.closeCartModal.emit(this.cartDataList.length);
   }
 
-
+  getEmployeeName()
+  {
+    let user_details = JSON.parse(atob(localStorage.getItem('cap_user')!));
+    return user_details.user_name;
+  }
 
   sentOrder() {
     let dataList:any = [];
@@ -152,6 +156,8 @@ export class ItemsCartComponent implements OnInit {
     let data = {
       data:dataList
     }
+    //getEmployeeName
+   let employee_Name =  this.getEmployeeName();
   
     let orderTableData = {
       order_status: 'approval_waiting',
@@ -161,7 +167,8 @@ export class ItemsCartComponent implements OnInit {
       order_summary_amount: this.orderAmount,
       order_additional_service_amount: this.additionAmount,
       order_total_amount: this.totalAmount,
-      order_items: data
+      order_items: data,
+      employee:employee_Name
     }
 
     let csvOrderTableData = {

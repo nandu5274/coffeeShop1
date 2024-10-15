@@ -6,6 +6,10 @@
   <div class="spinner"></div>
 </div>
 
+<div  *ngIf="!loggedIn" > <app-login [pageType]="pageType"  (loginStatus)="handleLoginStatus($event)"></app-login></div>
+
+<div  *ngIf="loggedIn" > 
+
 
 <section id="menu" class="menu section-bg" style="padding-top: 9em;">
   <div class="tabs"   [class.sticky-tabs]="isSticky">
@@ -19,7 +23,7 @@
       <div class="container" data-aos="fade-up">
 
         <div class="section-title" style="padding-top: 1em;">
-          <h2>Approval</h2>
+          <h2> 👦🏻 : {{employee_name}}</h2>
           <div  style="display: flex; flex-direction: row;" class="refresh">
             <p>Approve the orders</p>
             <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
@@ -111,7 +115,7 @@
       <div class="container" data-aos="fade-up">
 
         <div class="section-title" style="padding-top: 1em;">
-          <h2>Approved</h2>
+          <h2> 👦🏻 : {{employee_name}}</h2>
           <div  style="display: flex; flex-direction: row;" class="refresh">
             <p>Approved orders</p>
             <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
@@ -197,7 +201,7 @@
   </div>
   
     </section>
-
+</div>
 
 <div  *ngIf="showModal" class="modal">
   <div class="modal-content">
@@ -296,9 +300,11 @@
       <a>
         created  : {{order.created_at}}
        </a>
+
        <a>
         order no : {{order.id}}
       </a>
+
   </div>
  
   <div  style="    display: flex;
@@ -316,6 +322,13 @@
     <a style="      align-self: center; margin: 1px 10px;"  >
     Status : {{order.order_status}}
     </a>
+    <a style="border-radius: 25px;
+    padding: 0px 7px;
+    background: black;
+    align-content: center;
+    color: #ffffff;">
+      👨‍🏭: {{order.employee}}
+   </a>
     <div style="align-self: center;">
       <p style="
       margin: 0px;"> {{ order.created_at | timeAgo: timer$ }}</p>
