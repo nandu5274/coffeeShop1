@@ -1,6 +1,185 @@
 {
     "menu": [
 
+     
+      {
+        "course": {
+          "type": "Combos",
+          "typemoji": "🍽️",
+          "items": [
+            {
+              "id": 81101,
+              "name": "Veg Perfect Match",
+              "description": "fav testy dish",
+              "ingredients": "  Lorem, deren, trataro, filede, neradae",
+              "cost": 499,
+              "imagePath": "assets/img/menu/veg-combo.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png",
+              "desc": "Mojito, Spinach Corn Sandwich, Classic Panner Starter"
+            },
+            {
+              "id": 81103,
+              "name": "Veg Burger Bliss Bundle",
+              "description": "fav testy dish",
+              "ingredients": "  Lorem, deren, trataro, filede, neradae",
+              "cost": 499,
+              "imagePath": "assets/img/menu/veg-burger-combo.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png",
+              "desc": "Mojito, American Classic Burger, Spiced Corn Crunch"
+            },
+            {
+              "id": 81104,
+              "name": "Veg Pizza Pack",
+              "description": "fav testy dish",
+              "ingredients": "  Lorem, deren, trataro, filede, neradae",
+              "cost": 599,
+              "imagePath": "assets/img/menu/veg-pizza.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png",
+              "desc": "Mojito, Cheese & Crust Delight Pizza, Spiced Mushroom Tempters"
+            },
+            {
+              "id": 81105,
+              "name": "Veg Pasta Lovers Feast",
+              "description": "fav testy dish",
+              "ingredients": "  Lorem, deren, trataro, filede, neradae",
+              "cost": 599,
+              "imagePath": "assets/img/menu/veg_pasta_combo.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png",
+              "desc": "Mojito, veg classic pasta (customer choice) ,  Spiced Corn Crunch"
+            },
+            {
+              "id": 81109,
+              "name": "Veg Noodles & Toasted Garlic Magic",
+              "description": "fav testy dish",
+              "ingredients": "  Lorem, deren, trataro, filede, neradae",
+              "cost": 599,
+              "imagePath": "assets/img/menu/veg-hakka-combo.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png",
+              "desc": "Mojito, veg Hakka Noodles, cheese Garlic Bread"
+            },
+            
+            {
+              "id": 81111,
+              "name": "Flavors of veg India Combo",
+              "description": "fav testy dish",
+              "ingredients": "  Lorem, deren, trataro, filede, neradae",
+              "cost": 899,
+              "imagePath": "assets/img/menu/veg-biriyani-combo.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png",
+              "desc": "Veg Manchow Soup, Indian Veg starter, Shahi paneer biryani "
+            },
+            {
+              "id": 81102,
+              "name": "Non-veg Flavor Fusion",
+              "description": "fav testy dish",
+              "ingredients": "  Lorem, deren, trataro, filede, neradae",
+              "cost": 599,
+              "imagePath": "assets/img/menu/nonVegSandwichCombo.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png",
+              "desc": "Mojito, Chicken Royale sandwich, chef spl  chicken starter"
+            },
+            {
+              "id": 81106,
+              "name": "Non-veg Burger Bliss Bundle",
+              "description": "fav testy dish",
+              "ingredients": "  Lorem, deren, trataro, filede, neradae",
+              "cost": 599,
+              "imagePath": "assets/img/menu/nv-combo.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png",
+              "desc": "Mojito, Classic chicken Burger, chef spl chicken starter"
+            },
+            {
+              "id": 81107,
+              "name": "Non-veg Pizza Pack",
+              "description": "fav testy dish",
+              "ingredients": "  Lorem, deren, trataro, filede, neradae",
+              "cost": 699,
+              "imagePath": "assets/img/menu/non-veg-pizza.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png",
+              "desc": "Mojito, Chicken & Cheese Delight Pizza, chef spl chicken starter"
+            },
+            {
+              "id": 81108,
+              "name": "Non-veg Pasta Lovers Feast",
+              "description": "fav testy dish",
+              "ingredients": "  Lorem, deren, trataro, filede, neradae",
+              "cost": 699,
+              "imagePath": "assets/img/menu/pasta_non_combo.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png",
+              "desc": "Mojito, classic Chicken pasta (customer choice), chef spl chicken starter"
+            },
+            {
+              "id": 81110,
+              "name": "Non-Veg Noodles & Toasted Garlic Magic",
+              "description": "fav testy dish",
+              "ingredients": "  Lorem, deren, trataro, filede, neradae",
+              "cost": 699,
+              "imagePath": "assets/img/menu/non-veg-hakka.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png",
+              "desc": "Mojito, non-veg Hakka Noodles, cheese chicken Garlic Bread"
+            },
+            {
+              "id": 81112,
+              "name": "Flavors of Non-Veg India Combo",
+              "description": "fav testy dish",
+              "ingredients": "  Lorem, deren, trataro, filede, neradae",
+              "cost": 999,
+              "imagePath": "assets/img/menu/non-veg-chicken-biriyani.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png",
+              "desc": "Chicken Manchow Soup, Indian Non-Veg starter, Shahi Chicken biryani "
+            }
+          ]
+        }
+      },
+
       {
         "course": {
           "type": "BreakFast",
@@ -109,7 +288,7 @@
               "name": "Scrambled egg",
               "description": "fav testy dish",
               "ingredients": "  Lorem, deren, trataro, filede, neradae",
-              "cost": 250,
+              "cost": 150,
               "imagePath": "assets/img/menu/Scrambled-egg.jpg",
               "rating": 4,
               "available": "y",
@@ -149,10 +328,10 @@
             },
             {
               "id": 8820,
-              "name": "French breakfast",
+              "name": "French Toast",
               "description": "fav testy dish",
               "ingredients": "  Lorem, deren, trataro, filede, neradae",
-              "cost": 230,
+              "cost": 180,
               "imagePath": "assets/img/menu/Cinnamon-French-Toast.jpg",
               "rating": 4,
               "available": "y",
@@ -189,11 +368,6 @@
               "typePath": "assets/img/menu/non-veg.png",
               "desc": "Platter featuring with boiled Egg, plain omelet, sausages, pan cake, boiled veggies, cut fruit, Fresh juice, baked beans, Peach ice tea"
             }
-            
-            
-            
-            
-           
           ]
         }
       },
@@ -532,25 +706,11 @@
             },
             {
               "id": 19761,
-              "name": "Pista cookies",
+              "name": "Dark chocolate cookies",
               "description": "fav testy dish",
               "ingredients": "Lorem, deren, trataro, filede, nerada",
               "cost": 140,
-              "imagePath": "assets/img/menu/pistaCoo.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "NV",
-              "mustTry": false,
-              "typePath": ""
-             
-            },
-            {
-              "id": 19762,
-              "name": "Chocolate cookies",
-              "description": "fav testy dish",
-              "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 100,
-              "imagePath": "assets/img/menu/chocletcooki.jpg",
+              "imagePath": "assets/img/menu/chocochips.jpg",
               "rating": 4,
               "available": "y",
               "type": "NV",
@@ -558,6 +718,7 @@
               "typePath": ""
              
             }
+          
 
 
             
@@ -1305,6 +1466,19 @@
               "typePath": "assets/img/menu/veg.png"
             },
             {
+              "id": 111159,
+              "name": "Water Bottle Rhythm",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 29,
+              "imagePath": "assets/img/menu/rhythm.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png"
+            },
+            {
               "id": 15990,
               "name": "Water Bottle Bislari",
               "description": "fav testy dish",
@@ -1369,19 +1543,6 @@
               "mustTry": false,
               "typePath": "assets/img/menu/veg.png"
             },
-            {
-              "id": 150,
-              "name": "Pasta Salad",
-              "description": "fav testy dish",
-              "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 249,
-              "imagePath": "assets/img/menu/pasta_salad.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "NV",
-              "mustTry": false,
-              "typePath": "assets/img/menu/veg.png"
-            },
 
             {
               "id": 153,
@@ -1398,20 +1559,8 @@
             },
 
 
-            {
-              "id": 156,
-              "name": "Chicken Peanut Salad",
-              "description": "fav testy dish",
-              "ingredients": "Fresh spinach with mushrooms, hard boiled egg, and warm bacon vinaigrette",
-              "cost": 279,
-              "imagePath": "assets/img/menu/spinach-salad.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "veg",
-              "mustTry": false,
-              "typePath": "assets/img/menu/non-veg.png"
-            }
-            ,
+
+            
             {
               "id": 157,
               "name": "Chicken Grill Salad",
@@ -1585,11 +1734,687 @@
         }
       },
 
+      {
+        "course": {
+          "type": "Starters",
+          "typemoji": "🍱",
+          "items": [
+          
+            {
+              "id": 91,
+              "name": "Golden Loose corn",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 239,
+              "imagePath": "assets/img/menu/crispy-corn.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg.png",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png"
+            },
+            {
+              "id": 92,
+              "name": "Fried baby corn sticks",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 249,
+              "imagePath": "assets/img/menu/baby-corn.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg.png",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png"
+            },
+
+            
+            {
+              "id": 92,
+              "name": "Golden baby corn",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 249,
+              "imagePath": "assets/img/menu/baby-corn.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg.png",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png"
+            },
+                    
+            {
+              "id": 94,
+              "name": "Green spicy baby corn",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 289,
+              "imagePath": "assets/img/menu/Golden_fried_baby_corn.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg.png",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png"
+            },
+                              
+          {
+            "id": 93,
+            "name": "Sesame honey baby corn",
+            "description": "fav testy dish",
+            "ingredients": "Lorem, deren, trataro, filede, nerada",
+            "cost": 289,
+            "imagePath": "assets/img/menu/Golden_fried_baby_corn.jpg",
+            "rating": 4,
+            "available": "y",
+            "type": "veg.png",
+            "mustTry": true,
+            "typePath": "assets/img/menu/veg.png"
+          },
+
+
+            {
+              "id": 224,
+              "name": "Actu cheese mushroom",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 310,
+              "imagePath": "assets/img/menu/csm.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/veg.png"
+            },
+
+            
+            {
+              "id": 225,
+              "name": "Salt n pepper mushroom",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 299,
+              "imagePath": "assets/img/menu/spm.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png"
+            },
+
+            {
+              "id": 228,
+              "name": "Butter garlic mushroom",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 279,
+              "imagePath": "assets/img/menu/bgm.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/veg.png"
+            },
+
+            {
+              "id": 222,
+              "name": "Kung pao paneer",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 279,
+              "imagePath": "assets/img/menu/kup.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/veg.png"
+            },
+
+            {
+              "id": 17613,
+              "name": "Dragon Egg",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 289,
+              "imagePath": "assets/img/menu/gp.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            
+            
+            {
+              "id": 221,
+              "name": "Spider web paneer",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 309,
+              "imagePath": "assets/img/menu/tp.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/veg.png"
+            },
+
+            {
+              "id": 95,
+              "name": "Butter Garlic Panner",
+              "description": "A delicate crab cake served on a toasted roll with lettuce and tartar sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 299,
+              "imagePath": "assets/img/menu/Butter_Garlic_Panner.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/veg.png"
+            },
+            {
+              "id": 96,
+              "name": "Paneer crispy",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 299,
+              "imagePath": "assets/img/menu/Chilli_Paneer.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png"
+            },
+            {
+              "id": 97,
+              "name": "Green spicy paneer",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 289,
+              "imagePath": "assets/img/menu/Chilli_Paneer.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png"
+            },
+            {
+              "id": 98,
+              "name": "Paneer Singapore",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 310,
+              "imagePath": "assets/img/menu/Chilli_Paneer.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/veg.png"
+            },
+            {
+              "id": 221,
+              "name": "Sliced paneer",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 310,
+              "imagePath": "assets/img/menu/slc.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/veg.png"
+            },
+
+            {
+              "id": 203,
+              "name": "Butter garlic chicken",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 319,
+              "imagePath": "assets/img/menu/bgc.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            {
+              "id": 100,
+              "name": "Crispy red chicken",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 319,
+              "imagePath": "assets/img/menu/Crispy_chilli_chicken.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+                                          
+          {
+            "id": 93,
+            "name": "Sesame honey chicken",
+            "description": "fav testy dish",
+            "ingredients": "Lorem, deren, trataro, filede, nerada",
+            "cost": 319,
+            "imagePath": "assets/img/menu/Crispy_chilli_chicken.jpg",
+            "rating": 4,
+            "available": "y",
+            "type": "veg.png",
+            "mustTry": true,
+            "typePath": "assets/img/menu/veg.png"
+          },
+                        
+            {
+              "id": 102,
+              "name": "Mexican Chicken",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 319,
+              "imagePath": "assets/img/menu/chilli_chiken.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            {
+              "id": 101,
+              "name": "Chicken 65",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 329,
+              "imagePath": "assets/img/menu/chiekn-65.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            {
+              "id": 201,
+              "name": "Dragon chicken",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 339,
+              "imagePath": "assets/img/menu/dragon_chiekn.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            {
+              "id": 103,
+              "name": "Sour chicken",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 339,
+              "imagePath": "assets/img/menu/lemon-chiken.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+             
+            {
+              "id": 104,
+              "name": "Egg taused Chicken",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 339,
+              "imagePath": "assets/img/menu/chilli_chiken.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+
+            {
+              "id": 202,
+              "name": "Spider web chicken",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 369,
+              "imagePath": "assets/img/menu/thread.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },         
+            {
+              "id": 202,
+              "name": "Kaju chicken",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 369,
+              "imagePath": "assets/img/menu/kc.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },     
+               {
+              "id": 3221,
+              "name": "Sliced chicken",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 379,
+              "imagePath": "assets/img/menu/slc.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            {
+              "id": 5643221,
+              "name": "Italian chicken",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 399,
+              "imagePath": "assets/img/menu/ic.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },    
+            {
+              "id": 207,
+              "name": "Freedom prawns",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 369,
+              "imagePath": "assets/img/menu/loose.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+
+            {
+              "id": 204,
+              "name": "salt n pepper prawns",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 389,
+              "imagePath": "assets/img/menu/spp.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            {
+              "id": 205,
+              "name": "Hot cracker prawns",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 389,
+              "imagePath": "assets/img/menu/cp.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+                        
+            {
+              "id": 212,
+              "name": "Appollo fish",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 399,
+              "imagePath": "assets/img/menu/chf.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            {
+              "id": 209,
+              "name": "French fish kabab",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 399,
+              "imagePath": "assets/img/menu/fk.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+                        
+            {
+              "id": 211,
+              "name": "Singapore fish",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 399,
+              "imagePath": "assets/img/menu/sf.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+
+            {
+              "id": 208,
+              "name": "crunchy fish",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 399,
+              "imagePath": "assets/img/menu/cf.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+
+            {
+              "id": 210,
+              "name": "Burn garlic fish",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 399,
+              "imagePath": "assets/img/menu/bgf.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            {
+              "id": 230710,
+              "name": "Spinach prawns",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 399,
+              "imagePath": "assets/img/menu/sppra.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            {
+              "id": 89210,
+              "name": "Chicken wrapped prawns",
+              "description": "Crispy fried fish in roasted chilli sauce",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 419,
+              "imagePath": "assets/img/menu/chpraw.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+
+            {
+              "id": 77989,
+              "name": "Cocktail prawns",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 419,
+              "imagePath": "assets/img/menu/dprawn.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            {
+              "id": 87,
+              "name": "Jalapeno Balls",
+              "description": "A delicate crab cake served on a toasted roll with lettuce and tartar sauce",
+              "ingredients": "Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll",
+              "cost": 279,
+              "imagePath": "assets/img/menu/cheese-corn-nuggets.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png"
+            },
+            {
+              "id": 87,
+              "name": "veg nuggets",
+              "description": "A delicate crab cake served on a toasted roll with lettuce and tartar sauce",
+              "ingredients": "Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll",
+              "cost": 279,
+              "imagePath": "assets/img/menu/cheese-corn-nuggets.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png"
+            },
+
+            {
+              "id": 88,
+              "name": "Paneer popcorn",
+              "description": "fav testy dish",
+              "ingredients": "  Lorem, deren, trataro, filede, neradae",
+              "cost": 279,
+              "imagePath": "assets/img/menu/cheese-corn-nuggets.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png"
+            },
+
+            {
+              "id": 90,
+              "name": "Chicken popcorn",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, neradae",
+              "cost": 289,
+              "imagePath": "assets/img/menu/cheese-corn-nuggets.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            
+            {
+              "id": 91,
+              "name": "Chicken Nuggets",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, neradae",
+              "cost": 289,
+              "imagePath": "assets/img/menu/cheese-corn-nuggets.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            {
+              "id": 89,
+              "name": "Fish fingers",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, neradae",
+              "cost": 319,
+              "imagePath": "assets/img/menu/cheese-corn-nuggets.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            {
+              "id": 7759,
+              "name": "Fish and Chips",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 430,
+              "imagePath": "assets/img/menu/fishandchips.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            {
+              "id": 7769,
+              "name": "Grilled Fish with lemon butter Sauce",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 450,
+              "imagePath": "assets/img/menu/lemonFish.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            
+            {
+              "id": 7779,
+              "name": "Grilled Chicken with Black Pepper Sauce",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 430,
+              "imagePath": "assets/img/menu/grilled-chicken-with-pper-sause.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            
+            {
+              "id": 7789,
+              "name": "Grilled Chicken with Mushroom Sauce",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 430,
+              "imagePath": "assets/img/menu/mashr.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            }
+            
+          ]
+        }
+      },
 
 
       {
         "course": {
-          "type": "Starters",
+          "type": "IndoChineseStarters",
           "typemoji": "🍱",
           "items": [
           
@@ -2084,7 +2909,7 @@
             },
             {
               "id": 89210,
-              "name": "Chicken n prawns",
+              "name": "Chicken wrapped prawns",
               "description": "Crispy fried fish in roasted chilli sauce",
               "ingredients": "Lorem, deren, trataro, filede, nerada",
               "cost": 419,
@@ -2212,19 +3037,7 @@
               "mustTry": false,
               "typePath": "assets/img/menu/veg.png"
             },
-            {
-              "id": 88,
-              "name": "Spinach Corn Poppers",
-              "description": "fav testy dish",
-              "ingredients": "  Lorem, deren, trataro, filede, neradae",
-              "cost": 289,
-              "imagePath": "assets/img/menu/cheese-corn-nuggets.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "veg",
-              "mustTry": false,
-              "typePath": "assets/img/menu/veg.png"
-            },
+
             {
               "id": 88,
               "name": "Paneer popcorn",
@@ -2288,6 +3101,19 @@
           "type": "Breads",
           "typemoji": "🥖",
           "items": [
+            {
+              "id": 161,
+              "name": "Authentic Garlic Bread",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 169,
+              "imagePath": "assets/img/menu/garlic-bread.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "assets/img/menu/veg.png"
+            },
 
             {
               "id": 160,
@@ -2302,19 +3128,7 @@
               "mustTry": false,
               "typePath": "assets/img/menu/veg.png"
             },
-            {
-              "id": 161,
-              "name": "Authentic Garlic Bread",
-              "description": "fav testy dish",
-              "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 249,
-              "imagePath": "assets/img/menu/garlic-bread.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "NV",
-              "mustTry": true,
-              "typePath": "assets/img/menu/veg.png"
-            },
+
             {
               "id": 162,
               "name": "Chilly corn garlic bread",
@@ -2355,12 +3169,26 @@
               "name": "Coleslaw sandwich",
               "description": "fav testy dish",
               "ingredients": "Grilled chicken with provolone, artichoke hearts, and roasted red pesto",
-              "cost": 269,
+              "cost": 239,
               "imagePath": "assets/img/menu/Coleslaw.jpg",
               "rating": 4,
               "available": "y",
               "type": "NV",
               "mustTry": true,
+              "typePath": "assets/img/menu/veg.png"
+            },
+                         
+            {
+              "id": 79,
+              "name": "Mumbai style veg sandwich",
+              "description": "fav testy dish",
+              "ingredients": "  Lorem, deren, trataro, filede, neradae",
+              "cost": 249,
+              "imagePath": "assets/img/menu/mumbai-style.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
               "typePath": "assets/img/menu/veg.png"
             },
             {
@@ -2376,26 +3204,13 @@
               "mustTry": false,
               "typePath": "assets/img/menu/veg.png"
             },
-             
-            {
-              "id": 79,
-              "name": "Mumbai style veg sandwich",
-              "description": "fav testy dish",
-              "ingredients": "  Lorem, deren, trataro, filede, neradae",
-              "cost": 289,
-              "imagePath": "assets/img/menu/mumbai-style.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "veg",
-              "mustTry": false,
-              "typePath": "assets/img/menu/veg.png"
-            },
+
             {
               "id": 80,
               "name": "Paneer grill sandwich ",
               "description": "A delicate crab cake served on a toasted roll with lettuce and tartar sauce",
               "ingredients": "Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll",
-              "cost": 289,
+              "cost": 269,
               "imagePath": "assets/img/menu/panner.jpg",
               "rating": 4,
               "available": "y",
@@ -2403,28 +3218,14 @@
               "mustTry": false,
               "typePath": "assets/img/menu/veg.png"
             },
-           
-            {
-              "id": 78,
-              "name": "Non-veg club grill sandwich",
-              "description": "A delicate crab cake served on a toasted roll with lettuce and tartar sauce",
-              "ingredients": "Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll",
-              "cost": 289,
-              "imagePath": "assets/img/menu/veg-grill.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "NV",
-              "mustTry": true,
-              "typePath": "assets/img/menu/non-veg.png"
-            },
-             
+                        
            
             {
               "id": 81,
               "name": "Chicken grill sandwich",
               "description": "fav testy dish",
               "ingredients": "  Lorem, deren, trataro, filede, neradae",
-              "cost": 299,
+              "cost": 279,
               "imagePath": "assets/img/menu/chiken-grill.jpg",
               "rating": 4,
               "available": "y",
@@ -2433,34 +3234,20 @@
               "typePath": "assets/img/menu/non-veg.png"
             },
              
-           
             {
-              "id": 1681,
-              "name": "Tuna sandwich",
-              "description": "fav testy dish",
-              "ingredients": "  Lorem, deren, trataro, filede, neradae",
-              "cost": 310,
-              "imagePath": "assets/img/menu/ts.jpg",
+              "id": 78,
+              "name": "Non-veg club grill sandwich",
+              "description": "A delicate crab cake served on a toasted roll with lettuce and tartar sauce",
+              "ingredients": "Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll",
+              "cost": 299,
+              "imagePath": "assets/img/menu/veg-grill.jpg",
               "rating": 4,
               "available": "y",
-              "type": "veg",
+              "type": "NV",
               "mustTry": true,
               "typePath": "assets/img/menu/non-veg.png"
-            },
-            {
-              "id": 37709,
-              "name": "Avocado grilled cheese sandwich",
-              "description": "fav testy dish",
-              "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 399,
-              "imagePath": "assets/img/menu/avacdosandwich.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "V",
-              "mustTry": false,
-              "typePath": "assets/img/menu/veg.png"
             }
-            
+
             
           ]
         }
@@ -2601,19 +3388,7 @@
               "mustTry": true,
               "typePath": "assets/img/menu/veg.png"
             },
-            {
-              "id": 1658,
-              "name": "Olive broccoli pizza - Medium",
-              "description": "fav testy dish",
-              "ingredients": "Grilled chicken with provolone, artichoke hearts, and roasted red pesto",
-              "cost": 339,
-              "imagePath": "assets/img/menu/obp.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "NV",
-              "mustTry": true,
-              "typePath": "assets/img/menu/veg.png"
-            },
+
             {
               "id": 54,
               "name": "Classic margherita pizza - Medium",
@@ -2695,21 +3470,19 @@
               "mustTry": true,
               "typePath": "assets/img/menu/veg.png"
             },
-
             {
               "id": 1658,
-              "name": "Four cheese pizza - Medium",
+              "name": "Olive broccoli pizza - Medium",
               "description": "fav testy dish",
               "ingredients": "Grilled chicken with provolone, artichoke hearts, and roasted red pesto",
               "cost": 399,
-              "imagePath": "assets/img/menu/4c.jpg",
+              "imagePath": "assets/img/menu/obp.jpg",
               "rating": 4,
               "available": "y",
               "type": "NV",
               "mustTry": true,
               "typePath": "assets/img/menu/veg.png"
             },
-
             {
               "id": 64,
               "name": "BBQ chicken pizza - Medium",
@@ -2936,6 +3709,20 @@
               "mustTry": false,
               "typePath": "assets/img/menu/non-veg.png"
             },
+            {
+              "id": 81436303,
+              "name": "broccoli white sauce",
+              "description": "fav testy dish",
+              "ingredients": "  Lorem, deren, trataro, filede, neradae",
+              "cost": 399,
+              "imagePath": "assets/img/menu/cws.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "veg",
+              "mustTry": false,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            
             
             {
               "id": 76,
@@ -3055,6 +3842,275 @@
               "mustTry": true,
               "typePath": "assets/img/menu/non-veg.png"
             }
+            
+          ]
+        }
+      },
+      {
+        "course": {
+          "type": "MainCourse",
+          "typemoji": "🍛",
+          "items": [{
+            "id": 121,
+            "name": "Veg f-up rice",
+            "description": "fav testy dish",
+            "ingredients": "Grilled chicken with provolone, artichoke hearts, and roasted red pesto",
+            "cost": 279,
+            "imagePath": "assets/img/menu/veg_fr.jpg",
+            "rating": 4,
+            "available": "y",
+            "type": "NV",
+            "mustTry": false,
+            "typePath": "assets/img/menu/veg.png"
+          },
+          {
+            "id": 1214,
+            "name": "Schezwan veg f-up rice",
+            "description": "fav testy dish",
+            "ingredients": "Grilled chicken with provolone, artichoke hearts, and roasted red pesto",
+            "cost": 299,
+            "imagePath": "assets/img/menu/veg_sfr.jpg",
+            "rating": 4,
+            "available": "y",
+            "type": "NV",
+            "mustTry": false,
+            "typePath": "assets/img/menu/veg.png"
+          },
+          {
+            "id": 122,
+            "name": "Egg f-up rice",
+            "description": "A delicate crab cake served on a toasted roll with lettuce and tartar sauce",
+            "ingredients": "Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll",
+            "cost": 289,
+            "imagePath": "assets/img/menu/egg-fr.jpg",
+            "rating": 4,
+            "available": "y",
+            "type": "NV",
+            "mustTry": false,
+            "typePath": "assets/img/menu/non-veg.png"
+          },
+
+        
+          { "id": 1124,
+          "name": "Schezwan egg f-up rice",
+          "description": "fav testy dish",
+          "ingredients": "Grilled chicken with provolone, artichoke hearts, and roasted red pesto",
+          "cost": 319,
+          "imagePath": "assets/img/menu/cfr.jpg",
+          "rating": 4,
+          "available": "y",
+          "type": "NV",
+          "mustTry": true,
+          "typePath": "assets/img/menu/non-veg.png"
+          },
+        
+          { "id": 123,
+          "name": "Chicken f-up rice",
+          "description": "fav testy dish",
+          "ingredients": "Grilled chicken with provolone, artichoke hearts, and roasted red pesto",
+          "cost": 349,
+          "imagePath": "assets/img/menu/cfr.jpg",
+          "rating": 4,
+          "available": "y",
+          "type": "NV",
+          "mustTry": false,
+          "typePath": "assets/img/menu/non-veg.png"
+          },
+      
+          { "id": 1125,
+          "name": "Schezwan Chicken f-up rice",
+          "description": "fav testy dish",
+          "ingredients": "Grilled chicken with provolone, artichoke hearts, and roasted red pesto",
+          "cost": 369,
+          "imagePath": "assets/img/menu/cfr.jpg",
+          "rating": 4,
+          "available": "y",
+          "type": "NV",
+          "mustTry": true,
+          "typePath": "assets/img/menu/non-veg.png"
+          },
+          { "id": 1126,
+          "name": "Prawns f-up rice",
+          "description": "fav testy dish",
+          "ingredients": "Grilled chicken with provolone, artichoke hearts, and roasted red pesto",
+          "cost": 410,
+          "imagePath": "assets/img/menu/pfr.jpg",
+          "rating": 4,
+          "available": "y",
+          "type": "NV",
+          "mustTry": true,
+          "typePath": "assets/img/menu/non-veg.png"
+          },
+        
+          {
+            "id": 3121,
+            "name": "Shahi paneer biryani",
+            "description": "fav testy dish",
+            "ingredients": "Grilled chicken with provolone, artichoke hearts, and roasted red pesto",
+            "cost": 435,
+            "imagePath": "assets/img/menu/span.jpg",
+            "rating": 4,
+            "available": "y",
+            "type": "NV",
+            "mustTry": true,
+            "typePath": "assets/img/menu/veg.png"
+          },
+                    
+          {
+            "id": 17612,
+            "name": "Shahi egg biryani",
+            "description": "fav testy dish",
+            "ingredients": "Grilled chicken with provolone, artichoke hearts, and roasted red pesto",
+            "cost": 430,
+            "imagePath": "assets/img/menu/segg.jpg",
+            "rating": 4,
+            "available": "y",
+            "type": "NV",
+            "mustTry": true,
+            "typePath": "assets/img/menu/non-veg.png"
+          },
+          {
+            "id": 3122,
+            "name": "Chicken fry biryani",
+            "description": "A delicate crab cake served on a toasted roll with lettuce and tartar sauce",
+            "ingredients": "Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll",
+            "cost": 499,
+            "imagePath": "assets/img/menu/sashi-prawn.jpg",
+            "rating": 4,
+            "available": "y",
+            "type": "NV",
+            "mustTry": false,
+            "typePath": "assets/img/menu/non-veg.png"
+          },
+               
+          { "id": 3123,
+          "name": "Shahi chicken biryani",
+          "description": "fav testy dish",
+          "ingredients": "Grilled chicken with provolone, artichoke hearts, and roasted red pesto",
+          "cost": 482,
+          "imagePath": "assets/img/menu/sashi-chiken.jpg",
+          "rating": 4,
+          "available": "y",
+          "type": "NV",
+          "mustTry": true,
+          "typePath": "assets/img/menu/non-veg.png"
+          },
+          
+        
+          {
+            "id": 3124,
+            "name": "Mutton fry biryani",
+            "description": "A delicate crab cake served on a toasted roll with lettuce and tartar sauce",
+            "ingredients": "Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll",
+            "cost": 630,
+            "imagePath": "assets/img/menu/sashi-mutton.jpg",
+            "rating": 4,
+            "available": "y",
+            "type": "NV",
+            "mustTry": false,
+            "typePath": "assets/img/menu/non-veg.png"
+          },
+    
+          {
+            "id": 3125,
+            "name": "Shahi gosht mutton biryani",
+            "description": "A delicate crab cake served on a toasted roll with lettuce and tartar sauce",
+            "ingredients": "Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll",
+            "cost": 692,
+            "imagePath": "assets/img/menu/sashi-mutton.jpg",
+            "rating": 4,
+            "available": "y",
+            "type": "NV",
+            "mustTry": true,
+            "typePath": "assets/img/menu/non-veg.png"
+          },
+        
+          {
+            "id": 3126,
+            "name": "Shahi prawn biryani",
+            "description": "A delicate crab cake served on a toasted roll with lettuce and tartar sauce",
+            "ingredients": "Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll",
+            "cost": 692,
+            "imagePath": "assets/img/menu/sashi-prawn.jpg",
+            "rating": 4,
+            "available": "y",
+            "type": "NV",
+            "mustTry": false,
+            "typePath": "assets/img/menu/non-veg.png"
+          },
+       
+
+            {
+              "id": 24931,
+              "name": "Mushroom Stroganoff Rice Bowl",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 399,
+              "imagePath": "assets/img/menu/msrc.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "assets/img/menu/veg.png"
+            },
+             
+            {
+              "id": 24934,
+              "name": "cottage cheese Rice Bowl",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 449,
+              "imagePath": "assets/img/menu/crb.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "assets/img/menu/veg.png"
+            },
+            
+            {
+              "id": 24932,
+              "name": "Chicken Stroganoff Rice Bowl",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 399,
+              "imagePath": "assets/img/menu/csrc.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+
+            {
+              "id": 24933,
+              "name": "Harissa Grilled Chicken Rice Bowl",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 449,
+              "imagePath": "assets/img/menu/gcrb.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            
+ 
+            {
+              "id": 24935,
+              "name": "Pesto grilled fish Rice Bowl",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 499,
+              "imagePath": "assets/img/menu/pfrb.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            }
+            
             
           ]
         }
@@ -3186,6 +4242,33 @@
               "typePath": "assets/img/menu/veg.png"
             },
             {
+              "id": 1,
+              "name": "Peri peri burrito veg roll",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 329,
+              "imagePath": "assets/img/menu/vegroll.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "V",
+              "mustTry": true,
+              "typePath": "assets/img/menu/veg.png"
+            },
+            {
+              "id": 1,
+              "name": "Peri peri paneer burrito veg roll",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 349,
+              "imagePath": "assets/img/menu/vegroll.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "V",
+              "mustTry": true,
+              "typePath": "assets/img/menu/veg.png"
+            },
+
+            {
               "id": 1649,
               "name": "Chicken Bruschetta",
               "description": "fav testy dish",
@@ -3205,6 +4288,19 @@
               "ingredients": "Grilled chicken with provolone, artichoke hearts, and roasted red pesto",
               "cost": 349,
               "imagePath": "assets/img/menu/cb.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "assets/img/menu/non-veg.png"
+            },
+            {
+              "id": 9,
+              "name": "Peri peri burrito chicken roll",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 349,
+              "imagePath": "assets/img/menu/chickenRoll.jpg",
               "rating": 4,
               "available": "y",
               "type": "NV",
@@ -3285,7 +4381,20 @@
               "type": "NV",
               "mustTry": false,
               "typePath": "assets/img/menu/veg.png"
-            },          
+            },   
+            {
+              "id": 117,
+              "name": "Egg noodles",
+              "description": "A delicate crab cake served on a toasted roll with lettuce and tartar sauce",
+              "ingredients": "Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll",
+              "cost": 269,
+              "imagePath": "assets/img/menu/eggn.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png"
+            },              
               {
               "id": 56113,
               "name": "Chicken hakka Noodles",
@@ -3380,6 +4489,19 @@
               "ingredients": "Grilled chicken with provolone, artichoke hearts, and roasted red pesto",
               "cost": 299,
               "imagePath": "assets/img/menu/veg_sfr.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": false,
+              "typePath": "assets/img/menu/veg.png"
+            },
+            {
+              "id": 1214,
+              "name": "kaju veg f-up rice",
+              "description": "fav testy dish",
+              "ingredients": "Grilled chicken with provolone, artichoke hearts, and roasted red pesto",
+              "cost": 299,
+              "imagePath": "assets/img/menu/veg_frveg_fr.jpg",
               "rating": 4,
               "available": "y",
               "type": "NV",
@@ -3560,6 +4682,62 @@
           "typemoji": "🧁",
           "items": [
             {
+              "id": 19760,
+              "name": "Choco chip cookies",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 120,
+              "imagePath": "assets/img/menu/chocochips.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": false,
+              "typePath": ""
+            },
+            {
+              "id": 19761,
+              "name": "Oatmeal cookies",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 140,
+              "imagePath": "assets/img/menu/chocochips.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": false,
+              "typePath": ""
+             
+            },
+          
+
+
+            {
+              "id":600869,
+              "name": "Sugar Donut",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 109,
+              "imagePath": "assets/img/menu/sugdon.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": ""
+            },
+            {
+              "id":600871,
+              "name": "Caramel Donut",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 109,
+              "imagePath": "assets/img/menu/sugdon.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": ""
+            },
+            {
               "id":600867,
               "name": "Apricot Delight",
               "description": "fav testy dish",
@@ -3573,12 +4751,12 @@
               "typePath": ""
             },
             {
-              "id":600869,
-              "name": "Blueberry Delight",
+              "id":600879,
+              "name": "Almond Mawa cake",
               "description": "fav testy dish",
               "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 139,
-              "imagePath": "assets/img/menu/apricot.jpg",
+              "cost": 99,
+              "imagePath": "assets/img/menu/almawa.jpg",
               "rating": 4,
               "available": "y",
               "type": "NV",
@@ -3586,19 +4764,18 @@
               "typePath": ""
             },
             {
-              "id": 230767,
-              "name": "Cake Slice",
+              "id":600878,
+              "name": "Croissant",
               "description": "fav testy dish",
               "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 120,
-              "imagePath": "assets/img/menu/cakeslice.jpg",
+              "cost": 169,
+              "imagePath": "assets/img/menu/mcros.jpg",
               "rating": 4,
               "available": "y",
               "type": "NV",
               "mustTry": true,
               "typePath": ""
             },
-
             {
               "id": 173,
               "name": "Vanilla ice cream",
@@ -3656,22 +4833,8 @@
               
             },
             {
-              "id": 19744,
-              "name": "Biscof brownie",
-              "description": "fav testy dish",
-              "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 160,
-              "imagePath": "assets/img/menu/lobb.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "NV",
-              "mustTry": false,
-              "typePath": ""
-              
-            },
-            {
               "id": 19745,
-              "name": "Choco ship brownie",
+              "name": "Choco chip brownie",
               "description": "fav testy dish",
               "ingredients": "Lorem, deren, trataro, filede, nerada",
               "cost": 150,
@@ -3680,11 +4843,8 @@
               "available": "y",
               "type": "NV",
               "mustTry": true,
-              "typePath": ""
-              
+              "typePath": ""   
             },
-           
-
             {
               "id": 19748,
               "name": "walnut brownie",
@@ -3699,6 +4859,7 @@
              "typePath": ""
               
             },
+      
             {
               "id": 19749,
               "name": "Chocate brownie",
@@ -3713,27 +4874,14 @@
               "typePath": ""
               
             },
+         
             {
-              "id": 22751,
-              "name": "Biscoff cupcakes",
+              "id": 600872,
+              "name": "Tiramasu",
               "description": "fav testy dish",
               "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 130,
-              "imagePath": "assets/img/menu/biscofcup.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "NV",
-              "mustTry": true,
-             "typePath": ""
-              
-            },
-            {
-              "id": 19750,
-              "name": "Dream Cake",
-              "description": "fav testy dish",
-              "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 299,
-              "imagePath": "assets/img/menu/dremcak.jpg",
+              "cost": 229,
+              "imagePath": "assets/img/menu/termasu.jpg",
               "rating": 4,
               "available": "y",
               "type": "NV",
@@ -3742,24 +4890,10 @@
               
             },
 
-            {
-              "id": 19751,
-              "name": "Caramel jar cake",
-              "description": "fav testy dish",
-              "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 220,
-              "imagePath": "assets/img/menu/cjar.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "NV",
-              "mustTry": true,
-             "typePath": ""
-              
-            },
 
             {
               "id": 19752,
-              "name": "Choclate trufle jar cake",
+              "name": "Choco fudge brownie Jar cake",
               "description": "fav testy dish",
               "ingredients": "Lorem, deren, trataro, filede, nerada",
               "cost": 250,
@@ -3772,20 +4906,6 @@
               
             },
 
-            {
-              "id": 19753,
-              "name": "Biscoff jar cake",
-              "description": "fav testy dish",
-              "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 260,
-              "imagePath": "assets/img/menu/Biscoff.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "NV",
-              "mustTry": true,
-              "typePath": ""
-              
-            },
 
 
             {
@@ -3803,47 +4923,6 @@
               
             },
 
-            {
-              "id": 19755,
-              "name": "Cheese cake mousse jar",
-              "description": "fav testy dish",
-              "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 200,
-              "imagePath": "assets/img/menu/cheesecacke.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "NV",
-              "mustTry": true,
-              "typePath": ""
-              
-            },
-            {
-              "id": 22756,
-              "name": "Red velvet jars",
-              "description": "fav testy dish",
-              "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 200,
-              "imagePath": "assets/img/menu/cheesecacke.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "NV",
-              "mustTry": true,
-              "typePath": ""
-              
-            },
-            {
-              "id": 19084,
-              "name": "Loaf cake",
-              "description": "fav testy dish",
-              "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 250,
-              "imagePath": "assets/img/menu/loaf.jpg",
-              "rating": 4,
-              "available": "y",
-              "type": "NV",
-              "mustTry": false,
-              "typePath": ""
-            },
 
             {
               "id": 164,
@@ -3870,49 +4949,94 @@
               "type": "NV",
               "mustTry": true,
               "typePath": ""
-            },
+            }
+            
+          ]
+        }
+      },
+      {
+        "course": {
+          "type": "Loyalty",
+          "typemoji": "🧧",
+          "items": [
+
             {
-              "id": 30765,
-              "name": "Blue berry cake",
+              "id":814311,
+              "name": "Cappuccino",
               "description": "fav testy dish",
               "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 1000,
-              "imagePath": "assets/img/menu/blueberry.jpg",
+              "cost": 0,
+              "Reward":"130pt",
+              "imagePath": "assets/img/menu/cappuccino.jpg",
               "rating": 4,
               "available": "y",
               "type": "NV",
               "mustTry": true,
-              "typePath": ""
+              "typePath": "",
+              "isReward": true
             },
             {
-              "id": 19741,
-              "name": "Lotus Biscoff cake",
+              "id":814312,
+              "name": "Mocktail",
               "description": "fav testy dish",
               "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 1200,
-              "imagePath": "assets/img/menu/lcc.jpg",
+              "cost": 0,
+              "Reward":"250pt",
+              "imagePath": "assets/img/menu/mint-mojito.jpg",
               "rating": 4,
               "available": "y",
               "type": "NV",
-              "mustTry": false,
-              "typePath": ""
-              
-          
+              "mustTry": true,
+              "typePath": "",
+              "isReward": true
             },
             {
-              "id": 19742,
-              "name": "Truffle cake",
+              "id":814313,
+              "name": "Mocktail",
               "description": "fav testy dish",
               "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 1200,
-              "imagePath": "assets/img/menu/tcc.jpg",
+              "cost": 0,
+              "Reward":"350pt",
+              "imagePath": "assets/img/menu/mint-mojito.jpg",
               "rating": 4,
               "available": "y",
               "type": "NV",
-              "mustTry": false,
-              "typePath": ""
-              
-            }   
+              "mustTry": true,
+              "typePath": "",
+              "isReward": true
+            },
+            {
+              "id":814314,
+              "name": "Pizza",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 0,
+              "Reward":"350pt",
+              "imagePath": "assets/img/menu/veg-Delight-pizza.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "",
+              "isReward": true
+            },
+            {
+              "id":814314,
+              "name": "Burger",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 0,
+              "Reward":"350pt",
+              "imagePath": "assets/img/menu/veg-Delight-pizza.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "mustTry": true,
+              "typePath": "",
+              "isReward": true
+            }
+            
+            
           ]
         }
       },
@@ -3936,12 +5060,13 @@
               "typePath": "assets/img/menu/veg.png"
             },
 
+
             {
               "id": 8028,
               "name": "Loaded fries with chicken",
               "description": "loaded fries featuring juicy chicken and gooey melted cheese",
               "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 389,
+              "cost": 349,
               "imagePath": "assets/img/menu/loadedfries.jpg",
               "rating": 4,
               "available": "y",
@@ -4036,7 +5161,7 @@
               "name": "Peri peri burrito chicken roll",
               "description": "fav testy dish",
               "ingredients": "Lorem, deren, trataro, filede, nerada",
-              "cost": 329,
+              "cost": 349,
               "imagePath": "assets/img/menu/chickenRoll.jpg",
               "rating": 4,
               "available": "y",
@@ -4070,6 +5195,42 @@
         "course": {
           "type": "Add-ons",
           "items": [
+            {
+              "id": 111916,
+              "name": "Offer Coffee",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 99,
+              "imagePath": "assets/img/menu/cappuccino.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "typePath": "assets/img/menu/veg.png"
+            },
+            {
+              "id": 111917,
+              "name": "Offer Green Tea",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 99,
+              "imagePath": "assets/img/menu/green_tea.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "typePath": "assets/img/menu/veg.png"
+            },
+            {
+              "id": 111918,
+              "name": "Offer Lime soda",
+              "description": "fav testy dish",
+              "ingredients": "Lorem, deren, trataro, filede, nerada",
+              "cost": 99,
+              "imagePath": "assets/img/menu/mint-mojito.jpg",
+              "rating": 4,
+              "available": "y",
+              "type": "NV",
+              "typePath": "assets/img/menu/veg.png"
+            },
             {
               "id": 166,
               "name": "Cheese",

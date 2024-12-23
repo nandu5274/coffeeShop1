@@ -1,0 +1,45 @@
+
+<section id="menu" class="menu section-bg" style="padding-top: 9em; color: #cda45e;">
+  
+    <div class="card-name">
+        <h3>Membership Card </h3>
+      </div>
+  
+
+<div class="m-card" 
+(mousemove)="onMouseMove($event)" 
+       (mouseleave)="onMouseLeave()" 
+       (click)="onClick()"
+       (touchmove)="onTouchMove($event)" 
+       (touchstart)="onTouchStart($event)"
+       (touchend)="onTouchEnd()">
+<div class="card-inner" [style.transform]="rotationStyle">
+<div class="card-front">
+ <img src="assets/img/memship/card/1.png" alt="Card Front">
+</div>
+<div class="card-back">
+ <img src="assets/img/memship/card/2.png" alt="Card Back">
+</div>
+</div>
+</div>
+
+<div style="    margin: 1em;">
+    <div class="card-benefits-heading">
+        <h4>Elite Benefits</h4>
+    </div>
+    <div class="card-benefits">
+        <ul class="benefits-list">
+            <li class="benefit-item"> 100 Loyalty Points awarded upon membership purchase.</li>
+            <li class="benefit-item"> 10% Discount on all Cafe Kubera bills, redeemable with loyalty points.</li>
+            <li class="benefit-item"> Complimentary Dish for candlelight dinners at Cafe Kubera.</li>
+            <li class="benefit-item"> 10% Discount on SNAP Gym annual memberships.</li>
+            <li class="benefit-item"> ₹500 Instant Discount on Duty-Free purchases for every ₹3500 spent.</li>
+            <li class="benefit-item"> 10% Discount on Adventura Rides.</li>
+        
+        </ul>
+    </div>
+</div>
+
+<div>co-partners3</div>
+</section>
+

@@ -1,0 +1,72 @@
+<div *ngIf="showSpinner" class="spinner-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <div *ngIf="pageType == 'cap' ">
+    <section id="menu" class="menu section-bg" style="    padding: 1em; border-radius: 42px;" >
+      <div class="tab-content">
+        
+        <h1>Member Ship Portal</h1>
+  
+        <div *ngIf="selectedTab === 'sign_in'">
+  
+  
+          <div class="login-container">
+            <div *ngIf="otpSentBanner" class="success-banner">
+              Otp Sent to Email
+            </div>
+            <div *ngIf="memberShipOtpSuccessBanner" class="success-banner">
+              MemberShip Activated
+            </div>
+            <div *ngIf="loginShowErrorBanner" class="error-banner">
+              Invalid username or password. Please try again.
+            </div>
+            <div *ngIf="loginSessionExpiredBanner" class="error-banner">
+              Session expired Please renew your session.
+            </div>
+            <div *ngIf="invalidOtpBanner" class="error-banner">
+              Invalid otp. Please try again.
+            </div>
+            <div *ngIf="errorOccurredBanner" class="error-banner">
+              error occurred. Membership might present. Try again with other details.
+            </div>
+            <form>
+              <div class="form-group ">
+                <label for="sign_in_username">Mobile Number:</label>
+                <input type="text" id="sign_in_username" name="sign_in_username" class="username"
+                  [(ngModel)]="sign_in_username" required>
+              </div>
+            
+  
+              <button type="button" class="login-btn" (click)="CheckPoints()">Check</button>
+            </form>
+             <div *ngIf="isProfileFound" style="margin: 1em;">
+              <form>
+                <label for="validity_month">Validity Month:</label>
+                <select id="validity_month" name="validity_month" class="username" [(ngModel)]="validity_month" required>
+                  <option value="6">6 Months</option>
+                  <option value="1">12 Month</option>
+                </select>
+                <div >
+                <button type="button" class="login-btn" style="margin-top: 1em; margin-bottom: 1em;" (click)="sendOtpForMembership()">otp</button>
+                   
+                <label for="sign_in_username">OTP:</label>
+                <input type="text" id="member_ship_otp_field" name="member_ship_otp_field" class="username"
+                  [(ngModel)]="member_ship_otp_field" required>
+                  <button type="button" class="login-btn" style="margin-top: 1em; margin-bottom: 1em;" (click)="createMemberShip()">Create</button>
+              </div>
+              </form>
+
+             </div> 
+          
+          </div>
+  
+  
+  
+        </div>
+
+      </div>
+  
+  
+    </section>
+  </div>

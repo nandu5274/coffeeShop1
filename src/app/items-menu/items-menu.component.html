@@ -2,29 +2,34 @@
 <section id="menu" class="menu section-bg" style="padding-top: 9em;">
   <div class="container" data-aos="fade-up" >
 
-    <div  *ngIf="showMenu"  class="section-title" style="padding-top: 1em;">
+    <div  *ngIf="showMenu"  class="section-title" style="padding-top: 1em; padding-bottom: 20px;">
       <h2 class="align">Menu features {{filteredMenuItems.length}} delicious dishes</h2>
       <div  class="refresh Menu-row">
         <div style="    margin-bottom: 0.5em;">
-          <p class="header-align">Check Our  Menu 
-             <a style="    display: block;">
+          <p class="header-align">Check Our Menu 
+             <a *ngIf="isCap === 'true'" style="    display: block;">
              <img src="assets/img/table.png" class="table"  alt=""> 
           <a style="font-family: sans-serif; font-size: smaller; font-weight: 500;"> : {{tablePlace}} {{tableNumber}}</a>
         </a>
           </p>
-   
           <a class = "itemgst"> * Images displayed below are meant for reference.</a>
           <a class = "itemgst" style="text-align: center; color: lemonchiffon;"> 
             * The breakfast menu is only offered from 9:30 AM to 12:30 PM.
             </a>
 
         </div>
-    
-
         <div *ngIf="isCap === 'true'" class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
           <button style=" background-color: #d49b3b; color: #11100e;" routerLink="/cap">cap</button>
         
         </div>
+        <div *ngIf="isCap === 'true'; else showPoints" class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
+          <button style="background-color: #d49b3b; color: #11100e;" (click)="pointsChecker()">Points Check</button>
+        </div>
+        <ng-template #showPoints>
+          <span style="    text-align: center;" *ngIf="is_login === 'true'" >
+          <p style="    font-size: 25px;">Loyalty Points: <span class="shining-text">{{loyalty_point}}</span></p>
+        </span>
+        </ng-template>
       </div>
      
     </div>
@@ -80,8 +85,14 @@
       <div   *ngFor="let menuItem of filteredMenuItems; index as i"  class="col-lg-6 menu-item menu-item-click"  [class]="menuItem.class" (click)="openModal(menuItem)">
         <img [src]="menuItem.imagePath" class="menu-img" alt="">
         <div class="menu-content">
-          <a style="max-width:12em">{{menuItem.name}} <img [src]="menuItem.typePath" style="width: 14px; margin: 0px 2px 0px 2px;"> </a><span>&#8377; {{menuItem.cost}}</span>
-        
+          <a style="max-width:12em">{{menuItem.name}} <img [src]="menuItem.typePath" style="width: 14px; margin: 0px 2px 0px 2px;"> </a>
+      
+          
+          <span *ngIf="menuItem.isReward; else noReward">&#8377; {{menuItem.Reward}}</span>
+          <ng-template #noReward>
+              <span>&#8377; {{menuItem.cost}}</span>
+          </ng-template>
+          
         </div>
         <div class="menu-ingredients">
           {{menuItem.desc}}
@@ -259,7 +270,12 @@
         </div>
         <div>
         <div class="amount">
-          <h3><span>&#8377; {{selectedItem.cost}}</span></h3>
+          <h3><span *ngIf="selectedItem.isReward; else noReward">&#8377; {{selectedItem.Reward}}</span></h3>
+          <ng-template #noReward>
+            <h3><span>&#8377; {{selectedItem.cost}}</span></h3>
+          </ng-template>
+
+        
         </div>
         <div class="quantity-input" style="position: unset !important">
           <button (click)="decrement()">-</button>
@@ -275,6 +291,24 @@
   </div>
 </div>
 
+
+<div  *ngIf="showPointCheckerModal" class="modal">
+  <div class="modal-content">
+  
+<div class="cust-login">
+<app-customer-available-checker  ></app-customer-available-checker>
+<div style="   text-align: center; background: #1a1814;">
+  <span>
+<button (click) = "closePointCheckerModal()" style="width: 9em;
+align-self: center;  " class=" pop-up-btm">close</button>
+</span>
+</div>
+</div>
+
+
+
+  </div>
+</div>
 
     <!-- Modal for food menu -->
 

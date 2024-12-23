@@ -8,6 +8,7 @@ import { DropboxService } from '../service/dropbox.service';
 import * as Papa from 'papaparse';
 import { DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { CustomerService } from '../service/customer.service';
 
 @Component({
   selector: 'app-items-cart',
@@ -29,11 +30,12 @@ export class ItemsCartComponent implements OnInit {
   @Output() orderingResponse: EventEmitter<any> = new EventEmitter();
   quantityUpdated: boolean = false;
   constructor(private sharedService: SharedService, private router: Router, private graphqlService: GraphqlService,
-    private dropboxService: DropboxService, private datePipe: DatePipe, private http: HttpClient) { }
+    private dropboxService: DropboxService, private datePipe: DatePipe, private http: HttpClient, private customerService: CustomerService,) { }
 
   ngOnInit() {
-    let sessionCartDataList = sessionStorage.getItem('cartDataList');
-
+    this.UserMobileNumber =  sessionStorage.getItem('customer_number' )??''; 
+   let sessionCartDataList = sessionStorage.getItem('cartDataList');
+    this.commentText = '';
     if (sessionCartDataList) {
       this.cartDataList = JSON.parse(atob(sessionStorage.getItem('cartDataList')!));
       this.orderSummery(this.cartDataList);
@@ -41,6 +43,7 @@ export class ItemsCartComponent implements OnInit {
 
 
     this.sharedService.getItemToCartDataObservable().subscribe((data) => {
+      this.UserMobileNumber =  sessionStorage.getItem('customer_number' )??''; 
 
       sessionCartDataList = sessionStorage.getItem('cartDataList');
 
@@ -81,6 +84,7 @@ export class ItemsCartComponent implements OnInit {
       sessionStorage.setItem("cartDataList", btoa(JSON.stringify(this.cartDataList)));
       this.orderSummery(this.cartDataList);
     });
+   
 
   }
   updatedCartItemDto: CartItemDto = new CartItemDto;
@@ -168,7 +172,10 @@ export class ItemsCartComponent implements OnInit {
       order_additional_service_amount: this.additionAmount,
       order_total_amount: this.totalAmount,
       order_items: data,
-      employee:employee_Name
+      employee:employee_Name,
+      comments:this.commentText,
+      customer_number:this.UserMobileNumber
+
     }
 
     let csvOrderTableData = {
@@ -178,6 +185,7 @@ export class ItemsCartComponent implements OnInit {
       order_additional_service_amount: this.additionAmount,
       order_total_amount: this.totalAmount,
       table_place: sessionStorage.getItem('tablePlace'),
+      customer_number:this.UserMobileNumber
     }
 
    let csvOrderItemsTableData = dataList;
@@ -299,4 +307,85 @@ export class ItemsCartComponent implements OnInit {
     });
     return csv;
   }
+  isCommentModalOpen: boolean = false;  // To toggle modal visibility
+  commentText: string = '';  
+  
+  isUserMobileModalOpen: boolean = false;  // To toggle modal visibility
+  UserMobileNumber: string = '';  // Holds the comment input
+  showUserNotFoundError: boolean = false;
+  showUserFoundBanner: boolean = false
+  showSpinner: boolean = false;
+  tempUserMobileNumber: string = ''
+  openUserMobileModal()
+  {
+    this.showUserFoundBanner=false;
+    this.tempUserMobileNumber = this.UserMobileNumber
+    this.isUserMobileModalOpen = true
+  }
+  closeMobileNumberModal()
+  {
+    this.UserMobileNumber =  this.tempUserMobileNumber;
+    this.isUserMobileModalOpen = false
+  }
+
+  saveMobileNumberModal()
+  {
+    this.isUserMobileModalOpen = false
+  }
+  clearBanner(){
+    this.showUserNotFoundError = false
+    this.showUserFoundBanner = false
+  }
+  // Open the modal
+  openCommentModal() {
+    this.isCommentModalOpen = true;
+  }
+  checkProfile(){
+    this.showSpinner = true
+   this.clearBanner();
+   this.customerService.getCustomerPointAndDetailsByNumber(this.UserMobileNumber).subscribe((response) => {
+
+      if (response.data.kubera_profile_customer_points.length>0) {
+        this.showUserNotFoundError = false
+        this.showUserFoundBanner = true
+    }else{
+      this.showUserNotFoundError = true
+      this.showUserFoundBanner = false
+    }
+    this.showSpinner = false
+  })
+  }
+
+  // Save the comment and close the modal
+  saveComment() {
+    console.log('Comment saved:', this.commentText);  // Replace this with your save logic
+  
+    this.isCommentModalOpen = false;  // Close modal
+  }
+
+  // Close the modal without saving
+  closeCommentModal() {
+    this.isCommentModalOpen = false;
+  }
+
+  predefinedComments: string[] = [
+    'Need more spicy',
+    'add more cheese',
+    'add more veggies',
+    'avoid vegetable',
+    'jain food',
+    'pure veg order'
+
+  ];
+
+
+  addMessage(event: Event) {
+    const selectedMessage = (event.target as HTMLSelectElement).value;
+    if (selectedMessage) {
+      this.commentText = this.commentText 
+        ? `${this.commentText}, ${selectedMessage}` 
+        : selectedMessage;
+    }
+  }
+
 }

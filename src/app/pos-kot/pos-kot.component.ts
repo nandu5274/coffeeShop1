@@ -33,6 +33,7 @@ export class PosKotComponent {
     this.invoiceData.billNo = ""
     this.invoiceData.items = this.printData.order_items
     this.invoiceData.orderNo = this.printData.id
+    this.invoiceData.comments = this.printData.comments
     
   }
   

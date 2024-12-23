@@ -16,6 +16,7 @@ import { ValueFormatterParams } from 'ag-grid-community';
 import { AgGridAngular } from 'ag-grid-angular'; // Angular Data Grid Component
 // Column Definition Type Inter
 import { AdminResponseData } from '../interfaces/admin-reponse-data';
+import { WebSocketService } from '../service/WebSocket.service';
 @Component({
   selector: 'app-admin',
   templateUrl: './admin.component.html',
@@ -35,7 +36,7 @@ export class AdminComponent {
   TotalOnlineAMpunt:any = 0;
   TotalActualAmount:any = 0;
   constructor( private datePipe: DatePipe, private dropboxService: DropboxService,
-    private sharedService: SharedService, private dataService: HasuraApiService) {}
+    private sharedService: SharedService, private dataService: HasuraApiService, private webSocketService: WebSocketService,) {}
 
   isSticky: boolean = false;
   @HostListener('window:scroll', ['$event'])
@@ -185,14 +186,21 @@ export class AdminComponent {
     this.showSpinner = true;
     this.dataService.updateConfigByType("edit", "true").subscribe((response) => {
       this.showSpinner = false;
+      this.sendMessageToWebSocket("editApproved")
     })
   }
+
+  sendMessageToWebSocket(msg: any) {
+    this.webSocketService.sendMessage(msg);
+  }
+
 
   revokeLogin()
   {
     this.showSpinner = true;
     this.dataService.updateConfigByType("edit", "false").subscribe((response) => {
       this.showSpinner = false;
+      this.sendMessageToWebSocket("editRevoke")
     })
   }
 }

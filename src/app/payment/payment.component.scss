@@ -7,6 +7,10 @@
 }
 
 .switch input {display:none; background-color: #ccc;}
+.custom-dropdown {
+  padding: 5px;
+  font-size: 14px;
+}
 
 .slider {
   position: absolute;
@@ -548,3 +552,113 @@ input:checked + .slider:before {
       button:hover {
         background-color: #45a049;
       }
+
+      .alert-message {
+        position: fixed;
+        top: 48px;
+        right: -300px; /* Start off-screen */
+       
+        padding: 15px;
+        border-radius: 4px;
+        background-color: #d49b3b;
+        color: #000;
+        z-index: 99999;
+        text-align: center;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        font-size: 16px;
+        animation: slideIn 0.5s forwards, slideOut 0.5s 599.5s forwards; /* 10 minutes animation */
+      }
+      .alert-message-revoke{
+        background-color: #d60812 !important;
+        color: #ffffff !important;
+      }
+      
+      /* Keyframes for slide-in animation */
+      @keyframes slideIn {
+        from {
+          right: -300px;
+        }
+        to {
+          right: 20px;
+        }
+      }
+      
+      /* Keyframes for slide-out animation */
+      @keyframes slideOut {
+        from {
+          right: 20px;
+        }
+        to {
+          right: -300px;
+        }
+      }
+
+
+      /* Styling for the entire alert section */
+.alert-container {
+  position: fixed;
+  top: 120px;  /* Move to the top of the screen */
+  right: 20px; /* Keep it aligned to the right */
+  width: 400px; /* Adjust as per your layout */
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+@media screen and (max-width: 600px) {
+  .alert-container {
+    position: fixed;
+    top: 120px;  /* Move to the top of the screen */
+    right: 1px; /* Keep it aligned to the right */
+    width: unset;
+    text-align: center;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+
+/* Styling for individual notification messages */
+.notification-message {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  color: #721c24;
+  padding: 10px;
+  font-size: 14px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+/* Special class for revoke alert type */
+.notification-message-revoke {
+  background-color: #ffeeba;
+  border: 1px solid #ffeeba;
+  color: #856404;
+}
+
+
+.status-container {
+  position: fixed;
+  bottom: 20px; /* Distance from the bottom of the screen */
+  right: 20px;  /* Distance from the right side of the screen */
+  z-index: 1000; /* Ensure it stays above other elements */
+}
+
+.status-dot {
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.connected {
+  background-color: green;
+}
+
+.disconnected {
+  background-color: red;
+}

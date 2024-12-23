@@ -3,6 +3,8 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { Component, ElementRef, HostListener, OnInit, Renderer2, ViewChild } from '@angular/core';
 import {VERSION} from './common/constanst';
 import { HasuraApiService } from './service/hasura.api.service';
+import { WebSocketService } from './service/WebSocket.service';
+import { SharedService } from './service/shared-service';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -21,6 +23,12 @@ export class AppComponent implements OnInit  {
   title = 'cofeeshop1';
   version:any = VERSION;
   private sound: Howl;
+  isPopupOpen = false;
+  selectedFloor = '';
+  tableNumber = undefined;
+  message = '';
+  floors = ['Ground Floor', '1st Floor', 'out door'];
+
   public loadScript(url: string) {
     let node = document.createElement('script');
     node.src = url;
@@ -31,7 +39,8 @@ export class AppComponent implements OnInit  {
      hearts: { left: number, duration: number }[] = [];
      @ViewChild('container') container!: ElementRef;
    
-     constructor(private renderer: Renderer2,  private dataService: HasuraApiService) { 
+     constructor(private renderer: Renderer2,  private dataService: HasuraApiService,
+       private webSocketService: WebSocketService, private sharedService: SharedService) { 
       this.sound = new Howl({
         src: ['assets/audio/ipl.mp3'],
       });
@@ -50,14 +59,13 @@ export class AppComponent implements OnInit  {
       this.loadScript("assets/js/main.js");
       this.generateHearts();
       this.getLatestVersion()
-    //  this.openModal('d')
+      this.openModal('d')
 
 //below code is for popups 
 
-   /* 
-   this.playSound();
+   
+   //this.playSound();
     this.updateImageBasedOnScreenSize();
-*/
 //above code is for popups 
     }
   
@@ -156,10 +164,10 @@ this.updateImageBasedOnScreenSize()
     const screenWidth = window.innerWidth;
     if (screenWidth < 768) {
       // Set image for small screens
-      this.imageUrl = 'assets/img/event/ipl.jpg';
+      this.imageUrl = 'assets/img/event/loymb.jpg';
     } else {
       // Set image for larger screens
-      this.imageUrl = 'assets/img/event/iplc.jpg';
+      this.imageUrl = 'assets/img/event/loybs.jpg';
     }
   }
   showPopup: boolean = false;
@@ -253,6 +261,36 @@ if (this.step === 0) {
     }
 
   }
+
+
+
+  openFloatingBellPopup() {
+    this.selectedFloor = '';
+    this.message = '';
+    this.tableNumber  = undefined;
+    this.isPopupOpen = true;
+  }
+
+  closePopup() {
+    this.isPopupOpen = false;
+  }
+
+  submitDetails() {
+    console.log('Selected Floor:', this.selectedFloor);
+    console.log('Table Number:', this.tableNumber);
+    this.closePopup(); // Close popup after submission
+    let msg_text = "call from "+  this.selectedFloor + " table - " + this.tableNumber + " on " + this.sharedService.updateCurrentDateTimeInIST() ;
+    if(this.message != '')
+    {
+      msg_text = msg_text + " msg - " + this.message;
+    }
+    this.sendMessageToWebSocket(msg_text);
+  }
+
+  sendMessageToWebSocket(msg: any) {
+    this.webSocketService.sendMessage(msg);
+  }
+
 }
 
 

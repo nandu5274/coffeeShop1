@@ -6,9 +6,31 @@
   <div class="spinner"></div>
 </div>
 
+<div class="status-container">
+  <span [ngClass]="isConnected ? 'status-dot connected' : 'status-dot disconnected'"></span>
+  WS: {{ isConnected ? 'Connected' : 'Disconnected' }}
+</div>
+
 <div  *ngIf="!loggedIn" > <app-login (loginStatus)="handleLoginStatus($event)"></app-login></div>
 
 
+<div class="alert-message" *ngIf="showAlert">
+  <p style="margin: 0;">  edit access given, revert in {{ countdown }} seconds... </p>
+</div>
+
+<div class="alert-message alert-message-revoke" *ngIf="showEditRevokeAlert">
+  <p style="margin: 0;">  edit access removed </p>
+</div>
+
+
+
+<!-- Container to hold all notification messages -->
+<div class="alert-container" *ngIf="showBellmsgAlert">
+  <!-- Loop through the array of notification messages -->
+  <div *ngFor="let message of alertMessages" class="notification-message notification-message-revoke">
+    <p style="margin: 0;">{{ message }}</p>
+  </div>
+</div>
 <div  *ngIf="loggedIn" > 
 
     <section id="menu" class="menu section-bg" style="padding-top: 9em;">
@@ -253,7 +275,20 @@
           <label>Online</label>
   </div>
       </div>
- 
+<div  *ngIf="trigger_loyalty_Call">
+      <hr>
+      <div style="    margin: 1em;">
+        Customer: {{customerName}}
+        <br>
+        number : {{selected_customer_number}}
+        <br>
+        Loyalty points: {{existing_loyalty_points}}
+      </div>
+      <hr>
+      <div style="    margin: 1em;">
+        New Loyalty Points : {{new_loyalty_points}}
+      </div>
+    </div>
       <div class="buttons">
         <button  [disabled]="isAmountUndefined()" style="background-color: #198754" (click) = "makePaymentCompleted()">Done</button>
         <button style="background-color: #198754" (click) = "closePaymentTypePopup()">Close</button>
@@ -337,6 +372,21 @@
   <div class="popup-overlay" >
     <div class="popup-content" style="background: #1a1814;">
       
+      <div style="display: flex; align-items: center; margin-bottom: 1em; color: white;">
+        <label for="discountSelect" style="margin-right: 10px;">Select Discount:</label>
+        <select id="discountSelect" [(ngModel)]="selectedDiscount" class="custom-dropdown" style="margin-right: 10px;">
+          <option [value]="0">No Discount</option>
+          <option [value]="10">10%</option>
+          <option [value]="15">15%</option>
+        </select>
+        <button type="button" class="login-btn" (click)="applyDiscount()">Apply</button>
+      </div> 
+      
+      <div style="display: flex; align-items: center; margin-bottom: 1em; color: white;">
+        <label for="discountSelect" style="margin-right: 10px;">MemberShip:</label>
+        status
+        <button type="button" class="login-btn" (click)="applyDiscount()">check</button>
+      </div>
 
       
       <section id="menu" class="menu section-bg" style="padding: 0px;    max-height: 30em;
@@ -363,6 +413,7 @@
             </tr>
           </tbody>
         </table>
+      
 
         </section>
         <button type="button"  class = "login-btn" (click)="updateEditOrder()" >Save</button>
@@ -371,4 +422,7 @@
     </div>
   </div>
 </div>
+
+
+
 

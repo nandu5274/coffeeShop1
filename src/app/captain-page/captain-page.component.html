@@ -6,12 +6,29 @@
   <div class="spinner"></div>
 </div>
 
+<div class="status-container">
+  <span [ngClass]="isConnected ? 'status-dot connected' : 'status-dot disconnected'"></span>
+  WS: {{ isConnected ? 'Connected' : 'Disconnected' }}
+</div>
+
 <div  *ngIf="!loggedIn" > <app-login [pageType]="pageType"  (loginStatus)="handleLoginStatus($event)"></app-login></div>
+
+<!-- Container to hold all notification messages -->
+<div class="alert-container" *ngIf="showBellmsgAlert">
+  <!-- Loop through the array of notification messages -->
+  <div *ngFor="let message of alertMessages" class="notification-message notification-message-revoke">
+    <p style="margin: 0;">{{ message }}</p>
+  </div>
+</div>
 
 <div  *ngIf="loggedIn" > 
 
 
 <section id="menu" class="menu section-bg" style="padding-top: 9em;">
+  
+
+
+  
   <div class="tabs"   [class.sticky-tabs]="isSticky">
     <div class="tab tab-btn " (click)="selectTab('waiting_order')" [class.active]="selectedTab === 'waiting_order'" >waiting order</div>
     <div class="tab tab-btn " (click)="selectTab('Accepted_order')" [class.active]="selectedTab === 'Accepted_order'">Accepted order</div>
@@ -29,8 +46,9 @@
             <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
               <button style=" background-color: #d49b3b; color: #11100e;" (click) = "openOrderMenuModal()">order</button>
               <button style=" background-color: #d49b3b; color: #11100e;" (click) = "refreshOrder()">Refresh</button>
-           
-              <button style=" background-color: #d49b3b; color: #11100e;" (click) = "openModal('d')">show c</button>
+             <button style=" background-color: #d49b3b; color: #11100e;" (click) = "GenerateMemberShip()">Member Ship</button>
+              <!-- <button style=" background-color: #d49b3b; color: #11100e;" (click) = "openModal('d')">show c</button> -->
+            
            
             </div>
           
@@ -120,8 +138,9 @@
             <p>Approved orders</p>
             <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
               <button style=" background-color: #d49b3b; color: #11100e;" (click) = "refreshApprovedOrder()">Refresh</button>
-              <button style=" background-color: #d49b3b; color: #11100e;" (click) = "openModal('d')">show c</button>
+              <!-- <button style=" background-color: #d49b3b; color: #11100e;" (click) = "openModal('d')">show c</button> -->
               <button style=" background-color: #d49b3b; color: #11100e;"    (click)="toggleModal()">orders</button>
+              <button style=" background-color: #d49b3b; color: #11100e;" (click) = "GenerateMemberShip()">Member Ship</button>
             </div>
           
           </div>
@@ -134,11 +153,13 @@
     <div  #expandedDiv   *ngFor="let entry of ApprovedOrderListMap | keyvalue" class="expand_border" >
       <div class="expand-container"  >
         <div>
-          <p class="table-num" (click)="toggleExpand(ApprovedOrderListMap,entry)"> Table: {{ entry.key }}</p>
+          <p class="table-num" (click)="toggleExpand(ApprovedOrderListMap,entry)"> T: {{ entry.key }}</p>
         </div>
         <div> 
-          <div class="buttons" style="margin: 0px;">
-            <button style="background-color: #198754!important; margin: auto;" (click)="moveOrderToCheckOut(entry.value)" >Checkout</button>
+          <div class="buttons" style=" flex-direction: row;display: flex; margin: 0px;">
+            <button style="background-color: #e99714!important; margin: auto; margin: 6px !important; padding: 9px; margin: auto; " (click)="openExistingMenuPage(entry.value)" >More</button>
+            
+            <button style="background-color: #198754!important; margin: auto; margin: 6px !important; padding: 9px; margin: auto; "(click)="showCheckOutConfirmationModal(entry.value)" >Checkout</button>
           </div>
         </div>
     
@@ -155,11 +176,14 @@
           <a  style=" font-family: sans-serif !important; font-size: x-large; ">T: {{waitingApprovalOrder.order.table_place }}  {{waitingApprovalOrder.order.table_no}}</a>
           <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e;"> {{waitingApprovalOrder.order.id}}</a>
          </div>
-         
+         <div style="text-align: center;">
+          <a  style=" font-family: sans-serif !important; font-size: medium; color: #ffc107; font-weight: bold ;">Customer number :{{waitingApprovalOrder.order.customer_number}}</a>
+         </div>
 
           <div style="text-align: center;">
             <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e; ">Items</a>
            </div>
+
            <div style="text-align: center;">
             <a  style=" font-family: sans-serif !important; font-size: medium; color: #ffc107; ">{{waitingApprovalOrder.order.order_created_time}}</a>
            </div>
@@ -224,6 +248,36 @@
 
   </div>
 </div>
+
+
+<div  *ngIf="showCheckOutModal" class="modal">
+  <div class="modal-content">
+    <div class="main-content" style="width: fit-content; align-self: center; margin: 1em;">
+      <div class="popup-overlay" >
+        <div class="popup-content" style=" background: #d49b3b; padding: 1.5em;border-radius: 10px;
+        color: black;">
+         <div>  <h2 style="font-family: sans-serif !important; text-align: center;">Check Out Confirmation</h2> </div>
+         <div style="padding: inherit;">
+
+        
+            <a>
+          Are you sure to Checkout ?
+            </a>
+ 
+     
+          <div class="buttons">
+            <button style="background-color: #198754" (click)="moveOrderToCheckOut()" >Check out</button>
+            <button style="background-color: #c51717" (click) = "closeCheckOutModal()">Close</button>
+          </div>
+         </div>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+</div>
+
 
 
 <div  *ngIf="showMenuOrderModal" class="modal" style=" z-index: 999999;">
@@ -391,8 +445,7 @@
 
 
 
-<div class="main-content" style="position: relative;z-index: 9999;
-">
+<div class="main-content" style="position: relative;z-index: 9999;">
 
   <div class="popup-overlay" *ngIf="iskotPopupOpen" (click)="closePopup()">
     <div class="popup-content">
@@ -404,3 +457,27 @@
 </div>
 
 
+<div  *ngIf="isMemberShipModalOpen" class="modal" style="z-index: 9999;">
+ 
+<div class="cust-login">
+<app-membership-create></app-membership-create>
+<div style="   text-align: center; background: #1a1814;">
+  <span>
+<button (click) = "closeMemberShipModal()"  style="    background: #1a1814;
+border: 2px solid #cda45e;
+color: #fff;
+border-radius: 50px;
+padding: 8px 25px;
+text-transform: uppercase;
+font-size: 13px;
+font-weight: 500;
+letter-spacing: 1px;
+transition: 0.3s;">close</button>
+</span>
+</div>
+</div>
+
+
+
+
+</div>

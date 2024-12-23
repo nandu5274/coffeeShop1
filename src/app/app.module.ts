@@ -28,6 +28,11 @@ import { StockComponent } from './stock/stock.component';
 import { AdminComponent } from './admin/admin.component';
 import { AgGridModule } from 'ag-grid-angular';
 import { AdminFormComponent } from './admin-form/admin-form.component';
+import { CustomerLoginComponent } from './customer-login/customer-login.component';
+import { CustomerAvailableCheckerComponent } from './customer-available-checker/customer-available-checker.component';
+import { ProfileComponent } from './profile/profile.component';
+import { MembershipCreateComponent } from './membership-create/membership-create.component';
+import { MembershipCardComponent } from './membership-card/membership-card.component';
 
 
 @NgModule({
@@ -48,7 +53,12 @@ import { AdminFormComponent } from './admin-form/admin-form.component';
     TimeAgoPipe,
     StockComponent,
     AdminComponent,
-    AdminFormComponent
+    AdminFormComponent,
+    CustomerLoginComponent,
+    CustomerAvailableCheckerComponent,
+    ProfileComponent,
+    MembershipCreateComponent,
+    MembershipCardComponent
   ],
   imports: [
     BrowserModule,

@@ -29,6 +29,7 @@ export class GraphqlService {
           order_total_amount
           table_no
           table_place
+          comments
           order_items {
             item_name
             item_description
@@ -165,6 +166,7 @@ export class GraphqlService {
         created_at
         order_status
         employee
+        comments
       }
       }
     `;
@@ -343,5 +345,78 @@ mutation update_kubera_employee_login($user_name: String!, $renew_date: timestam
     });
   }
   
+
+
+  insertPaymentDetails(kubera_payment_details_insert_input:any): any {
+    const mutation = gql`
+mutation InsertPaymentDetail($kubera_payment_details_insert_input: kubera_payment_details_insert_input!) {
+  insert_kubera_payment_details_one(object: $kubera_payment_details_insert_input) {
+   
+      created_at
+			id
+			actual_amount
+			paid_amount
+			order_id
+			payment_mode
+			created_time
+      bill_no
+  }
+}
+    
+    
+    `;
+
+    return this.apollo.mutate({
+      mutation,
+      variables: {
+        kubera_payment_details_insert_input
+        
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': GRAPHQL_KEY,
+        },
+      },
+    });
+  }
+
+
+
+  getPaymentDetails(kubera_payment_details_insert_input:any): any {
+    const mutation = gql`
+query get_payment_mode_summary {
+  kubera_payment_details_aggregate(where: {created_at: {_eq: "10-29-2024"}}) {
+    aggregate {
+      sum {
+        paid_amount
+        actual_amount
+      }
+      count
+    }
+    nodes {
+      paid_amount
+      payment_mode
+      actual_amount
+    }
+  }
+}
+
+    
+    
+    `;
+
+    return this.apollo.mutate({
+      mutation,
+      variables: {
+        kubera_payment_details_insert_input
+        
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': GRAPHQL_KEY,
+        },
+      },
+    });
+  }
 
 }

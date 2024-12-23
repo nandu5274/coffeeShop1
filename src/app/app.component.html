@@ -1,7 +1,7 @@
 <div class="main-container">
 
   <!--  below code is for popups -->
-  <!--
+  
   <div  *ngIf="showModal" class="modal">
     <div class="modal-content">
       <button (click) = "closeModal()" style="width: 9em;
@@ -29,7 +29,7 @@
     </div>
   </div>
 
--->
+
     <!--  above code is for popups -->
 
     <div  *ngIf="showVersionModal" class="modal">
@@ -102,7 +102,48 @@
   </div>
 
     <app-nav-bar></app-nav-bar>
+<!-- floating-bell.component.html -->
+<div class="floating-bell" (click)="openFloatingBellPopup()">
+  <i class="fa fa-user" style="    position: relative;
+  left: 0px;
+  font-size: 33px;"></i>
+ 
+<span class="call-waiter-box">
+  Call Waiter
+</span>
+</div>
 
+
+<!-- Popup Content -->
+<div class="notification-popup" *ngIf="isPopupOpen">
+  <div class="popup-container">
+    <h3 style="font-size: 16px;
+    font-weight: 700;
+    font-family: 'Playfair Display', serif;
+    color: #000;">Choose Floor & Table to call waiter</h3>
+    
+    <!-- Dropdown for Floor Selection -->
+    <label class="popup-label" for="floor">Floor:</label>
+    <select class="popup-select" id="floor" [(ngModel)]="selectedFloor">
+      <option *ngFor="let floor of floors" [value]="floor">{{ floor }}</option>
+    </select>
+
+    <!-- Input for Table Number -->
+    <label class="popup-label" for="tableNumber">Table Number:</label>
+    <input class="popup-input" id="tableNumber" type="number" [(ngModel)]="tableNumber"  />
+
+    <!-- Input for message  -->
+    <label class="popup-label" for="message">message(if needed):</label>
+    <input class="popup-input" id="message" type="text" [(ngModel)]="message"  />
+    
+
+    <!-- Button section -->
+    <div class="popup-button-group">
+      <button class="popup-btn" [disabled]="!selectedFloor || !tableNumber" (click)="submitDetails()">Submit</button>
+      <button class="popup-btn" (click)="closePopup()">Close</button>
+    </div>
+  </div>
+</div>
     <router-outlet></router-outlet>
 
     <app-footer></app-footer>

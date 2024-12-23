@@ -7,6 +7,8 @@ import { KitchenPageComponent } from './kitchen-page/kitchen-page.component';
 import { PaymentComponent } from './payment/payment.component';
 import { StockComponent } from './stock/stock.component';
 import { AdminComponent } from './admin/admin.component';
+import { ProfileComponent } from './profile/profile.component';
+import { MembershipCardComponent } from './membership-card/membership-card.component';
 
 const routes: Routes = [
   { path: '', component: HomePageComponent },
@@ -16,6 +18,8 @@ const routes: Routes = [
   { path: 'payment', component: PaymentComponent },
   { path: 'stock', component: StockComponent },
   { path: 'admin', component: AdminComponent },
+  { path: 'profile', component: ProfileComponent },
+  { path: 'card', component: MembershipCardComponent },
 ];
 
 @NgModule({

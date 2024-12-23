@@ -75,7 +75,29 @@
         <!-- <img src="assets/img/cart.png" class="cart"  alt="">  -->
       </div>
 
+     <!-- <a (click)="openCustomerLoginModal()" class="book-a-table-btn "> Login</a> -->
 
+
+
+     <div class="d-flex align-items-center" *ngIf="!diable_login_btn">
+      <!-- Displayed when user is not logged in -->
+      <a *ngIf="!isLoggedIn" (click)="openCustomerLoginModal()" class="book-a-table-btn">
+        Login
+      </a>
+    
+      <!-- Displayed when user is logged in -->
+      <div *ngIf="isLoggedIn" class="user-dropdown">
+        <div class="user-initial" (click)="toggleDropdown()">
+          {{ userInitial }}
+        </div>
+        <div *ngIf="isDropdownOpen" class="customer-dropdown-menu">
+         
+          <a style="    font-weight: bold;">{{customerName}}</a>
+          <hr class="dropdown-divider">
+          <a (click)="onSignOut()">Sign Out</a>
+        </div>
+      </div>
+    </div>
      <a href="#book-a-table" class="book-a-table-btn scrollto d-none d-lg-flex"> Book a table</a>
      
     </div>
@@ -105,4 +127,24 @@
   </div>
 
   <!-- Button to Trigger Info Alert -->
+
+
+
+  <div  *ngIf="showCustomerLoginModal" class="modal">
+    <div class="modal-content">
+    
+<div class="cust-login">
+  <app-customer-login (loginStatus)="onCustomerLogin($event)" ></app-customer-login>
+  <div style="   text-align: center; background: #1a1814;">
+    <span>
+  <button (click) = "closeModal()" style="width: 9em;
+  align-self: center;  " class=" pop-up-btm">close</button>
+  </span>
+  </div>
+</div>
+
+
+
+    </div>
+  </div>
 

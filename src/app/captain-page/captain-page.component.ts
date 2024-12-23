@@ -10,6 +10,8 @@ import { SharedService } from '../service/shared-service';
 import { SingleFileOrderDto } from '../dtos/singleFileOrderDto';
 import { GraphqlService } from '../service/graphql.service';
 import { TimerService } from '../service/timer.service';
+import { BELL_MSG_TIME_OUT } from '../common/constanst';
+import { CustomerService } from '../service/customer.service';
 
 
 
@@ -26,8 +28,10 @@ export class CaptainPageComponent implements AfterViewInit {
   showSpinner: Boolean = false;
   showMenuOrderModal: Boolean = false;
   approvedShowSpinner: Boolean = false;
+  showCheckOutModal: Boolean = false;
   count: any = 0;
   private sound: Howl;
+  private bellSound: Howl;
   employee_name:any='';
   ApprovalOrderList: SingleFileOrderDto[] = [];
   ApprovedOrderList: SingleFileOrderDto[] = [];
@@ -36,12 +40,18 @@ export class CaptainPageComponent implements AfterViewInit {
   orderItemsStatus: any = {};
   ApprovedOrderListMap!: Map<string, SingleFileOrderDto[]>;
   popmessgae: any = ""
+  showBellmsgAlert = false;
+  isConnected = false;
+  bell_msg = "";
   constructor(private webSocketService: WebSocketService, private datePipe: DatePipe, private timerService: TimerService,
-    private dropboxService: DropboxService, private graphqlService: GraphqlService,
+    private dropboxService: DropboxService, private graphqlService: GraphqlService,private customerService: CustomerService, 
     private sharedService: SharedService) {
     this.initializePushNotifications();
     this.sound = new Howl({
       src: ['assets/audio/order_waiting.mp3'],
+    });
+    this.bellSound = new Howl({
+      src: ['assets/audio/bell.mp3'],
     });
   }
   logs: string[] = [];
@@ -54,7 +64,6 @@ export class CaptainPageComponent implements AfterViewInit {
       // console.log(message); // Log to the browser console
     };
 
-    this.getApprovalWaitingOrders();
 
     this.webSocketService.getMessageSubject().subscribe((event) => {
       // Handle incoming WebSocket messages here
@@ -63,6 +72,15 @@ export class CaptainPageComponent implements AfterViewInit {
       console.log("message", message)
       this.messages.push(message);
     });
+    
+
+    this.webSocketService.getConnectionStatus().subscribe((status: boolean) => {
+      this.isConnected = status;
+      console.log('WebSocket connection status:', status ? 'Connected' : 'Disconnected');
+    });
+
+    this.getApprovalWaitingOrders();
+
 
     this.timer$ = this.timerService.getTimer();
 
@@ -77,20 +95,28 @@ export class CaptainPageComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    timer(0, 300000).subscribe(() => {
-      this.count = this.count + 1
-      this.webSocketService.reconnect();
-      this.Status = "reconnecting" + this.count
-      console.log("tetsing")
-    });
+
 
   }
-
-
+  removeSubstring(str: string, substring: string): string {
+    return str.replace(substring, '');
+  }
   triggerPopupMessage(mesg: any) {
-    this.schedulePushNotification(mesg)
-    this.approveOrderBYpopup(mesg)
-    this.popmessgae = mesg;
+    const trimmedMessage = String(mesg).trim();
+    let originalString = this.removeSubstring(trimmedMessage, "broad cast");
+ 
+ if (trimmedMessage.includes("call from")) {
+      this.showBellmsgAlert = false;
+      this.showBellMessage(originalString);
+    }
+
+     else {
+      this.schedulePushNotification(mesg)
+      this.approveOrderBYpopup(mesg)
+      this.popmessgae = mesg;
+    }
+
+
 
   }
 
@@ -533,7 +559,8 @@ export class CaptainPageComponent implements AfterViewInit {
     this.isSticky = window.scrollY > 100;
   }
 
-  async moveOrderToCheckOut(data: any) {
+  async moveOrderToCheckOut() {
+    let data = this.entry;
     this.approvedShowSpinner = true;
     const currentDate = new Date();
     const formattedDate = this.datePipe.transform(currentDate, 'yyyyMMddHHmm');
@@ -566,6 +593,7 @@ export class CaptainPageComponent implements AfterViewInit {
       console.log(resw);
       setTimeout(() => { this.refreshApprovedOrder(); }, 3000);
       this.sendMessageToWebSocket('payment');
+      this.showCheckOutModal=false
       //delete the approved orders
 
     }).catch((error) => {
@@ -592,6 +620,7 @@ export class CaptainPageComponent implements AfterViewInit {
     sessionStorage.removeItem('table')
     sessionStorage.removeItem('tableSet')
     sessionStorage.removeItem('tablePlace')
+    sessionStorage.removeItem('customer_number')
     this.showMenuOrderModal = true
   }
   tableNumber: any
@@ -608,6 +637,23 @@ export class CaptainPageComponent implements AfterViewInit {
     this.sharedService.setShowMenuFlag(1)
     this.sharedService.navigateToMenu('menu');
   }
+
+  openExistingMenuPage(data:any) {
+    sessionStorage.removeItem('table')
+    sessionStorage.removeItem('tableSet')
+    sessionStorage.removeItem('tablePlace')
+    sessionStorage.removeItem('customer_number')
+    
+    sessionStorage.setItem('table', data[0].order.table_no);
+    sessionStorage.setItem('tablePlace', data[0].order.table_place ?? '');
+    const latestCustomerNumber = data.find((obj: any) => obj.order.customer_number !== "")?.order.customer_number || "";
+    sessionStorage.setItem('customer_number',latestCustomerNumber);
+    sessionStorage.setItem('tableSet', '1');
+    sessionStorage.setItem('isCap', 'true');
+    this.sharedService.setShowMenuFlag(1)
+    this.sharedService.navigateToMenu('menu');
+  }
+
 
   iskotPopupOpen = false;
 
@@ -839,6 +885,74 @@ export class CaptainPageComponent implements AfterViewInit {
     let is_Exceeeded = hoursDiff >= user_details.expire_in;
     return is_Exceeeded;
   }
+  alertMessages: string[] = [];
+  addNewAlert(newMessage: string) {
+    // Add the new message to the beginning of the array
+    this.alertMessages.unshift(newMessage);
+
+    // Display the alert
+    this.showBellmsgAlert = true;
+  }
+
+  entry:any;
+  showCheckOutConfirmationModal(entry:any) {
+  this.showCheckOutModal = true;
+  this.entry = entry;
+}
+closeCheckOutModal(){
+  this.showCheckOutModal = false;
+
+}
+
+  showBellMessage(msg:any) {
+    this.showBellmsgAlert = true;
+    this.bell_msg = msg;
+    this.bellSound.play()
+    navigator.vibrate([200, 100, 200]);  
+    this.addNewAlert( this.bell_msg )
+    // Hide the alert message after 10 minutes (600,000 ms)
+    setTimeout(() => {
+      if (this.alertMessages.length > 0) {
+        // Remove the oldest message (the last in the array)
+        this.alertMessages.pop();
+        // Hide the alert if there are no more messages
+        if (this.alertMessages.length === 0) {
+          this.showBellmsgAlert = false;
+        }
+      }
+    }, BELL_MSG_TIME_OUT); // 1 minute = 60000 ms
+  }
+
+  isMemberShipModalOpen: boolean = false;
+  showUserNotFoundError: boolean = false;
+  showUserFoundBanner: boolean = false;
+  customerMobileNumber: string = '';
+  GenerateMemberShip()
+  {
+this.isMemberShipModalOpen = true
+  }
+
+  closeMemberShipModal() {
+    this.isMemberShipModalOpen = false;
+  }
+
+  checkProfile(){
+    this.showSpinner = true
+  
+   this.customerService.getCustomerPointAndDetailsByNumber(this.customerMobileNumber).subscribe((response) => {
+
+      if (response.data.kubera_profile_customer_points.length>0) {
+        this.showUserNotFoundError = false
+        this.showUserFoundBanner = true
+    }else{
+      this.showUserNotFoundError = true
+      this.showUserFoundBanner = false
+    }
+    this.showSpinner = false
+  })
+  }
 
 
+  // Card rotation
+  
 }

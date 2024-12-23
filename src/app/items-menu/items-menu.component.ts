@@ -3,6 +3,8 @@ import { CartItemDto } from '../dtos/CartItemDto';
 import { SharedService } from '../service/shared-service';
 import * as menuListJsonData from 'src/app/sampleResponse/menu-list.json';
 import * as menuCourseCuisineListJsonData from 'src/app/sampleResponse/cuisine-list.json';
+import { CustomerService } from '../service/customer.service';
+
 
 @Component({
   selector: 'app-items-menu',
@@ -12,11 +14,21 @@ import * as menuCourseCuisineListJsonData from 'src/app/sampleResponse/cuisine-l
 export class ItemsMenuComponent implements AfterViewInit,OnInit {
   filteredMenuItems: any;
 
-  constructor(private sharedService: SharedService,private renderer: Renderer2) {}
+  constructor(private sharedService: SharedService,private renderer: Renderer2,
+    private customerService: CustomerService) {}
   showMenu:any  = false
   showCourse:any  = false
   ngOnInit(): void {
     this.populateMenuList();
+ this.sharedService.getIsLoginFlag().subscribe((data) => {
+  this.is_login = sessionStorage.getItem('is_login' );
+  if(data)
+  {
+    this.getLoyalPoints();
+  }
+
+})
+  
     
   }
   public loadScript(url: string) {
@@ -42,11 +54,19 @@ export class ItemsMenuComponent implements AfterViewInit,OnInit {
   tableNumber:any
   tablePlace:any;
   selectedSize: any;
+  loyalty_point:any;
+  is_login:any;
   ngAfterViewInit() {
      this.isCap = sessionStorage.getItem('isCap');
     this.tableNumber =  sessionStorage.getItem('table' );
     this.tablePlace = sessionStorage.getItem('tablePlace' );
-
+    this.is_login = sessionStorage.getItem('is_login' );
+ 
+    if(!this.isCap && this.is_login )
+      {
+        this.getLoyalPoints();
+      }
+    
     setTimeout(() => {
       const loadEvent = new Event('load');
       window.dispatchEvent(loadEvent);
@@ -115,7 +135,23 @@ export class ItemsMenuComponent implements AfterViewInit,OnInit {
     this.selectedItem = undefined;
   }
 
+  getLoyalPoints()
+  {let customer_details = JSON.parse(sessionStorage.getItem("customer_Details")!);
+    this.customerService.getCustomerPointByName(customer_details.customer_detail.name).subscribe(
 
+      (result: any) => {
+
+
+       if (result.data.kubera_profile_customer_points.length>0) {
+        this.loyalty_point = result.data.kubera_profile_customer_points[0].available_points
+       }
+     
+      },
+            (error: any) => {
+   
+              this.loyalty_point = "error"
+   })
+  }
 
   increment() {
     this.quantity++;
@@ -299,5 +335,15 @@ populateMenuList()
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   
+  }
+  showPointCheckerModal:any = false
+  pointsChecker()
+  {
+this.showPointCheckerModal =true
+  }
+
+  closePointCheckerModal()
+  {
+    this.showPointCheckerModal =false
   }
 }

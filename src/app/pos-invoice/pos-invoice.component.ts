@@ -42,6 +42,7 @@ this.zeroQuantityRemovedOrderItems = this.printData.orderItems.filter((item: any
     this.invoiceData.tokenNumbers = this.getTokenNumbersFromData(this.printData)
     this.invoiceData.tableNo = this.printData.order[0].table_no
     this.invoiceData.billNo = this.printData.order[0].billNo
+    this.invoiceData.CustomerNumber = this.getCustomerNumber(this.printData.order)
     this.updateOrderItemPrices(this.printData.orderItems);
     this.zeroQuantityRemovedOrder()
 
@@ -56,7 +57,11 @@ this.zeroQuantityRemovedOrderItems = this.printData.orderItems.filter((item: any
     
       this.invoiceData.GrandTotal =  this.formatStringWithTwoDecimalPlaces(    this.invoiceData.GrandTotal)
   }
+  getCustomerNumber(ordersList: any[]) {
+    const latestCustomerNumber = ordersList.find((obj: any) => obj.customer_number !== "")?.customer_number || "";
   
+    return latestCustomerNumber;
+  }
   getTokenNumbersFromData(data:any)
   {
      return data.order.map((obj: any) => obj.id).join(',');
