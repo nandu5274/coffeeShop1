@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1735455915979,
+  "timestamp": 1735471673885,
   "index": "https://nandu5274.github.io/coffeeShop1/index.html",
   "assetGroups": [
     {
@@ -13,7 +13,7 @@
       "urls": [
         "https://nandu5274.github.io/coffeeShop1/favicon.ico",
         "https://nandu5274.github.io/coffeeShop1/index.html",
-        "https://nandu5274.github.io/coffeeShop1/main.4e46f9ff4246b485.js",
+        "https://nandu5274.github.io/coffeeShop1/main.1c151b14047b664e.js",
         "https://nandu5274.github.io/coffeeShop1/manifest.webmanifest",
         "https://nandu5274.github.io/coffeeShop1/polyfills.942d049d5e170e85.js",
         "https://nandu5274.github.io/coffeeShop1/runtime.70a93a6d34744d57.js",
@@ -52,6 +52,9 @@
         "https://nandu5274.github.io/coffeeShop1/assets/img/chefs/chefs-1.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/chefs/chefs-2.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/chefs/chefs-3.jpg",
+        "https://nandu5274.github.io/coffeeShop1/assets/img/compines/adventura-logo.png",
+        "https://nandu5274.github.io/coffeeShop1/assets/img/compines/duty_free.jpg",
+        "https://nandu5274.github.io/coffeeShop1/assets/img/compines/snap.png",
         "https://nandu5274.github.io/coffeeShop1/assets/img/event-birthday.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/event-custom.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/event-private.jpg",
@@ -511,6 +514,9 @@
     "https://nandu5274.github.io/coffeeShop1/assets/img/chefs/chefs-1.jpg": "00aba1e554434248736d52bcd62a8a588e465f46",
     "https://nandu5274.github.io/coffeeShop1/assets/img/chefs/chefs-2.jpg": "31618457d5c6a7a91d8b9be59757489425264c4c",
     "https://nandu5274.github.io/coffeeShop1/assets/img/chefs/chefs-3.jpg": "70cde13ea5ae6857790dac6e7dce1dbc2eb162fe",
+    "https://nandu5274.github.io/coffeeShop1/assets/img/compines/adventura-logo.png": "148d7d2a88b80f90bcf912b6bf23e517bfe362ae",
+    "https://nandu5274.github.io/coffeeShop1/assets/img/compines/duty_free.jpg": "41fa156f7719d3418aea3fc7eafc9def4aea73ff",
+    "https://nandu5274.github.io/coffeeShop1/assets/img/compines/snap.png": "212fb0a6ce4a28d077aafe40e15fe71bdd057a1e",
     "https://nandu5274.github.io/coffeeShop1/assets/img/event-birthday.jpg": "ee0a30462d4fd5c65e1a231d3bf97d642560b574",
     "https://nandu5274.github.io/coffeeShop1/assets/img/event-custom.jpg": "bb8ea33c68a4afa5546f5083ec03c9369f5773f6",
     "https://nandu5274.github.io/coffeeShop1/assets/img/event-private.jpg": "ab1201ebae38ff991a8e70f03631b4ea44620fe2",
@@ -942,8 +948,8 @@
     "https://nandu5274.github.io/coffeeShop1/assets/vendor/swiper/swiper-bundle.min.js": "f4dc8d46086739c58121185b2d0f4e190710f11b",
     "https://nandu5274.github.io/coffeeShop1/assets/vendor/swiper/swiper-bundle.min.js.map": "8476a6a709730180c88f23d341d400ee50aad267",
     "https://nandu5274.github.io/coffeeShop1/favicon.ico": "22f6a4a3bcaafafb0254e0f2fa4ceb89e505e8b2",
-    "https://nandu5274.github.io/coffeeShop1/index.html": "582527d515ea4ab47ee90fca6b0a662941cb4e24",
-    "https://nandu5274.github.io/coffeeShop1/main.4e46f9ff4246b485.js": "c0705cde5b5de60cd4331c21f154e8191dabbca9",
+    "https://nandu5274.github.io/coffeeShop1/index.html": "0422216fb8d1363785c46926b41f3810b88bb936",
+    "https://nandu5274.github.io/coffeeShop1/main.1c151b14047b664e.js": "9b3669d8d976083bae598a7d210c0816d1afd0ea",
     "https://nandu5274.github.io/coffeeShop1/manifest.webmanifest": "d60dcd6811325a69a3c68475d205b1288b2003a4",
     "https://nandu5274.github.io/coffeeShop1/polyfills.942d049d5e170e85.js": "dff8f1fa9600d7f5460ea3a321897c2caf575fc3",
     "https://nandu5274.github.io/coffeeShop1/runtime.70a93a6d34744d57.js": "a175440d402209cf47f1da72f14d5aabe0ed4093",
