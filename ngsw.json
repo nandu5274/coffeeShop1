@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1735498756185,
+  "timestamp": 1735629057678,
   "index": "https://nandu5274.github.io/coffeeShop1/index.html",
   "assetGroups": [
     {
@@ -13,7 +13,7 @@
       "urls": [
         "https://nandu5274.github.io/coffeeShop1/favicon.ico",
         "https://nandu5274.github.io/coffeeShop1/index.html",
-        "https://nandu5274.github.io/coffeeShop1/main.7dd78bce08101ff4.js",
+        "https://nandu5274.github.io/coffeeShop1/main.27c4a1cbf4d94ec1.js",
         "https://nandu5274.github.io/coffeeShop1/manifest.webmanifest",
         "https://nandu5274.github.io/coffeeShop1/polyfills.942d049d5e170e85.js",
         "https://nandu5274.github.io/coffeeShop1/runtime.70a93a6d34744d57.js",
@@ -220,6 +220,7 @@
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/classic-margherita-pizza.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/cocbrow.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/cold_coffee.jpg",
+        "https://nandu5274.github.io/coffeeShop1/assets/img/menu/cooker.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/corn_soup.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/cornb.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/menu/cp.jpg",
@@ -682,6 +683,7 @@
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/classic-margherita-pizza.jpg": "05efc30b9a4a1d801210ddb1660fed7144224f31",
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/cocbrow.jpg": "e2abb2ec1bc3e1857410b319bcf1227ffdfea88e",
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/cold_coffee.jpg": "cf89bf57501c034f67e9ba21fea87fcb8d1d12ed",
+    "https://nandu5274.github.io/coffeeShop1/assets/img/menu/cooker.jpg": "00c100eb6be72e007e7d7fa84d015edebe41063b",
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/corn_soup.jpg": "071970d5f9d0e68eb1b043f97e09774afa337f3b",
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/cornb.jpg": "20da803f0621a10bf71041bd831396f600dd1b7e",
     "https://nandu5274.github.io/coffeeShop1/assets/img/menu/cp.jpg": "f67f8bd1d705366e01e94589f87a4d16ff6955ec",
@@ -948,8 +950,8 @@
     "https://nandu5274.github.io/coffeeShop1/assets/vendor/swiper/swiper-bundle.min.js": "f4dc8d46086739c58121185b2d0f4e190710f11b",
     "https://nandu5274.github.io/coffeeShop1/assets/vendor/swiper/swiper-bundle.min.js.map": "8476a6a709730180c88f23d341d400ee50aad267",
     "https://nandu5274.github.io/coffeeShop1/favicon.ico": "22f6a4a3bcaafafb0254e0f2fa4ceb89e505e8b2",
-    "https://nandu5274.github.io/coffeeShop1/index.html": "ab6d1ecc9fac37f16bf4dbb33850dfdc88895b4e",
-    "https://nandu5274.github.io/coffeeShop1/main.7dd78bce08101ff4.js": "a0a703cc98faec3d8a9c1c28b9e2906426ca73aa",
+    "https://nandu5274.github.io/coffeeShop1/index.html": "64fe6bca658babf757d20d435e2707eb2f3eb648",
+    "https://nandu5274.github.io/coffeeShop1/main.27c4a1cbf4d94ec1.js": "4b857660ba71282a9a9e2932c415d089f3ab03e0",
     "https://nandu5274.github.io/coffeeShop1/manifest.webmanifest": "d60dcd6811325a69a3c68475d205b1288b2003a4",
     "https://nandu5274.github.io/coffeeShop1/polyfills.942d049d5e170e85.js": "dff8f1fa9600d7f5460ea3a321897c2caf575fc3",
     "https://nandu5274.github.io/coffeeShop1/runtime.70a93a6d34744d57.js": "a175440d402209cf47f1da72f14d5aabe0ed4093",
