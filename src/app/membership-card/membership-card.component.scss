@@ -84,3 +84,40 @@
         font-size: 1em; /* Adjust font size for smaller screens */
     }
 }
+
+.logo-container {
+  text-align: center;
+  margin: 20px auto;
+  width: 300px; /* Adjust as needed */
+}
+
+.logo {
+  width: 100px; /* Adjust logo size */
+  height: auto;
+  margin-bottom: 10px;
+}
+
+.address {
+  font-size: 10px;
+  line-height: 1.5;
+  color: #cda45e;
+}
+
+.co-partners-banner {
+  text-align: center;
+  margin: 20px 0;
+  padding: 10px 0;
+
+  color: #cda45e;
+  font-size: 1.5em;
+  font-weight: bold;
+
+}
+
+.co-partners-banner .line {
+  margin: 10px auto;
+  width: 80%;
+  height: 2px;
+  background-color: #cda45e;
+  border-radius: 1px;
+}

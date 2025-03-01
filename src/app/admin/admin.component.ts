@@ -23,7 +23,7 @@ import { WebSocketService } from '../service/WebSocket.service';
   styleUrls: ['./admin.component.scss']
 })
 export class AdminComponent {
-  selectedTab: string = 'payments';
+  selectedTab: string = 'inventory';
   loggedIn: boolean = false;
   pageType:any="admin";
   currentDateTimeInIST:any
@@ -98,7 +98,21 @@ export class AdminComponent {
     { field:"attachmnet" },
     
   ];
+
+  public adminPaymentColumnDefs: ColDef[] = [
+     { field:"id" , sortable: true},
+     { field:"company_name" },
+     { field:"amount" },
+     { field:"payment_type" },
+     { field:"payment_date" ,   valueFormatter: this.dateFormatter.bind(this)},
+     { field:"month" },
+     { field:"year" },
+     { field:"created_at" }
+   ];
+
   rowData :any;
+
+  adminPaymentRowData :any;
 
   public defaultColDef: ColDef = {
     flex: 1,
@@ -123,13 +137,58 @@ export class AdminComponent {
     });
     
   }
+    totalMonthAmount:any = 0;
+  onAdminPaymentGridReady() {
+    this.showSpinner = true;
+    let month = new Date().toLocaleString('default', { month: 'long' });
+    let year = new Date().getFullYear().toString();
+    this.dataService.getKuberaAccountAdminPaymentDetails(month, year ).subscribe((response) => {
+      // Handle the response here
+      this.adminPaymentRowData = response.data.kubera_Account_kubera_admin_payment_aggregate.nodes
+      this.totalMonthAmount = response.data.kubera_Account_kubera_admin_payment_aggregate.aggregate.sum.amount
+    //  console.log("response", response)
+      this.showSpinner = false;
+    },
+    (error) => {
+      this.showSpinner = false;
+      // Handle errors here
+      console.error(error);
+    });
+    
+  }
+  searchSelectedMonth:any = "Month";
+  searchSelectedYear:any = "Year";
+  onAdminPaymentGridReadyByMonth() {
+    let month = this.searchSelectedMonth
+    let year = this.searchSelectedYear
+    this.showSpinner = true;
+    this.dataService.getKuberaAccountAdminPaymentDetails(month, year ).subscribe((response) => {
+      // Handle the response here
+      this.adminPaymentRowData = response.data.kubera_Account_kubera_admin_payment_aggregate.nodes
+      this.totalMonthAmount = response.data.kubera_Account_kubera_admin_payment_aggregate.aggregate.sum.amount
+    //  console.log("response", response)
+      this.showSpinner = false;
+    },
+    (error) => {
+      this.showSpinner = false;
+      // Handle errors here
+      console.error(error);
+    });
+    
+  }
 
   isFormVisible = false;
-
+  isAdminPaymentFormVisible = false
   openForm(): void {
     this.isFormVisible = true;
   }
 
+  openAdminPaymentForm(): void {
+    this.isAdminPaymentFormVisible = true;
+  }
+  closeAdminPaymentForm(): void {
+    this.isAdminPaymentFormVisible = false;
+  }
   closeForm(): void {
     this.isFormVisible = false;
   }
@@ -153,6 +212,25 @@ export class AdminComponent {
     });
     
   }
+
+
+  createAdminPaymentDetails(data:any){
+    this.showSpinner = true;
+    //  console.log("data - ", data)
+    data.year = String( data.year );
+      this.dataService.setKuberaAccountAdminPaymentDetails(data).subscribe((response) => {
+    //    console.log("createPaymentDetails response", response)
+        this.showSpinner = false;
+        this.onAdminPaymentGridReady();
+     
+      },
+      (error) => {
+        this.showSpinner = false;
+        // Handle errors here
+        console.error(error);
+      });
+  }
+
   private dateFormatter(params: ValueFormatterParams): string {
     if (params.value) {
       const date = new Date(params.value);
@@ -181,6 +259,8 @@ export class AdminComponent {
     this.gridApi.setFilterModel(null);
     this.gridApi.onFilterChanged();
   }
+
+
   approveLogin()
   {
     this.showSpinner = true;
@@ -203,6 +283,12 @@ export class AdminComponent {
       this.sendMessageToWebSocket("editRevoke")
     })
   }
+
+  search(): void {
+    // Call API or perform search logic here
+    //console.log(this.filterForm.value);
+  }
+  
 }
 
 

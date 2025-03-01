@@ -5,6 +5,12 @@
     border-radius: 5px;
    
   }
+
+  .mem-user:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    background-color: #ccc;
+  }
   
   .error-banner {
     background-color: #f2dede;

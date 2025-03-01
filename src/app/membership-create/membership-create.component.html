@@ -18,8 +18,11 @@
             <div *ngIf="memberShipOtpSuccessBanner" class="success-banner">
               MemberShip Activated
             </div>
+            <div *ngIf="showSignUpSuccessBanner" class="success-banner">
+              Reward Pointes Added
+            </div>
             <div *ngIf="loginShowErrorBanner" class="error-banner">
-              Invalid username or password. Please try again.
+             No profile found. Please try again.
             </div>
             <div *ngIf="loginSessionExpiredBanner" class="error-banner">
               Session expired Please renew your session.
@@ -33,8 +36,8 @@
             <form>
               <div class="form-group ">
                 <label for="sign_in_username">Mobile Number:</label>
-                <input type="text" id="sign_in_username" name="sign_in_username" class="username"
-                  [(ngModel)]="sign_in_username" required>
+                <input type="text" id="sign_in_username" name="sign_in_username" class="username mem-user"
+                  [(ngModel)]="sign_in_username" required [disabled]="isProfileFound">
               </div>
             
   
@@ -44,8 +47,8 @@
               <form>
                 <label for="validity_month">Validity Month:</label>
                 <select id="validity_month" name="validity_month" class="username" [(ngModel)]="validity_month" required>
-                  <option value="6">6 Months</option>
-                  <option value="1">12 Month</option>
+                  <option value="6" selected>6 Months</option>
+                  <option value="12">12 Month</option>
                 </select>
                 <div >
                 <button type="button" class="login-btn" style="margin-top: 1em; margin-bottom: 1em;" (click)="sendOtpForMembership()">otp</button>

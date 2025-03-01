@@ -106,15 +106,15 @@ background: #ffc83d; display: inline-block;">
       User exist.
     </div>
     <h2>User Mobile Number</h2>
-    <span style="    display: block;font-weight: 900;  text-align: center;">add registered user number</span>
+   
     <!-- Dropdown for predefined messages -->
   <div>
     <!-- Textarea for custom comments -->
     <input type="text" [(ngModel)]="UserMobileNumber" style="width:fit-content" maxlength="20" [disabled]="showUserFoundBanner" />
     </div>
     <div class="comment-modal-buttons">
-      <button *ngIf="showUserFoundBanner"  (click)="saveMobileNumberModal()">Save</button>
-      <button (click)="checkProfile()">Check</button>
+      <button   (click)="saveMobileNumberModal()">Save</button>
+      
       <button (click)="closeMobileNumberModal()">Close</button>
     </div>
   </div>

@@ -231,12 +231,30 @@ export class PaymentComponent implements AfterViewInit {
 
   }
 
-  showInvoice(invoiceData: any) {
-    this.openPopup();
+   showInvoice(invoiceData: any) {
+    let customer_detail:any ={}
     this.printValue = invoiceData
-
+    if(invoiceData.order[0].customer_number != ""){
+   this.getMemberShipDetails(invoiceData.order[0].customer_number);
+    }
+    else{
+      this.openPopup();
+    }
+   
   }
 
+  getMemberShipDetails(customerNumber: any) {
+    this.showSpinner = true;
+    this.customerService.getCustomerDetailsWithPointsAndMemberShipByNumber(customerNumber).subscribe((response:any) => {
+      if (response.data.kubera_profile_customer_details.length > 0) {  
+        this.printValue.customer_detail = response.data.kubera_profile_customer_details[0]  
+        this.printValue.isDiscount = true 
+      }
+      this.showSpinner = false;
+      this.openPopup();
+
+    })
+  }
 
   updatedPaidFiles: any[] = [];
   async getUpdatedPaidOrders() {
@@ -437,19 +455,8 @@ export class PaymentComponent implements AfterViewInit {
   customer_Details:any={}
   customerName:any='loading..'
   existing_loyalty_points:any='loading..'
-getCustomerDetailsByNumber(customer_number: any) {
-  this.customerService.getCustomerPointAndDetailsByNumber( this.selected_customer_number).subscribe((response) => {
-    if (response.data.kubera_profile_customer_points.length > 0) {
-    this.customer_Details = response.data.kubera_profile_customer_points[0]
-    this.customerName = response.data.kubera_profile_customer_points[0].customer_detail.name
-    this.existing_loyalty_points = response.data.kubera_profile_customer_points[0].available_points
-    }
-    else
-    {
-      this.customerName = "user not found"
-    }
-  })
-}
+  membership_Status:any='';
+
 clearAllFields()  {
 this.customer_Details = {};
 this.customerName = 'loading..';
@@ -462,13 +469,76 @@ this.existing_loyalty_points = 'loading..';
     this.selectedOrder = order;
     if( this.selected_customer_number != "")
     {
-      this.trigger_loyalty_Call = true
-      this.getCustomerDetailsByNumber(this.selected_customer_number)
+      if(order.customer_detail!=null)
+      {
+        this.trigger_loyalty_Call = true
+        // this.getCustomerDetailsByNumber(this.selected_customer_number)
+        this.customer_Details = order.customer_detail
+       this.customerName =  this.customer_Details.name 
+       this.existing_loyalty_points =  this.customer_Details.customer_points[0].available_points
+       if( this.customer_Details.customer_member_ship!=null)
+       {
+        this.membership_Status = this.isMemberShipStatus( this.customer_Details.customer_member_ship)
+       }else{
+        this.membership_Status = "No Membership"
+       }
+      
+      }else
+      {
+        
+        this.getCustomerDetailsByNumber(this.selected_customer_number, order)
+      }
+
+
+
     }else
     {
       this.trigger_loyalty_Call = false
     }
     
+  }
+
+
+  isMemberShipStatus(memberShip:any){
+    let expiryDateParts = memberShip.expiry_date.split("-");
+let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDateParts[2]);
+    let today = new Date();
+    today.setHours(0, 0, 0, 0); // set time to midnight
+    expiryDate.setHours(0, 0, 0, 0); // set time to midnight
+    
+    if (expiryDate >= today) {
+      return "Active";
+    } else {
+      return "Expired";
+    }
+  }
+  
+
+  getCustomerDetailsByNumber(customer_number: any, order:any) {
+    this.showSpinner = true;
+    this.customerService.getCustomerDetailsWithPointsAndMemberShipByNumber( this.selected_customer_number).subscribe((response) => {
+      if (response.data.kubera_profile_customer_details.length > 0) {
+
+      this.customer_Details = response.data.kubera_profile_customer_details[0]  
+      this.customerName =  this.customer_Details.name 
+      this.existing_loyalty_points =  this.customer_Details.customer_points[0].available_points
+      this.trigger_loyalty_Call = true
+      if( this.customer_Details.customer_member_ship!=null)
+        {
+         this. membership_Status = this.isMemberShipStatus( this.customer_Details.customer_member_ship)
+         order.customer_detail = response.data.kubera_profile_customer_details[0]  
+         order.isDiscount = true 
+        }else{
+         this. membership_Status = "No Membership"
+        }
+      }
+      else
+      {
+        this.trigger_loyalty_Call = false
+        this.customerName = "user not found"
+      }
+      this.showSpinner = false;
+    })
   }
   generateLoyaltyPoints(amount: number) {
     this.new_loyalty_points = Math.floor(amount / 50) * 2;
@@ -504,7 +574,9 @@ this.existing_loyalty_points = 'loading..';
     paymentType.actual_amount = this.formatStringWithTwoDecimalPlaces(this.getActualAmount(data.orderItems));
     paymentType.mode = this.paymentMode
     paymentType.period = this.sharedService.updateCurrentDateTimeInIST();
-
+    if(data.customer_detail != null){
+      this.addDiscountToActualAmount(data, paymentType )
+    }
     const csvOrderTableDataCsv = this.objectsToCsv2(data.order);
     const orderItemTableDataListCsv = this.objectsToCsv2(data.orderItems);
     const paymentTypeListCsv = this.objectsToCsv2([paymentType]);
@@ -540,15 +612,15 @@ this.existing_loyalty_points = 'loading..';
     this.showSpinner = true;
     let customer_payment_details: any = {};
     let customerPointHistory: any = {};
-    let new_redeem_points =  this.customer_Details.available_points + this.new_loyalty_points
-    let new_total_points = this.customer_Details.total_points + this.new_loyalty_points
+    let new_redeem_points =  this.customer_Details.customer_points[0].available_points + this.new_loyalty_points
+    let new_total_points = this.customer_Details.customer_points[0].total_points + this.new_loyalty_points
     customerPointHistory.new_redeem_points = new_redeem_points
-    customerPointHistory.old_redeem_points = this.customer_Details.available_points
+    customerPointHistory.old_redeem_points = this.customer_Details.customer_points[0].available_points
     customerPointHistory.point_status = 'added'
     customerPointHistory.redeem_points = this.new_loyalty_points
     customerPointHistory.redeem_waiter = 'admin',
     customerPointHistory.redeem_date=  this.sharedService.formatDateAsString( new Date()) 
-    customerPointHistory.customer_details_id = this.customer_Details.customer_detail.id
+    customerPointHistory.customer_details_id = this.customer_Details.id
     let data = {
       data: customerPointHistory
     }
@@ -556,11 +628,11 @@ this.existing_loyalty_points = 'loading..';
     customer_payment_details.paid_amount = paid_amount
     customer_payment_details.points = this.new_loyalty_points
     customer_payment_details.customer_point_history = data
-    customer_payment_details.customer_details_id = this.customer_Details.customer_detail.id
+    customer_payment_details.customer_details_id = this.customer_Details.id
     this.customerService.createCustomerPaymentDetailsAndHistory(customer_payment_details).subscribe();
     this.customerService.updateCustomerPointsAndDetails(this.customer_Details.id, new_redeem_points,new_total_points).subscribe();
-    this.sendMailToCustomerForLoyaltyPoints(this.customer_Details.customer_detail, new_redeem_points, this.new_loyalty_points)
-    this.showSpinner = false;
+    this.sendMailToCustomerForLoyaltyPoints(this.customer_Details, new_redeem_points, this.new_loyalty_points)
+   
   }
   async sendMailToCustomerForLoyaltyPoints(customer_detail: any, new_redeem_points: any, new_loyalty_points: any) {
 
@@ -602,6 +674,34 @@ this.existing_loyalty_points = 'loading..';
   }
 
 
+  isMemberShipValid(memberShip:any){
+    let expiryDateParts = memberShip.expiry_date.split("-");
+let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDateParts[2]);
+    let today = new Date();
+    today.setHours(0, 0, 0, 0); // set time to midnight
+    expiryDate.setHours(0, 0, 0, 0); // set time to midnight
+    
+    if (expiryDate >= today) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  
+
+  addDiscountToActualAmount(data:any, paymentType:any)
+  {
+  let customer_details = data.customer_detail
+  if(customer_details.customer_member_ship != null && this.isMemberShipValid(customer_details.customer_member_ship))
+  {
+    let discountPercentage = 10
+    paymentType.un_discount_actualAmount =  paymentType.actual_amount;
+    paymentType.actual_amount =paymentType.actual_amount - (paymentType.actual_amount * 0.10);
+    paymentType.discountPercentage =  discountPercentage
+  }
+
+  }
+
   async moveOrderToPaid(data: any) {
     this.showSpinner = true;
 
@@ -613,6 +713,9 @@ this.existing_loyalty_points = 'loading..';
     paymentType.actual_amount = this.formatStringWithTwoDecimalPlaces(this.getActualAmount(data.orderItems));
     paymentType.mode = this.paymentMode
     paymentType.period = this.sharedService.updateCurrentDateTimeInIST();
+    if(data.customer_detail != null){
+      this.addDiscountToActualAmount(data, paymentType )
+    }
     delete data.order[0].table_place;
     delete data.order[0].customer_number;
     const csvOrderTableDataCsv = this.objectsToCsv2(data.order);

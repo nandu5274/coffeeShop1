@@ -33,6 +33,8 @@ import { CustomerAvailableCheckerComponent } from './customer-available-checker/
 import { ProfileComponent } from './profile/profile.component';
 import { MembershipCreateComponent } from './membership-create/membership-create.component';
 import { MembershipCardComponent } from './membership-card/membership-card.component';
+import { CustomerProfileComponent } from './customer-profile/customer-profile.component';
+import { AdminPaymentFormComponent } from './admin-payment-form/admin-payment-form.component';
 
 
 @NgModule({
@@ -58,7 +60,9 @@ import { MembershipCardComponent } from './membership-card/membership-card.compo
     CustomerAvailableCheckerComponent,
     ProfileComponent,
     MembershipCreateComponent,
-    MembershipCardComponent
+    MembershipCardComponent,
+    CustomerProfileComponent,
+    AdminPaymentFormComponent
   ],
   imports: [
     BrowserModule,

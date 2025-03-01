@@ -248,8 +248,15 @@ onCustomerLogin(login_status: any) {
   this.closeModal()
   
   let customer_details = JSON.parse(sessionStorage.getItem("customer_Details")!);
-  console.log(customer_details);
+
   this.onLoginSuccess(customer_details.customer_detail.name);
   // Handle the login event (e.g., update UI, make an API call, etc.)
+}
+
+
+navigateToProfile(){
+let customer_details = JSON.parse(sessionStorage.getItem("customer_Details")!);
+this.router.navigate(['/profile'], { queryParams: { data: btoa(customer_details.customer_detail.mobile_number) } });
+
 }
 }

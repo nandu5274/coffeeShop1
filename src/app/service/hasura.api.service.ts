@@ -100,6 +100,37 @@ export class HasuraApiService {
 
   }
 
+
+  setKuberaAccountAdminPaymentDetails(data:any): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'x-hasura-admin-secret': KUBERA_ACCOUNT_GRAPHQL_KEY // Replace with your authorization header
+    });
+
+    const operationsDoc = `
+  mutation insert_kubera_Account_kubera_admin_payment_one($kubera_Account_kubera_admin_payment_insert_input:kubera_Account_kubera_admin_payment_insert_input!) {
+  insert_kubera_Account_kubera_admin_payment_one(object: $kubera_Account_kubera_admin_payment_insert_input) {
+      amount
+      company_name
+      created_at
+      id
+      month
+      payment_date
+      year
+  }
+}
+  `;
+  const body = {
+    query: operationsDoc,
+    variables: {
+      kubera_Account_kubera_admin_payment_insert_input: data
+    }
+  };
+    return this.http.post(this.graphqlApiUrl, body, { headers });
+
+  }
+
+
   getConfigDetails(): Observable<any> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
@@ -125,6 +156,48 @@ export class HasuraApiService {
     });
     return this.http.get<any>(this.updateConfigByTypeUrl+ type + "/"+ status, { headers });
   }
+
+
+
+  getKuberaAccountAdminPaymentDetails(month:any, year:any): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'x-hasura-admin-secret': KUBERA_ACCOUNT_GRAPHQL_KEY // Replace with your authorization header
+    });
+
+    const operationsDoc = `
+    query kubera_Account_kubera_admin_payment($month: String!, $year: String!)  {
+  kubera_Account_kubera_admin_payment_aggregate(order_by: {id: desc}, where: {month: {_eq: $month}, year: {_eq: $year}}) {
+    aggregate {
+      sum {
+        amount
+      }
+    }
+    nodes {
+      amount
+      company_name
+      created_at
+      id
+      month
+      payment_date
+      year
+      payment_type
+    }
+  }
+}
+
+  `;
+  const body = {
+    query: operationsDoc,
+    variables: {
+      month: month,
+      year:year
+    }
+  };
+    return this.http.post(this.graphqlApiUrl, body, { headers });
+
+  }
+
 
 
 }

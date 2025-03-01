@@ -1,5 +1,5 @@
 <!-- ======= Menu Section ======= -->
-<section id="menu" class="menu section-bg" style="padding-top: 9em;">
+<section id="menu"  *ngIf="section"   #menuSection  class="menu section-bg" style="padding-top: 9em;">
   <div class="container" data-aos="fade-up" >
 
     <div  *ngIf="showMenu"  class="section-title" style="padding-top: 1em; padding-bottom: 20px;">
@@ -9,7 +9,8 @@
           <p class="header-align">Check Our Menu 
              <a *ngIf="isCap === 'true'" style="    display: block;">
              <img src="assets/img/table.png" class="table"  alt=""> 
-          <a style="font-family: sans-serif; font-size: smaller; font-weight: 500;"> : {{tablePlace}} {{tableNumber}}</a>
+          <a style="font-family: sans-serif; font-size: smaller; font-weight: 500;"> : {{tablePlace}} {{tableNumber}} </a>
+          <a style="font-family: sans-serif; font-size: smaller; font-weight: 500;">  {{tableCustomerName}} </a>
         </a>
           </p>
           <a class = "itemgst"> * Images displayed below are meant for reference.</a>
@@ -35,8 +36,31 @@
     </div>
 
 
-
-
+    <div class="search-container" style=" 
+    text-align: center;
+    margin-bottom: 20px;
+    margin-right: 1em;
+    margin-left: 1em;
+    justify-self: center;
+    position: relative;"
+>
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        class="search-input" 
+        placeholder="Search items" 
+        (ngModelChange)="onSearchChange()"
+      />
+      <button 
+        class="clear-button" 
+        *ngIf="searchTerm" 
+        (click)="clearSearch()"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+        </svg>
+      </button>
+    </div>
 
 <!-- 
     <div class="row" data-aos="fade-up" data-aos-delay="100">
@@ -53,8 +77,8 @@
 
     <div   *ngIf="showCourse" class="row" data-aos="fade-up" data-aos-delay="100">
       <div class="col-lg-12 d-flex justify-content-center" style="padding:0">
-        <ul  id="menu-flters">
-                    <li data-filter="*" class="filter-active"  (click)="filterBYcuisine('all')" >All</li>
+        <ul  id="menu-flters" [ngClass]="{'hidden': isSearchEnabled}" >
+                    <li id="all-tems"  #allItems data-filter="*" class="filter-active"  (click)="filterBYcuisine('all')" >All</li>
           <li *ngFor="let menuCourse of menuCourseCuisineList.cuisines"  [attr.data-filter]="menuCourse.cuisine.class" #menuListItem  
            (click)="filterBYcuisine(menuCourse.cuisine.type)">
             {{menuCourse.cuisine.type}}</li> 
@@ -106,108 +130,6 @@
 
 
     
-
-<!-- 
-      <div class="col-lg-6 menu-item filter-starters" (click)="openModal()">
-        <img src="assets/img/menu/lobster-bisque.jpg" class="menu-img" alt="">
-        <div class="menu-content">
-          <a>Lobster Bisque</a><span>$5.95</span>
-        </div>
-        <div class="menu-ingredients">
-          Lorem, deren, trataro, filede, nerada
-        </div>
-      </div>
-
-      <div class="col-lg-6 menu-item filter-specialty">
-        <img src="assets/img/menu/bread-barrel.jpg" class="menu-img" alt="">
-        <div class="menu-content">
-          <a>Bread Barrel</a><span>$6.95</span>
-        </div>
-        <div class="menu-ingredients">
-          Lorem, deren, trataro, filede, nerada
-        </div>
-      </div>
-
-      <div class="col-lg-6 menu-item filter-starters">
-        <img src="assets/img/menu/cake.jpg" class="menu-img" alt="">
-        <div class="menu-content">
-          <a>Crab Cake</a><span>$7.95</span>
-        </div>
-        <div class="menu-ingredients">
-          A delicate crab cake served on a toasted roll with lettuce and tartar sauce
-        </div>
-      </div>
-
-      <div class="col-lg-6 menu-item filter-salads">
-        <img src="assets/img/menu/caesar.jpg" class="menu-img" alt="">
-        <div class="menu-content">
-          <a href="#">Caesar Selections</a><span>$8.95</span>
-        </div>
-        <div class="menu-ingredients">
-          Lorem, deren, trataro, filede, nerada
-        </div>
-      </div>
-
-      <div class="col-lg-6 menu-item filter-specialty">
-        <img src="assets/img/menu/tuscan-grilled.jpg" class="menu-img" alt="">
-        <div class="menu-content">
-          <a>Tuscan Grilled</a><span>$9.95</span>
-        </div>
-        <div class="menu-ingredients">
-          Grilled chicken with provolone, artichoke hearts, and roasted red pesto
-        </div>
-      </div>
-
-      <div class="col-lg-6 menu-item filter-starters">
-        <img src="assets/img/menu/mozzarella.jpg" class="menu-img" alt="">
-        <div class="menu-content">
-          <a>Mozzarella Stick</a><span>$4.95</span>
-        </div>
-        <div class="menu-ingredients">
-          Lorem, deren, trataro, filede, nerada
-        </div>
-      </div>
-
-      <div class="col-lg-6 menu-item filter-salads">
-        <img src="assets/img/menu/greek-salad.jpg" class="menu-img" alt="">
-        <div class="menu-content">
-          <a>Greek Salad</a><span>$9.95</span>
-        </div>
-        <div class="menu-ingredients">
-          Fresh spinach, crisp romaine, tomatoes, and Greek olives
-        </div>
-      </div>
-
-      <div class="col-lg-6 menu-item filter-salads">
-        <img src="assets/img/menu/spinach-salad.jpg" class="menu-img" alt="">
-        <div class="menu-content">
-          <a>Spinach Salad</a><span>$9.95</span>
-        </div>
-        <div class="menu-ingredients">
-          Fresh spinach with mushrooms, hard boiled egg, and warm bacon vinaigrette
-        </div>
-      </div>
-
-      <div class="col-lg-6 menu-item filter-specialty">
-        <img src="assets/img/menu/lobster-roll.jpg" class="menu-img" alt="">
-        <div class="menu-content">
-          <a>Lobster Roll</a><span>$12.95</span>
-        </div>
-        <div class="menu-ingredients">
-          Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll
-        </div>
-      </div>
-
-      <div class="col-lg-6 menu-item filter-coffee">
-        <img src="assets/img/menu/lobster-roll.jpg" class="menu-img" alt="">
-        <div class="menu-content">
-          <a>Cofee</a><span>$12.95</span>
-        </div>
-        <div class="menu-ingredients">
-          Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll
-        </div>
-      </div> -->
-
     </div>
     <div  *ngIf="!showMenu"  class="invalid-route">
         please, close the browser and scan QR code from the table to view menu

@@ -616,6 +616,9 @@ export class CaptainPageComponent implements AfterViewInit {
   isTableNUmberUndefined(): boolean {
     return this.tableNumber == null;
   }
+  isTableCustomerNameUndefined(): boolean {
+    return this.tableCustomerName == null;
+  }
   openOrderMenuModal() {
     sessionStorage.removeItem('table')
     sessionStorage.removeItem('tableSet')
@@ -624,6 +627,7 @@ export class CaptainPageComponent implements AfterViewInit {
     this.showMenuOrderModal = true
   }
   tableNumber: any
+  tableCustomerName:any
 
   closeOrderMenuModal() {
     this.showMenuOrderModal = false
@@ -632,6 +636,7 @@ export class CaptainPageComponent implements AfterViewInit {
   openMenuPage() {
     sessionStorage.setItem('table', this.tableNumber);
     sessionStorage.setItem('tablePlace', this.tablePlace);
+    sessionStorage.setItem('tableCustomerName', this.tableCustomerName);
     sessionStorage.setItem('tableSet', '1');
     sessionStorage.setItem('isCap', 'true');
     this.sharedService.setShowMenuFlag(1)
@@ -835,7 +840,7 @@ export class CaptainPageComponent implements AfterViewInit {
 
   tablePlace: string = '';
   showDropdown: boolean = false;
-  options: string[] = ['GI', 'GO', 'FO', 'FI', 'PG', 'PF', 'C'];
+  options: string[] = ['GR','GI', 'GO', 'FO', 'FI', 'PG', 'PF', 'C'];
 
   toggleDropdown() {
     this.showDropdown = !this.showDropdown;

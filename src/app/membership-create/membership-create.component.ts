@@ -178,22 +178,22 @@ export class MembershipCreateComponent {
       let updateAvailablePoints = Number(this.loyalty_points) - Number(this.redeem_points);
   
       //create an entry in the history table and then update the points in the customer point  table
-      this.createPointsHistoryAndUpdateCustomerPoints(updateAvailablePoints);
+      this.createPointsHistoryAndUpdateCustomerPoints(updateAvailablePoints, 'redeemed', this.redeem_points, this.loyalty_points, '1000');
      
     }
 
   }
 
-  createPointsHistoryAndUpdateCustomerPoints(updateAvailablePoints:any) {
+  createPointsHistoryAndUpdateCustomerPoints(updateAvailablePoints:any, point_status:any, redeem_points:any, old_redeem_points:any, total_points:any) {
     this.showSpinner = true;
     let cap_user = JSON.parse(atob(localStorage.getItem("cap_user")!));
 
     let data = {
       customer_details_id: this.customerDetails.customer_detail.id,
-      redeem_points: this.redeem_points,
+      redeem_points: redeem_points,
       new_redeem_points: updateAvailablePoints,
-      old_redeem_points:  this.loyalty_points,
-      point_status: 'redeemed',
+      old_redeem_points:  old_redeem_points,
+      point_status: point_status,
       redeem_waiter: cap_user.user_name,
       redeem_date:  this.sharedService.formatDateAsString( new Date()) ,
     }
@@ -208,7 +208,7 @@ export class MembershipCreateComponent {
 
         } else {
          //csert the points in the customer points table
-          this.customerService.updateCustomerPoints(this.customerDetails.id, updateAvailablePoints).subscribe(
+          this.customerService.updateCustomerPointsAndDetailsWithId(this.customerDetails.id, updateAvailablePoints, total_points).subscribe(
             (result: any) => {
               if (result.errors && result.errors.length > 0) {
                 this.showError = true;
@@ -217,6 +217,7 @@ export class MembershipCreateComponent {
                 this.loyalty_points = result.data.update_kubera_profile_customer_points.returning[0].available_points
                 this.showSignUpSuccessBanner = true;
                 this.showSpinner = false;
+                this.sendMailToCustomerForLoyaltyPoints(this.customerDetails.customer_detail, updateAvailablePoints, 100);
               }
             },
             (error: any) => {
@@ -295,8 +296,34 @@ export class MembershipCreateComponent {
   }
 
 
-  triggerMemberShipSuccessMail(){
- 
+  triggerMemberShipSuccessMail(memberShipRequest:any, Membership_id:any, customerData:any){
+    let request: any = {};
+    request.recipient = customerData.email_id;
+    request.msgBody = "Hey! " + customerData.name + "\nEnjoy your Cafe Kubera membership! \n\nhere are you details: "
+      + "\nMembership id : " + Membership_id+ "\nExpire Date : " + memberShipRequest.expiry_date + "\nValidity : " + memberShipRequest.validity_month + " months" 
+      +"\n\n Elite Benefits: "
+      + "\n1. 100 Loyalty Points awarded upon membership purchase."
+      + "\n2. 10% Discount on all Cafe Kubera bills, redeemable with loyalty points."
+      + "\n3. Complimentary Dish for candlelight dinners at Cafe Kubera."
+      + "\n4. 10% Discount on SNAP Gym annual memberships."
+      + "\n5. ₹500 Instant Discount on Duty-Free purchases for every ₹3500 spent."
+      + "\n6. 10% Discount on Adventura Rides."
+      + " \n\nThanks and Regards,\nCAFE KUBERA,\n3rd line, near Guru Nanak Colony,\nKanaka Durga Gazetted Officers Colony, \nGuru Nanak Colony, Vijayawada, Andhra Pradesh 520007.\ncontact: 9652544239";
+    request.subject = "We appreciate your enrollment in Cafe Kubera membership program."
+    this.dataService.SendSimpleMail(request).subscribe();
+  }
+
+  async sendMailToCustomerForLoyaltyPoints(customer_detail: any, new_redeem_points: any, new_loyalty_points: any) {
+
+    let request: any = {};
+    request.recipient = customer_detail.email_id;
+    request.msgBody = "Hey! " + customer_detail.name +"," + "\n Thank you for visiting Cafe Kubera. We added " 
+    + new_loyalty_points + " loyalty points to your account. Currently you have Total of " + new_redeem_points + " points in you account."
+      + " \n\nThanks and Regards,\nCAFE KUBERA,\n3rd line, near Guru Nanak Colony,\nKanaka Durga Gazetted Officers Colony, \nGuru Nanak Colony, Vijayawada, Andhra Pradesh 520007.\ncontact: 9652544239";
+    request.subject = "Thank you for visiting Cafe Kubera"
+    this.dataService.SendSimpleMail(request).subscribe();
+    
+
   }
   createSignUpUser() {
     this.clearAllBanners();
@@ -480,7 +507,7 @@ export class MembershipCreateComponent {
   customerDetails: any = {}
   redeem_points: any = 0
   isProfileFound:boolean=false  
-  validity_month:any=''
+  validity_month:any=6
   CheckPoints() {
     this.clearAllBanners()
     // sign_in_username is used as mobile number
@@ -570,8 +597,12 @@ memberShipOtpSuccessBanner:boolean=false
             let Membership_id = result.data.insert_kubera_profile_customer_member_ship_one.id;
             this.memberShipOtpSuccessBanner = true;
             this.showSpinner = false;
-            //this.triggerMemberShipSuccessMail(request, Membership_id, this.customerDetails.customer_detail);
+            this.isProfileFound = false
+            this.triggerMemberShipSuccessMail(request, Membership_id, this.customerDetails.customer_detail);
             //add 100 loyalty points to the customer
+            let updateAvailablePoints = this.customerDetails.available_points + 100
+            let total_points = this.customerDetails.total_points + 100
+            this.createPointsHistoryAndUpdateCustomerPoints(updateAvailablePoints, 'added', 100, this.customerDetails.available_points, total_points);
           }
         }
 

@@ -104,20 +104,22 @@ export class MembershipCardComponent {
 
     const card = event.currentTarget as HTMLElement;
     const rect = card.getBoundingClientRect();
-
+  
     // Get the current touch position
     const touchX = event.touches[0].clientX - rect.left;
     const touchY = event.touches[0].clientY - rect.top;
-
-    // Calculate the difference between the current touch and the initial touch
-    const deltaX = touchX - this.lastTouchX;
-
-    // If the swipe is horizontal (left or right swipe)
-    if (Math.abs(deltaX) > Math.abs(touchY - this.lastTouchY)) {
-      const rotationY = deltaX * 0.5; // Adjust the multiplier to control the sensitivity
-      this.rotationStyle = `rotateY(${rotationY}deg)`; // Rotate along the Y-axis
-    }
-
+  
+    // Normalize touch position (from 0 to 1) relative to card's dimensions
+    const xNormalized = touchX / rect.width;
+    const yNormalized = touchY / rect.height;
+  
+    // Map normalized values to a 360-degree rotation range
+    const xRotate = (yNormalized - 0.5) * 360; // Full rotation in X-axis
+    const yRotate = (xNormalized - 0.5) * -360; // Full rotation in Y-axis
+  
+    // Update the rotation style with backticks for string interpolation
+    this.rotationStyle = `rotateX(${xRotate}deg) rotateY(${yRotate}deg)`;
+  
     // Prevent default behavior to avoid scrolling or zooming
     event.preventDefault();
   }

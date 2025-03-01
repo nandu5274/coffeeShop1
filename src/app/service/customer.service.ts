@@ -322,6 +322,69 @@ const body = {
     );
 
 }
+getCustomerDetailsWithPointsAndMemberShipByNumber(number:any): Observable<any> {
+  const headers = new HttpHeaders({
+    'Content-Type': 'application/json',
+    'x-hasura-admin-secret': CUSTOMER_ACCOUNT_GRAPHQL_ADMIN_SECRETE // Replace with your authorization header
+  });
+
+  const operationsDoc = `
+query kubera_profile_customer_details($mob: String!) {
+  kubera_profile_customer_details(where: {mobile_number: {_eq: $mob}}) {
+email_id
+    id
+    mobile_number
+    name
+    customer_points {
+      id
+      available_points
+      customer_details_id
+      total_points
+    }
+    customer_member_ship {
+      id
+      member_ship_id
+      validity_month
+      expiry_date
+      customer_details_id
+    }
+  }
+  
+}
+
+
+`;
+const body = {
+  query: operationsDoc,
+  variables: {
+    mob: number
+      
+  }
+};
+  return this.http.post(this.apiUrl, body, { headers }).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('Error:', error);
+
+        // Check for 200 status code with error in response body
+        if (error.status === 200 && error.error && error.error.errors) {
+          const errors = error.error.errors;
+          errors.forEach((graphqlError:any) => {
+            console.error('GraphQL Error:', graphqlError.message);
+            const errorMessage = graphqlError.message;
+
+            // Handle specific errors, e.g., uniqueness violation
+            if (errorMessage.includes('Uniqueness violation')) {
+              alert('Email or Mobile Number already exists.');
+            }
+          });
+        } else {
+          console.error('Network Error:', error);
+        }
+        return throwError(() => error);
+      })
+    );
+
+}
 
   getCustomerPointAndDetailsByNumber(name:any): Observable<any> {
     const headers = new HttpHeaders({
@@ -576,6 +639,55 @@ available_points
   }
 
   updateCustomerPointsAndDetails(id:any, available_points:any, total_points:any): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'x-hasura-admin-secret': CUSTOMER_ACCOUNT_GRAPHQL_ADMIN_SECRETE // Replace with your authorization header
+    });
+
+    const operationsDoc = `
+    mutation update_kubera_profile_customer_points($id:Int,$available_points:Int,$total_points:Int) {
+      update_kubera_profile_customer_points(where: {customer_details_id: {_eq: $id}}, _set: {available_points: $available_points, total_points: $total_points}) {
+    affected_rows
+       returning {
+      available_points
+    }
+      }
+    }
+    
+  `;
+  const body = {
+    query: operationsDoc,
+    variables: {
+        id: id,
+        available_points: available_points,
+        total_points: total_points  
+    }
+  };
+    return this.http.post(this.apiUrl, body, { headers }).pipe(
+        catchError((error: HttpErrorResponse) => {
+          console.error('Error:', error);
+  
+          // Check for 200 status code with error in response body
+          if (error.status === 200 && error.error && error.error.errors) {
+            const errors = error.error.errors;
+            errors.forEach((graphqlError:any) => {
+              console.error('GraphQL Error:', graphqlError.message);
+              const errorMessage = graphqlError.message;
+  
+              // Handle specific errors, e.g., uniqueness violation
+              if (errorMessage.includes('Uniqueness violation')) {
+                alert('Email or Mobile Number already exists.');
+              }
+            });
+          } else {
+            console.error('Network Error:', error);
+          }
+          return throwError(() => error);
+        })
+      );
+
+  }
+  updateCustomerPointsAndDetailsWithId(id:any, available_points:any, total_points:any): Observable<any> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'x-hasura-admin-secret': CUSTOMER_ACCOUNT_GRAPHQL_ADMIN_SECRETE // Replace with your authorization header

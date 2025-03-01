@@ -45,8 +45,9 @@
             <p>Approve the orders</p>
             <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
               <button style=" background-color: #d49b3b; color: #11100e;" (click) = "openOrderMenuModal()">order</button>
+              <button style=" background-color: #d49b3b; color: #11100e;" (click) = "GenerateMemberShip()">Member Ship</button>
               <button style=" background-color: #d49b3b; color: #11100e;" (click) = "refreshOrder()">Refresh</button>
-             <button style=" background-color: #d49b3b; color: #11100e;" (click) = "GenerateMemberShip()">Member Ship</button>
+
               <!-- <button style=" background-color: #d49b3b; color: #11100e;" (click) = "openModal('d')">show c</button> -->
             
            
@@ -139,8 +140,9 @@
             <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
               <button style=" background-color: #d49b3b; color: #11100e;" (click) = "refreshApprovedOrder()">Refresh</button>
               <!-- <button style=" background-color: #d49b3b; color: #11100e;" (click) = "openModal('d')">show c</button> -->
-              <button style=" background-color: #d49b3b; color: #11100e;"    (click)="toggleModal()">orders</button>
               <button style=" background-color: #d49b3b; color: #11100e;" (click) = "GenerateMemberShip()">Member Ship</button>
+              <button style=" background-color: #d49b3b; color: #11100e;"    (click)="toggleModal()">orders</button>
+
             </div>
           
           </div>
@@ -301,7 +303,9 @@
                 <option *ngFor="let option of options" [value]="option">{{ option }}</option>
               </select>
             </div>
-
+            <div style="    margin: 1em;">
+              Name : <input type = "Text"  [(ngModel)]="tableCustomerName" (ngModelChange)="isTableCustomerNameUndefined()">
+            </div>
 
           </div>
      

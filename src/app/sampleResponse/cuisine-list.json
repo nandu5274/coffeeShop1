@@ -20,6 +20,16 @@
     },
     {
       "cuisine": {
+        "type": "FreshJuice",
+        "class": ".filter-FreshJuice",
+        "items": [
+          "FreshJuice"
+        ]
+      }
+    },
+    
+    {
+      "cuisine": {
         "type": "Barista",
         "class": ".filter-HotCoffees",
         "items": [

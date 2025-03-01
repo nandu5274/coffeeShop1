@@ -9,6 +9,7 @@ import { StockComponent } from './stock/stock.component';
 import { AdminComponent } from './admin/admin.component';
 import { ProfileComponent } from './profile/profile.component';
 import { MembershipCardComponent } from './membership-card/membership-card.component';
+import { CustomerProfileComponent } from './customer-profile/customer-profile.component';
 
 const routes: Routes = [
   { path: '', component: HomePageComponent },
@@ -18,8 +19,9 @@ const routes: Routes = [
   { path: 'payment', component: PaymentComponent },
   { path: 'stock', component: StockComponent },
   { path: 'admin', component: AdminComponent },
-  { path: 'profile', component: ProfileComponent },
+  { path: 'external-profile', component: ProfileComponent },
   { path: 'card', component: MembershipCardComponent },
+  { path: 'profile', component: CustomerProfileComponent },
 ];
 
 @NgModule({
