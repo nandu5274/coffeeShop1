@@ -27,8 +27,11 @@ isOtherItemsActive:boolean = false;
 orderProcessingStatus:any='';
 response!:ResponseDto;
 previousUrl:any;
+isCap:any;
 showSpinner:Boolean = false
 showMenu:boolean = false
+showCustomerLoginModal:boolean=false;
+diable_login_btn:boolean=false;
 ngOnInit(){
   const sessionCartDataList = sessionStorage.getItem('cartDataList');
 
@@ -81,7 +84,29 @@ this.webSocketService.getMessageSubject().subscribe((event) => {
   console.log("message", message)
 
 });
+let localStorageData = sessionStorage.getItem("is_login");
 
+
+this.isCap =  sessionStorage.getItem('isCap');
+if(this.isCap )
+{
+  this.diable_login_btn=true
+
+}
+else
+{
+  this.diable_login_btn=false
+
+if (localStorageData) {
+  let isLoggedIn = localStorageData === "true";
+
+  if(isLoggedIn)
+  {
+    this.onCustomerLogin(isLoggedIn)
+  }
+
+}
+}
 
 }
 
@@ -175,6 +200,7 @@ showInfoMessage(msg:any): void {
 
 
 infoMessages: string[] = [];
+pageType:any = "cap"
 
   addInfoMessage(message: string): void {
     this.infoMessage = message;
@@ -185,6 +211,52 @@ infoMessages: string[] = [];
     this.infoMessage = null;
     this.infoMessages.splice(index, 1);
   }
-
+  openCustomerLoginModal()
+  {
+    this.showCustomerLoginModal=true;
+  }
+  closeModal()
+  {
+    this.showCustomerLoginModal = false;
+  }
   
+  isLoggedIn: boolean = false;
+  userInitial: string = ''; // First letter of the user's name
+  customerName:string = ''; 
+  // Example login success handler
+  onLoginSuccess(userName: string) {
+    this.isLoggedIn = true;
+    this.userInitial = userName.charAt(0).toUpperCase();
+    this.customerName = userName
+  }
+  
+  // Example signout handler
+  onSignOut() {
+    this.isLoggedIn = false;
+    this.userInitial = '';
+    sessionStorage.removeItem('customer_Details')
+    sessionStorage.removeItem('is_login')
+    this.sharedService.setIsLoginFlag(false);
+  }
+  isDropdownOpen: boolean = false;
+
+toggleDropdown() {
+  this.isDropdownOpen = !this.isDropdownOpen;
+}
+onCustomerLogin(login_status: any) {
+  console.log('User logged in:', login_status);
+  this.closeModal()
+  
+  let customer_details = JSON.parse(sessionStorage.getItem("customer_Details")!);
+
+  this.onLoginSuccess(customer_details.customer_detail.name);
+  // Handle the login event (e.g., update UI, make an API call, etc.)
+}
+
+
+navigateToProfile(){
+let customer_details = JSON.parse(sessionStorage.getItem("customer_Details")!);
+this.router.navigate(['/profile'], { queryParams: { data: btoa(customer_details.customer_detail.mobile_number) } });
+
+}
 }

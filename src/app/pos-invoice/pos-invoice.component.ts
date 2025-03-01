@@ -36,17 +36,62 @@ export class PosInvoiceComponent implements OnChanges {
   {
 this.zeroQuantityRemovedOrderItems = this.printData.orderItems.filter((item: any) => item.item_quantity !== 0);
   }
+  isDiscountEnabled:boolean = false
+  discountPercentage:any=''
+  addDiscountToActualAmount()
+  {
+  let customer_details = this.printData.customer_detail
+  if(customer_details.customer_member_ship != null && this.isMemberShipValid(customer_details.customer_member_ship))
+  {
+    this.isDiscountEnabled = true
+    this.discountPercentage = 10
+    this.invoiceData.un_discount_actualAmount =  this.invoiceData.actualAmount;
+    this.printData.un_discount_actualAmount =  this.invoiceData.actualAmount;
+    this.printData.actualAmount = this.invoiceData.actualAmount - (this.invoiceData.actualAmount * 0.10);
+    this.printData.discountPercentage =  this.discountPercentage
+     return this.invoiceData.actualAmount = this.invoiceData.actualAmount - (this.invoiceData.actualAmount * 0.10);
+
+  }
+  else{
+    this.isDiscountEnabled = false
+    return this.invoiceData.actualAmount 
+  }
+  }
+
+
+  isMemberShipValid(memberShip:any){
+    let expiryDateParts = memberShip.expiry_date.split("-");
+let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDateParts[2]);
+    let today = new Date();
+    today.setHours(0, 0, 0, 0); // set time to midnight
+    expiryDate.setHours(0, 0, 0, 0); // set time to midnight
+    
+    if (expiryDate >= today) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  
+
   populateInvoice()
   {
     this.invoiceData.date = this.sharedService.updateCurrentDateInIST();
     this.invoiceData.tokenNumbers = this.getTokenNumbersFromData(this.printData)
     this.invoiceData.tableNo = this.printData.order[0].table_no
     this.invoiceData.billNo = this.printData.order[0].billNo
+    this.invoiceData.CustomerNumber = this.getCustomerNumber(this.printData.order)
     this.updateOrderItemPrices(this.printData.orderItems);
     this.zeroQuantityRemovedOrder()
 
     this.invoiceData.items = this.zeroQuantityRemovedOrderItems
     this.invoiceData.actualAmount =  this.formatStringWithTwoDecimalPlaces(this.getActualAmount(this.printData.orderItems))
+    if(this.printData.customer_detail!=null)
+    {
+      this.invoiceData.actualAmount = this.addDiscountToActualAmount();
+    }
+
+
     this.invoiceData.sgst =   (this.invoiceData.actualAmount * 2.5) / 100;
     this.invoiceData.sgst = this.formatStringWithTwoDecimalPlaces( this.invoiceData.sgst );
     this.invoiceData.cgst =  (this.invoiceData.actualAmount * 2.5) / 100;
@@ -56,7 +101,11 @@ this.zeroQuantityRemovedOrderItems = this.printData.orderItems.filter((item: any
     
       this.invoiceData.GrandTotal =  this.formatStringWithTwoDecimalPlaces(    this.invoiceData.GrandTotal)
   }
+  getCustomerNumber(ordersList: any[]) {
+    const latestCustomerNumber = ordersList.find((obj: any) => obj.customer_number !== "")?.customer_number || "";
   
+    return latestCustomerNumber;
+  }
   getTokenNumbersFromData(data:any)
   {
      return data.order.map((obj: any) => obj.id).join(',');

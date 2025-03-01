@@ -24,6 +24,8 @@
     "@apollo/client": "^3.8.6",
     "@stomp/stompjs": "^7.0.0",
     "@types/sockjs-client": "^1.5.3",
+    "ag-grid-angular": "^29.3.5",
+    "ag-grid-community": "^29.3.5",
     "apollo-angular": "^5.0.2",
     "assert": "^2.1.0",
     "crypto-browserify": "^3.12.0",

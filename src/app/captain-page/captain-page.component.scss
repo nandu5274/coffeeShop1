@@ -85,10 +85,12 @@ transform: translateX(0);
 
 
 .expand_border{
+  display: grid;
   border-radius: 30px;
     background: #cda45ef0;
-    margin: 1em;
-    padding: 0.5em;
+    margin: 0.1em;
+    align-items: center;
+    margin-bottom: 1.0em;
 }
 
 .order-container{
@@ -329,19 +331,19 @@ transform: translateX(0);
 
 
   /* loading-spinner.component.css */
-.spinner-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10000; /* Ensure it's above other content */
-  backdrop-filter: blur(10px); 
-}
+// .spinner-overlay {
+//   position: fixed;
+//   top: 0;
+//   left: 0;
+//   width: 100%;
+//   height: 100%;
+//   background: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+//   z-index: 10000; /* Ensure it's above other content */
+//   backdrop-filter: blur(10px); 
+// }
 
 .spinner {
   border: 6px solid #f3f3f3;
@@ -482,3 +484,199 @@ transform: translateX(0);
       padding: 5px;
       border: 1px solid #ccc;
     }
+
+          /* Styling for the entire alert section */
+.alert-container {
+  position: fixed;
+  top: 120px;  /* Move to the top of the screen */
+  right: 20px; /* Keep it aligned to the right */
+  width: 400px; /* Adjust as per your layout */
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media screen and (max-width: 600px) {
+  .alert-container {
+    position: fixed;
+    top: 120px;  /* Move to the top of the screen */
+    right: 1px; /* Keep it aligned to the right */
+    width: unset;
+    text-align: center;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+.status-container {
+  position: fixed;
+  bottom: 20px; /* Distance from the bottom of the screen */
+  right: 20px;  /* Distance from the right side of the screen */
+  z-index: 1000; /* Ensure it stays above other elements */
+}
+
+.status-dot {
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.connected {
+  background-color: green;
+}
+
+.disconnected {
+  background-color: red;
+}
+
+/* Styling for individual notification messages */
+.notification-message {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  color: #721c24;
+  padding: 10px;
+  font-size: 14px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+/* Special class for revoke alert type */
+.notification-message-revoke {
+  background-color: #ffeeba;
+  border: 1px solid #ffeeba;
+  color: #856404;
+}
+
+.mobile-modal-content {
+  background: #d49b3b;
+  padding: 14px;
+  border-radius: 8px;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-family: Arial, sans-serif;
+  color: #000;
+}
+
+/* Modal overlay */
+.comment-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6); /* Slightly darker overlay */
+  z-index: 1000;
+}
+
+
+/* Text area styling */
+.comment-modal-content textarea {
+  width: 100%;
+  height: 80px;
+  padding: 10px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #555;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  resize: vertical; /* Allow vertical resizing only */
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.comment-modal-content textarea:focus {
+  border-color: #cda45e; /* Border color on focus */
+  box-shadow: 0 0 5px rgba(205, 164, 94, 0.3);
+}
+
+/* Button container */
+.comment-modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Buttons styling */
+.comment-modal-buttons button {
+  background: #090807;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  display: inline-block;
+  padding: 12px 30px;
+  border-radius: 50px;
+  transition: 0.3s;
+  line-height: 1;
+  color: white;
+  border: 2px solid #cda45e;
+  margin: 10px 0px 7px 1px;
+  float: right;
+}
+
+.comment-modal-buttons button:first-child {
+  background: #198754; /* Save button color */
+}
+
+.comment-modal-buttons button:first-child:hover {
+  background: #b8944e;
+  transform: translateY(-2px);
+}
+
+.comment-modal-buttons button:last-child {
+  background: #000000; /* Close button color */
+}
+
+.comment-modal-buttons button:last-child:hover {
+  background: #000000;
+  transform: translateY(-2px);
+}
+
+
+.cust-login{
+  border: 12px solid #1a1814;
+  border-radius: 42px;
+  background: #1a1814;
+  width: fit-content;
+  align-self: center;
+}
+
+@media only screen and (max-width: 991px) {
+
+.cust-login{
+  border: 12px solid #1a1814;
+  border-radius: 42px;
+  background: #1a1814;
+  max-width: fit-content;
+  width: 90%;
+  align-self: center;
+}
+}
+.spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-text {
+  color: white;
+  font-size: 1.5em;
+  font-weight: bold;
+}

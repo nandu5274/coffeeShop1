@@ -27,7 +27,11 @@
                     <a>Date: {{invoiceData.date}}</a>
                     <a>Table No:  {{invoiceData.tableNo}}</a>
                 </div>
-                
+                <div style="    display: flex;
+                justify-content: space-between;">
+                    <a>Customer Number: {{invoiceData.CustomerNumber}}</a>
+                 
+                </div>
                 <div style="    display: flex;
                 justify-content: space-between;">
                     <a>Token Nos: {{invoiceData.tokenNumbers}}</a>
@@ -68,12 +72,42 @@
             <div style="    justify-content: space-between; padding: 0px 2px;
                 display: flex; flex-direction: column;">
                 <div style="    display: flex;
-                justify-content: space-between;">
+                justify-content: space-between;"  *ngIf="!isDiscountEnabled" >
                     <a></a>
                     <a></a>
+                    
+                <span style="display: contents;">
                     <a>Sub Total</a>
                     <a>{{invoiceData.actualAmount}}</a>
+                </span>
+
                 </div>
+
+                <div style="    display: flex;
+                justify-content: space-between;"  *ngIf="isDiscountEnabled">
+                    <a></a>
+                    <a></a>
+                    
+ 
+                <span   style="display: contents;">
+                    
+                      <a>Total</a>
+                      <a>{{invoiceData.un_discount_actualAmount}}</a>
+               
+          
+                  </span>
+                </div>
+                <div style="    display: flex;
+                justify-content: space-between;"  *ngIf="isDiscountEnabled">
+                    <a></a>
+                  
+                    
+ 
+                      <a>Sub Total (Discount - {{discountPercentage}}%)</a>
+                      <a>{{invoiceData.actualAmount}}</a>
+              
+                </div>
+
                 <hr class = "hr">
 
                 <div style="    display: flex;

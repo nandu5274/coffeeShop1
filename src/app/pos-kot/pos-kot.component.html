@@ -46,9 +46,16 @@ background: white;    padding: 5px;">
             </tbody>
         </table>
         <hr class = "hr">
-   
-   
-    
+        <div *ngIf='invoiceData.comments != "" ' style="max-width: 100%; overflow-wrap: break-word;">
+            <p  style="
+                text-align: left;
+                font-size: 17px;
+                word-wrap: break-word;
+                white-space: pre-line;">
+                 <span style=" font-size: 15px; font-weight: 900;">Note:</span> {{ invoiceData.comments  }}
+            </p>
+        </div>
+        <hr class = "hr">
     </div>
 
   

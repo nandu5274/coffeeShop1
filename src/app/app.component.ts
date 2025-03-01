@@ -3,6 +3,8 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { Component, ElementRef, HostListener, OnInit, Renderer2, ViewChild } from '@angular/core';
 import {VERSION} from './common/constanst';
 import { HasuraApiService } from './service/hasura.api.service';
+import { WebSocketService } from './service/WebSocket.service';
+import { SharedService } from './service/shared-service';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -21,6 +23,12 @@ export class AppComponent implements OnInit  {
   title = 'cofeeshop1';
   version:any = VERSION;
   private sound: Howl;
+  isPopupOpen = false;
+  selectedFloor = '';
+  tableNumber = undefined;
+  message = '';
+  floors = ['Ground Floor', '1st Floor', 'out door'];
+
   public loadScript(url: string) {
     let node = document.createElement('script');
     node.src = url;
@@ -31,7 +39,8 @@ export class AppComponent implements OnInit  {
      hearts: { left: number, duration: number }[] = [];
      @ViewChild('container') container!: ElementRef;
    
-     constructor(private renderer: Renderer2,  private dataService: HasuraApiService) { 
+     constructor(private renderer: Renderer2,  private dataService: HasuraApiService,
+       private webSocketService: WebSocketService, private sharedService: SharedService) { 
       this.sound = new Howl({
         src: ['assets/audio/ipl.mp3'],
       });
@@ -49,14 +58,14 @@ export class AppComponent implements OnInit  {
      ngOnInit(): void {
       this.loadScript("assets/js/main.js");
       this.generateHearts();
-    //  this.openModal('d')
+      this.getLatestVersion()
+      this.openModal('d')
 
 //below code is for popups 
 
-   /* 
-   this.playSound();
+   
+   //this.playSound();
     this.updateImageBasedOnScreenSize();
-*/
 //above code is for popups 
     }
   
@@ -64,7 +73,7 @@ export class AppComponent implements OnInit  {
       if (this.container) {
         this.scrollToBottom();
       }
-      this.getLatestVersion()
+    
     }
 
     getLatestVersion()
@@ -72,8 +81,10 @@ export class AppComponent implements OnInit  {
       this.dataService.getLatestVersion().subscribe((response) => {
         // Handle the response here
         const versionNumber = response.kubera_Account_ui_version[0].verison;
-        console.log("version - ",versionNumber); // Example: log the response
-      this.checkVersion(versionNumber)
+        const recursiveStatus = response.kubera_Account_ui_version[0].recursive;
+        console.log("API version - ",versionNumber); 
+        console.log("UI version - ",this.version); // Example: log the response
+      this.checkVersion(versionNumber,recursiveStatus)
       },
       (error) => {
         // Handle errors here
@@ -153,10 +164,10 @@ this.updateImageBasedOnScreenSize()
     const screenWidth = window.innerWidth;
     if (screenWidth < 768) {
       // Set image for small screens
-      this.imageUrl = 'assets/img/event/ipl.jpg';
+      this.imageUrl = 'assets/img/event/loymb.jpg';
     } else {
       // Set image for larger screens
-      this.imageUrl = 'assets/img/event/iplc.jpg';
+      this.imageUrl = 'assets/img/event/loybs.jpg';
     }
   }
   showPopup: boolean = false;
@@ -207,21 +218,23 @@ if (this.step === 0) {
     this.showPopup = false;
   }
   showVersionModal:any = false
-  checkVersion(api_version:any)
+  checkVersion(api_version:any, recursiveStatus:any)
   {
     if(this.version === api_version)
     {
       sessionStorage.setItem("reloadCount","0")
-      console.log("latest version");
+      sessionStorage.setItem("recursive",recursiveStatus)
+    //  console.log("latest version");
       this.showVersionModal = false
+
     }else
     {
       this.showVersionModal = true
-      console.log("old version");
+     // console.log("old version");
       setTimeout(() => {
         this.reloadMultipleTimes()
      
-      },2000);
+      },100);
    
     }
   }
@@ -229,7 +242,7 @@ if (this.step === 0) {
 
 
   reloadCount = 0;
-  maxReloads = 5;
+  maxReloads = 1;
   reloadMultipleTimes() {
     const reloadCountCon = sessionStorage.getItem('reloadCount');
 
@@ -237,9 +250,9 @@ if (this.step === 0) {
       this.reloadCount = Number(reloadCountCon)
       if (this.reloadCount < this.maxReloads) {
         this.reloadCount++;
-        console.log("retry - ",this.reloadCount)
+      //  console.log("retry - ",this.reloadCount)
         sessionStorage.setItem("reloadCount",String(this.reloadCount))
-        window.location.reload();
+       // window.location.reload();
   
       }
     }else{
@@ -248,6 +261,36 @@ if (this.step === 0) {
     }
 
   }
+
+
+
+  openFloatingBellPopup() {
+    this.selectedFloor = '';
+    this.message = '';
+    this.tableNumber  = undefined;
+    this.isPopupOpen = true;
+  }
+
+  closePopup() {
+    this.isPopupOpen = false;
+  }
+
+  submitDetails() {
+    console.log('Selected Floor:', this.selectedFloor);
+    console.log('Table Number:', this.tableNumber);
+    this.closePopup(); // Close popup after submission
+    let msg_text = "call from "+  this.selectedFloor + " table - " + this.tableNumber + " on " + this.sharedService.updateCurrentDateTimeInIST() ;
+    if(this.message != '')
+    {
+      msg_text = msg_text + " msg - " + this.message;
+    }
+    this.sendMessageToWebSocket(msg_text);
+  }
+
+  sendMessageToWebSocket(msg: any) {
+    this.webSocketService.sendMessage(msg);
+  }
+
 }
 
 

@@ -1,0 +1,193 @@
+<div *ngIf="showSpinner" class="spinner-overlay">
+  <div class="spinner"></div>
+</div>
+
+<div *ngIf="showPaidSpinner" class="spinner-overlay">
+  <div class="spinner"></div>
+</div>
+<!--   
+  <div  *ngIf="!loggedIn" > <app-login [pageType]="pageType" (loginStatus)="handleLoginStatus($event)"></app-login></div>
+   -->
+
+<div>
+
+  <section id="menu" class="menu section-bg" style="padding-top: 9em;">
+
+
+    
+    <div class="tabs" [class.sticky-tabs]="isSticky">
+
+      <div class="tab tab-btn " (click)="selectTab('admin')" [class.active]="selectedTab === 'admin'">admin 
+      </div>
+
+      <div class="tab tab-btn " (click)="selectTab('payments')" [class.active]="selectedTab === 'payments'">Payments 
+      </div>
+
+      <div class="tab tab-btn " (click)="selectTab('inventory')" [class.active]="selectedTab === 'inventory'">Inventory
+      </div>
+    </div>
+
+
+    <div class="tab-content">
+      <div *ngIf="selectedTab === 'admin'">
+
+        <div class="container" data-aos="fade-up">
+
+          <div class="section-title" style="padding-top: 1em; padding-bottom: 0px;">
+            <h2>Admin Dashboard</h2>
+
+            <div  style="display: flex; flex-direction: row;" class="refresh">
+              <p>Admin Payments</p>
+              <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
+             
+                <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
+                  <button style=" background-color: #d49b3b; color: #11100e;"  (click)="openAdminPaymentForm()" >Add Payment</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div >
+            <div style="display: flex;">
+              <select class="form-control"  [(ngModel)]="searchSelectedMonth" style=" background: #cda45e; margin: 1em;">
+                <option value="Month" disabled>Select Month</option>
+                <option value="January">January</option>
+                <option value="February">February</option>
+                <option value="March">March</option>
+                <option value="April">April</option>
+                <option value="May">May</option>
+                <option value="June">June</option>
+                <option value="July">July</option>
+                <option value="August">August</option>
+                <option value="September">September</option>
+                <option value="October">October</option>
+                <option value="November">November</option>
+                <option value="December">December</option>
+              </select>
+            
+              <select class="form-control" [(ngModel)]="searchSelectedYear" style=" background: #cda45e; margin: 1em;">
+                <option value="Year" disabled>Select Year</option>
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+                <option value="2028">2028</option>
+                <option value="2029">2029</option>
+              </select>
+            
+        
+              <button style="height: fit-content; background-color: #d49b3b; color: #11100e; place-self: center;"  (click)="onAdminPaymentGridReadyByMonth()">Search</button>
+           
+        
+            </div>
+
+            <div  style="margin: 12px;  text-align: center;">
+              <span style="font-weight: bold; font-size: 18px; color: #cda45e;">Total Amount: </span>
+              <span style="font-weight: bold; font-size: 24px; color: #cda45e;">{{totalMonthAmount}}</span>
+            </div>
+          <div  style="height: 100%; display: flex; flex-direction: column;" >
+            <ag-grid-angular
+            style="width: 100%; height: 500px;"
+            class="ag-theme-alpine"
+            [defaultColDef]="defaultColDef"
+            [rowData]="adminPaymentRowData"
+            [columnDefs]="adminPaymentColumnDefs"
+            (gridReady)="onAdminPaymentGridReady()">
+          </ag-grid-angular>
+
+
+          
+        </div>
+          </div>
+      
+   
+      
+        
+      </div>
+  
+      </div>
+
+      <!-- tab 1 ending -->
+     
+      <app-admin-form  [isVisible]="isFormVisible" 
+      (cancel)="closeForm()"  (fromData)="createPaymentDetails($event)"></app-admin-form>
+
+<app-admin-payment-form [isVisible]="isAdminPaymentFormVisible" 
+(cancel)="closeAdminPaymentForm()"  (fromData)="createAdminPaymentDetails($event)"></app-admin-payment-form>
+    </div>
+
+
+
+
+    <div class="tab-content">
+      <div *ngIf="selectedTab === 'payments'">
+
+        <div class="container" data-aos="fade-up">
+
+          <div class="section-title" style="padding-top: 1em;">
+            <h2>Payment</h2>
+
+            <div  style="display: flex; flex-direction: row;" class="refresh">
+              <p>Kubera Payments</p>
+              <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
+             
+                <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
+                  <button style=" background-color: #d49b3b; color: #11100e;"  (click)="openForm()" >Create</button>
+                  <button style=" background-color: #d49b3b; color: #11100e;"  (click) = "clearFilters()" >orders</button>
+                </div>
+              
+              </div>
+            
+            </div>
+           
+          </div>
+
+          <div>
+
+  
+          <div  style="height: 100%; display: flex; flex-direction: column;" >
+            <ag-grid-angular
+            style="width: 100%; height: 500px;"
+            class="ag-theme-alpine"
+            [defaultColDef]="defaultColDef"
+            [rowData]="rowData"
+            [columnDefs]="columnDefs"
+            (gridReady)="onGridReady()">
+          </ag-grid-angular>
+
+
+          
+        </div>
+          </div>
+      
+   
+      
+        
+      </div>
+  
+      </div>
+
+      <!-- tab 1 ending -->
+     
+      <app-admin-form  [isVisible]="isFormVisible" 
+      (cancel)="closeForm()"  (fromData)="createPaymentDetails($event)"></app-admin-form>
+
+      <div *ngIf="selectedTab === 'inventory'">
+
+        <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
+          <button style=" background-color: #d49b3b; color: #11100e;"  (click)="approveLogin()" >approve login</button>
+          <button style=" background-color: #d49b3b; color: #11100e;"  (click) = "revokeLogin()" >revoke login</button>
+         
+        </div>
+
+
+      </div>
+      <div *ngIf="selectedTab === 'tab3'">Content for Tab 3> </div>
+
+    </div>
+
+
+
+
+  </section>
+
+</div>

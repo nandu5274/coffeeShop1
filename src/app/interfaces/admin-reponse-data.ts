@@ -1,0 +1,18 @@
+export interface AdminResponseData {
+                amount: number,
+                amount_paid: number,
+                attachmnet: string,
+                balance: number,
+                company_name: string,
+                created_at: string,
+                generated_date: string,
+                id: number,
+                invoice_number: string,
+                paid_by: string,
+                payment_date: string,
+                payment_type: string,
+                status: string,
+                updated_at: string,
+                use_month: string,
+                use_year: string,
+}

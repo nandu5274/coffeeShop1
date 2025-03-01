@@ -4,6 +4,7 @@ import { SharedService } from '../service/shared-service';
 import { ActivatedRoute } from '@angular/router';
 import { DataService } from '../service/data.service';
 import { HasuraApiService } from '../service/hasura.api.service';
+import { BookingForm } from '../dtos/bookingForm';
 
 @Component({
   selector: 'app-home-page',
@@ -41,5 +42,15 @@ export class HomePageComponent implements OnInit, AfterViewInit {
     this.sharedService.navigateToMenu(menu);
   }
 
+
+  bookingForm: BookingForm = {
+    name: '',
+    email: '',
+    phone: '',
+    date: '',
+    time: '',
+    people: 1,
+    message: ''
+  };
 
 }

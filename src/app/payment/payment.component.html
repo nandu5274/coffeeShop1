@@ -6,9 +6,31 @@
   <div class="spinner"></div>
 </div>
 
+<div class="status-container">
+  <span [ngClass]="isConnected ? 'status-dot connected' : 'status-dot disconnected'"></span>
+  WS: {{ isConnected ? 'Connected' : 'Disconnected' }}
+</div>
+
 <div  *ngIf="!loggedIn" > <app-login (loginStatus)="handleLoginStatus($event)"></app-login></div>
 
 
+<div class="alert-message" *ngIf="showAlert">
+  <p style="margin: 0;">  edit access given, revert in {{ countdown }} seconds... </p>
+</div>
+
+<div class="alert-message alert-message-revoke" *ngIf="showEditRevokeAlert">
+  <p style="margin: 0;">  edit access removed </p>
+</div>
+
+
+
+<!-- Container to hold all notification messages -->
+<div class="alert-container" *ngIf="showBellmsgAlert">
+  <!-- Loop through the array of notification messages -->
+  <div *ngFor="let message of alertMessages" class="notification-message notification-message-revoke">
+    <p style="margin: 0;">{{ message }}</p>
+  </div>
+</div>
 <div  *ngIf="loggedIn" > 
 
     <section id="menu" class="menu section-bg" style="padding-top: 9em;">
@@ -71,6 +93,7 @@
                   <div class="buttons">
                     <button style="background-color: #198754!important" (click) = "showInvoice(waitingApprovalOrder)" >Invoice</button>
                     <button style="background-color: #261987!important" (click) = "paymentDone(waitingApprovalOrder)" >Paid</button>
+                    <button style="background-color: #dc3545!important" (click) = "paymentDoneOwner(waitingApprovalOrder)" >Owner</button>
                   </div>
                 </div>
               </div>  
@@ -96,6 +119,7 @@
             <p>Paid orders</p>
             <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
               <button style=" background-color: #d49b3b; color: #11100e;     height: -webkit-fill-available;" (click) = "refreshPaidOrder()">Refresh</button>
+              <button style=" background-color: #d49b3b; color: #11100e;     height: -webkit-fill-available;" (click) = "refreshPaidOrder()">Show Orders</button>
             <div style=" display: flex;
             flex-direction: column;">
           
@@ -251,7 +275,22 @@
           <label>Online</label>
   </div>
       </div>
- 
+<div  *ngIf="trigger_loyalty_Call">
+      <hr>
+      <div style="    margin: 1em;">
+        Customer: {{customerName}}
+        <br>
+        number : {{selected_customer_number}}
+        <br>
+        Loyalty points: {{existing_loyalty_points}}
+        <br>
+        membership Status: {{membership_Status}}
+      </div>
+      <hr>
+      <div style="    margin: 1em;">
+        New Loyalty Points : {{new_loyalty_points}}
+      </div>
+    </div>
       <div class="buttons">
         <button  [disabled]="isAmountUndefined()" style="background-color: #198754" (click) = "makePaymentCompleted()">Done</button>
         <button style="background-color: #198754" (click) = "closePaymentTypePopup()">Close</button>
@@ -281,6 +320,7 @@
             <div>
             <button type="button"  class = "login-btn" (click)="checkAdminLogin()"  >Login</button>
             <button type="button"  class = "login-btn" (click)="closePasswordPopup()" >Close</button>
+            <button type="button"  class = "login-btn" (click)="editApproval()" >Approve</button>
     
           </div>
           </form>
@@ -295,11 +335,60 @@
 
 
 
+<div class="main-content"  *ngIf="isOwnerPopupOpen">
+
+  <div class="popup-overlay" >
+    <div class="popup-content" style="background: #1a1814;">
+      
+
+      
+      <section id="menu" class="menu section-bg" style="padding: 0px;">
+        <div class="login-container">
+         
+
+          <form>
+            <div class="form-group " >
+              <label for="username">Admin Password:</label>
+              <input type="password" id="username" name="username" class = "username" [(ngModel)]="username" required>
+            </div>
+            <div>
+            <button type="button"  class = "login-btn" (click)="makeOwnerPaymentCompleted()"  >Login</button>
+            <button type="button"  class = "login-btn" (click)="closeOwnerPasswordPopup()" >Close</button>
+    
+          </div>
+          </form>
+          </div>
+        </section>
+
+
+     
+    </div>
+  </div>
+</div>
+
+
+
+
 <div class="main-content"  *ngIf="isEditOrderPopUpOpen">
 
   <div class="popup-overlay" >
     <div class="popup-content" style="background: #1a1814;">
       
+      <div style="display: flex; align-items: center; margin-bottom: 1em; color: white;">
+        <label for="discountSelect" style="margin-right: 10px;">Select Discount:</label>
+        <select id="discountSelect" [(ngModel)]="selectedDiscount" class="custom-dropdown" style="margin-right: 10px;">
+          <option [value]="0">No Discount</option>
+          <option [value]="10">10%</option>
+          <option [value]="15">15%</option>
+        </select>
+        <button type="button" class="login-btn" (click)="applyDiscount()">Apply</button>
+      </div> 
+      
+      <div style="display: flex; align-items: center; margin-bottom: 1em; color: white;">
+        <label for="discountSelect" style="margin-right: 10px;">MemberShip:</label>
+        status
+        <button type="button" class="login-btn" (click)="applyDiscount()">check</button>
+      </div>
 
       
       <section id="menu" class="menu section-bg" style="padding: 0px;    max-height: 30em;
@@ -326,6 +415,7 @@
             </tr>
           </tbody>
         </table>
+      
 
         </section>
         <button type="button"  class = "login-btn" (click)="updateEditOrder()" >Save</button>
@@ -334,4 +424,7 @@
     </div>
   </div>
 </div>
+
+
+
 

@@ -29,6 +29,7 @@ export class GraphqlService {
           order_total_amount
           table_no
           table_place
+          comments
           order_items {
             item_name
             item_description
@@ -164,6 +165,8 @@ export class GraphqlService {
         table_place
         created_at
         order_status
+        employee
+        comments
       }
       }
     `;
@@ -251,5 +254,169 @@ export class GraphqlService {
     });
   }
 
+
+
+
+  createEmployeeLogin(kubera_employee_login_insert_input:any): any {
+    const mutation = gql`
+   mutation InsertEmployeeLogin($kubera_employee_login_insert_input: kubera_employee_login_insert_input!) {
+  insert_kubera_employee_login_one(object: $kubera_employee_login_insert_input) {
+    expire_in
+    id
+    password
+    user_name
+    created_at
+    renew_date
+    updated_at
+  }
+}
+    `;
+
+    return this.apollo.mutate({
+      mutation,
+      variables: {
+        kubera_employee_login_insert_input
+        
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': GRAPHQL_KEY,
+        },
+      },
+    });
+  }
+
+  getEmployeeLoginDetailsByUserName(user_name:any): any {
+    const mutation = gql`
+ query GetEmployeeLogin ($user_name: String!){
+  kubera_employee_login(where: {user_name: {_eq: $user_name }}) {
+    id
+    user_name
+    password
+    renew_date
+    created_at
+    updated_at
+    expire_in
+  }
+}
+
+    `;
+
+    return this.apollo.mutate({
+      mutation,
+      variables: {
+        user_name
+        
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': GRAPHQL_KEY,
+        },
+      },
+    });
+  }
+  
+  updateEmployeeRenewDetailsByUserName(user_name:any, renew_date:any): any {
+    const mutation = gql`
+mutation update_kubera_employee_login($user_name: String!, $renew_date: timestamptz!) {
+  update_kubera_employee_login(where: {user_name: {_eq: $user_name}}, _set: {renew_date: $renew_date}) {
+    returning {
+      user_name,
+      renew_date
+    }
+  }
+}
+
+
+
+    `;
+
+    return this.apollo.mutate({
+      mutation,
+      variables: {
+        user_name,
+        renew_date
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': GRAPHQL_KEY,
+        },
+      },
+    });
+  }
+  
+
+
+  insertPaymentDetails(kubera_payment_details_insert_input:any): any {
+    const mutation = gql`
+mutation InsertPaymentDetail($kubera_payment_details_insert_input: kubera_payment_details_insert_input!) {
+  insert_kubera_payment_details_one(object: $kubera_payment_details_insert_input) {
+   
+      created_at
+			id
+			actual_amount
+			paid_amount
+			order_id
+			payment_mode
+			created_time
+      bill_no
+  }
+}
+    
+    
+    `;
+
+    return this.apollo.mutate({
+      mutation,
+      variables: {
+        kubera_payment_details_insert_input
+        
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': GRAPHQL_KEY,
+        },
+      },
+    });
+  }
+
+
+
+  getPaymentDetails(kubera_payment_details_insert_input:any): any {
+    const mutation = gql`
+query get_payment_mode_summary {
+  kubera_payment_details_aggregate(where: {created_at: {_eq: "10-29-2024"}}) {
+    aggregate {
+      sum {
+        paid_amount
+        actual_amount
+      }
+      count
+    }
+    nodes {
+      paid_amount
+      payment_mode
+      actual_amount
+    }
+  }
+}
+
+    
+    
+    `;
+
+    return this.apollo.mutate({
+      mutation,
+      variables: {
+        kubera_payment_details_insert_input
+        
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': GRAPHQL_KEY,
+        },
+      },
+    });
+  }
 
 }

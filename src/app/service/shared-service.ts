@@ -18,6 +18,9 @@ export class SharedService {
     private showMenu: any = false;
     private showMenuSubject = new Subject<any>();
 
+    private isLoginFlag: any = false;
+    private isLoginFlagSubject = new Subject<any>();
+
 
     private orderProcessingResponse: ResponseDto = new ResponseDto;
     private orderProcessingResponseSubject = new Subject<ResponseDto>();
@@ -38,7 +41,14 @@ export class SharedService {
       this.showMenu = data;
       this.showMenuSubject.next(data);
     }
-  
+    setIsLoginFlag(data: any) {
+      this.isLoginFlag = data;
+      this.isLoginFlagSubject.next(data);
+    }
+    getIsLoginFlag() {
+    
+      return this.isLoginFlagSubject.asObservable();
+    }
      
     getShowMenuFlagData() {
       return this.showMenu;
@@ -357,6 +367,38 @@ updateCurrentDateTimeInIST() {
   return formattedTime;
 }
 
+
+updateCurrentTimeInIST() {
+  let istTime: any;
+  const localTime = new Date();
+
+  // Check if the current time is in IST
+  let isCurrentTimeInIST = this.isTimeInIST(localTime);
+
+  // Convert to IST if not in IST
+  if (!isCurrentTimeInIST) {
+    istTime = this.convertToIST(localTime);
+  } else {
+    istTime = localTime;
+  }
+
+  // Format the time as HH:mm:ss or any preferred format
+  let formattedTime = this.formatTime(istTime);
+
+  return formattedTime;
+}
+
+// Method to format time
+formatTime(date: Date): string {
+  // Get the hours, minutes, and seconds
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+
+  // Return the formatted time
+  return `${hours}:${minutes}:${seconds}`;
+}
+
 isTimeInIST(date: Date): boolean {
   // Check if the time zone is 'Asia/Kolkata' (IST)
   return date.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }) === date.toLocaleString();
@@ -476,5 +518,14 @@ updateCurrentDateInIST12() {
     return formattedDateString;
    
 }
+formatDateAsString(date: Date): string {
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
 
+  return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+}
 }
