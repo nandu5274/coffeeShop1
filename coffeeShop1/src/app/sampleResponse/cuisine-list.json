@@ -1,0 +1,137 @@
+{
+  "cuisines": [
+    {
+      "cuisine": {
+        "type": "Combos",
+        "class": ".filter-Combos",
+        "items": [
+          "Combos"
+        ]
+      }
+    },
+
+    {
+      "cuisine": {
+        "type": "BreakFast",
+        "class": ".filter-BreakFast",
+        "items": [
+          "BreakFast"
+        ]
+      }
+    },
+    {
+      "cuisine": {
+        "type": "FreshJuice",
+        "class": ".filter-FreshJuice",
+        "items": [
+          "FreshJuice"
+        ]
+      }
+    },
+            {
+      "cuisine": {
+        "type": "Matcha",
+        "class": ".filter-Combos",
+        "items": [
+          "Matcha"
+        ]
+      }
+    },
+    
+    {
+      "cuisine": {
+        "type": "Barista",
+        "class": ".filter-HotCoffees",
+        "items": [
+          "HotCoffees",
+          "Matcha",
+          "ColdCoffees",
+          "Cookies",
+          "GreenTea",
+          "IceTea",
+          "Shakes",
+          "Mocktails",
+          "Soda",
+          "Beverages"
+        ]
+      }
+    },
+    {
+      "cuisine": {
+        "type": "Starters",
+        "class": ".filter-Starters",
+        "items": [
+          "Starters",
+          "Fries"
+
+        ]
+      }
+    },
+    {
+      "cuisine": {
+        "type": "MainCourse",
+        "class": ".filter-MainCourse",
+        "items": [
+          "MainCourse"
+        ]
+      }
+    },
+    {
+      "cuisine": {
+        "type": "Continental",
+        "class": ".filter-Salads",
+        "items": [
+          "Salads",
+          "Fries",
+          "Breads",
+          "Sandwiches",
+          "Burgers",
+          "Pizzas",
+          "Pastas",
+          "Grills",
+          "RiceBowl",
+          "Bruschetta"
+        ]
+      }
+    },
+    {
+      "cuisine": {
+        "type": "Indo-Chinese",
+        "class": ".filter-Soups",
+        "items": [
+          "Soups",
+          "IndoChineseStarters",
+          "Noodles",
+          "Rices"
+        ]
+      }
+    },
+    {
+      "cuisine": {
+        "type": "Desserts",
+        "class": ".filter-Desserts",
+        "items": [
+          "Desserts"
+        ]
+      }
+    },
+    {
+      "cuisine": {
+        "type": "Loyalty",
+        "class": ".filter-Loyalty",
+        "items": [
+          "Loyalty"
+        ]
+      }
+    },
+    {
+      "cuisine": {
+        "type": "Add-ons",
+        "class": ".filter-Add-ons",
+        "items": [
+          "Add-ons"
+        ]
+      }
+    }
+  ]
+}

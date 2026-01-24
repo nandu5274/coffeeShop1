@@ -1,0 +1,9 @@
+{
+  "name": "email-serverless-project",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "nodemailer": "^6.x.x",
+    "sib-api-v3-sdk": "^8.5.0"
+  }
+}

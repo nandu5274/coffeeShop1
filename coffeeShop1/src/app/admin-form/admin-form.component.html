@@ -1,0 +1,50 @@
+<div class="popup " *ngIf="isVisible">
+    <div class="popup-content "  >
+      <h2>Add Payment</h2>
+      <form [formGroup]="adminForm" (ngSubmit)="onSubmit()">
+        <label class="label-display">
+            Invoice Number:
+            <input type="text" formControlName="invoice_number" required>
+          </label>
+          <label class="label-display">
+            Bill Generated Date:
+            <input type="date" formControlName="generated_date" required>
+          </label>
+          <label class="label-display">
+            Company Name:
+            <input type="text" formControlName="company_name" required>
+          </label>
+        <label class="label-display">
+          Amount:
+          <input type="number" formControlName="amount" required>
+        </label>
+
+        <label class="label-display">
+            Use Month:
+            <select formControlName="use_month" required>
+              <option value="" disabled>Select month</option>
+              <option value="January">January</option>
+              <option value="February">February</option>
+              <option value="March">March</option>
+              <option value="April">April</option>
+              <option value="May">May</option>
+              <option value="June">June</option>
+              <option value="July">July</option>
+              <option value="August">August</option>
+              <option value="September">September</option>
+              <option value="October">October</option>
+              <option value="November">November</option>
+              <option value="December">December</option>
+            </select>
+          </label>
+        <label class="label-display">
+          Use Year:
+          <input type="number" formControlName="use_year" required>
+        </label>
+        <div class="button-group">
+          <button type="submit" [disabled]="!adminForm.valid"(click)="onSubmit()" >Submit</button>
+          <button type="button" (click)="onCancel()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>

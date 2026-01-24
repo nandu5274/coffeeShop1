@@ -1,0 +1,60 @@
+<div *ngIf="showSpinner" class="spinner-overlay">
+    <div class="spinner"></div>
+  </div>
+
+
+  <div >
+    <section id="menu" class="menu section-bg" style="padding-top: 9em;">
+      <div class="login-container">
+        
+        <div *ngIf="noProfileError" class="error-banner">
+          Profile not found
+        </div>
+  
+  
+      
+
+        <div *ngIf="profileFound" class="profile-details">
+          <p class="membership-header">Profile Details</p>
+          <p><strong>Name:</strong> {{ customerDetails.name }}</p>
+          <p><strong>Email ID:</strong> {{ customerDetails.email_id }}</p>
+          <p><strong>Number:</strong> {{ customerDetails.mobile_number}}</p>
+          <p><strong>created_at:</strong> {{ convertedDate}}</p>
+          <p class="membership-header">Loyalty points</p>
+          <p><strong>Available Points:</strong> {{ customer_points.available_points}}</p>
+          <p><strong>Total Points:</strong> {{ customer_points.total_points}}</p>
+          <p class="membership-header">Membership Details</p>
+          <p><strong>Membership ID:</strong> {{ memberShipDetails.member_ship_id }}</p>
+          <p><strong>Expire Date:</strong> {{ memberShipDetails.expiry_date }}</p>
+          <p>
+            <strong>Status:</strong> 
+            <span 
+            class="status 
+              {{ customerDetails.status === 'Active' ? 'active' : 
+                 customerDetails.status === 'Expired' ? 'expired' : 
+                 'not-found' }}">
+            {{ customerDetails.status }}
+          </span>
+          <p class="membership-header"> </p>
+          <div routerLink="/card" style="align-self: center;">  
+              <button type="button" style = "    background: #ffffff;
+              border: 2px solid #000000;
+              color: #000000;
+              border-radius: 50px;
+              padding: 8px 25px;
+              text-transform: uppercase;
+              font-size: 13px;
+              font-weight: 500;
+              letter-spacing: 1px;
+              transition: 0.3s;"
+        >Member ship Card</button></div>
+        <p style="    font-size: small;
+    align-self: center;">click above button for membership card</p>
+        </div>
+   
+
+      </div>
+
+
+    </section>
+    </div>

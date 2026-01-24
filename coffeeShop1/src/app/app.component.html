@@ -1,0 +1,176 @@
+<div class="main-container">
+
+  <!--  below code is for popups -->
+  
+  <div  *ngIf="showModal" class="modal">
+    <div class="modal-content">
+      <button (click) = "closeModal()" style="width: 9em; background: #1a1814;
+      align-self: center;     position: fixed;" class=" pop-up-btm">close</button>
+   
+      <div class="test" style=" height: 86vh;
+      padding: 2em;
+      
+      overflow-y: auto;"
+     >
+        <div>
+        
+          <ul style="text-align: -webkit-center;">
+                <a style=" display: block;
+                max-width:230px;
+                max-height:95px;
+                width: auto;
+                height: auto;"></a>
+                <img [src]="imageUrl" alt="Responsive Image" class="imag-size">
+                <span style="    position: relative;
+    top: -55px;">
+                <!-- <a>click here -></a>
+                <button routerLink="/card" (click) = "closeModal()"  style="    width: 99px;
+                max-width: fit-content;
+                align-self: center;
+                position: relative;
+                margin: 10px 0 0 15px;
+    border: 2px solid #cda45e;
+    color: white;
+    background: none;
+    border-radius: 50px;
+    padding: 5px 10px;
+    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    transition: 0.3s;
+    width: 9em;
+                " >Card</button> -->
+              </span>
+          </ul>
+        </div>
+
+
+      </div>
+  
+    </div>
+  </div>
+
+
+    <!--  above code is for popups -->
+
+    <div  *ngIf="showVersionModal" class="modal">
+
+      
+     
+        
+        <div class="modal-content"  *ngIf="reloadCount>=1">
+          <div style="    background-color: #cda45e;
+          color: #1a1814;
+          padding: 15px;
+          border: 1px solid #f2dede;
+          border-radius: 4px;
+          align-items: center;
+          align-self:center;
+          z-index: 99999999;
+          width: fit-content;">
+        close the browser tab and Re-scan
+          </div>
+            
+          </div>
+      </div>
+   
+  
+<div class="container" #container>
+    
+  <!-- <img src="assets/img/specials-2.png"  class="heart" *ngFor="let heart of hearts; let i = index" [style.left.px]="heart.left" [style.animation-duration.s]="heart.duration" /> -->
+  <!-- <div class="heart" *ngFor="let heart of hearts; let i = index" [style.left.px]="heart.left" [style.animation-duration.s]="heart.duration"></div> -->
+  </div> 
+
+
+  <div id="ipl" style="z-index: 999;">
+   
+
+    <div class="container">
+      <!-- <button (click)="openPopup()">Open Popup</button> -->
+      <div *ngIf="showPopup" class="popup">
+        <div *ngIf="step === 0">
+          <p>This is a disclaimer.</p>
+          <button (click)="continue()">Accept</button>
+        </div>
+        <div *ngIf="step === 1" class="slide" [@slideInOut]>
+          <label for="name">Name:</label>
+          <input type="text" id="name" [(ngModel)]="name">
+          <br>
+          <label for="mobile">Mobile:</label>
+          <input type="text" id="mobile" [(ngModel)]="mobile">
+          <br>
+          <button (click)="continue()">Continue</button>
+        </div>
+        <div *ngIf="step === 2" class="slide"[@slideInOut] >
+          <p>Choose an option:</p>
+          <input type="radio" id="option1" name="option" [(ngModel)]="selectedOption" value="Option 1">
+          <label for="option1">Option 1</label><br>
+          <input type="radio" id="option2" name="option" [(ngModel)]="selectedOption" value="Option 2">
+          <label for="option2">Option 2</label><br>
+          <button (click)="next()">Next</button>
+        </div>
+        <div *ngIf="step === 3" class="slide" [@slideInOut]>
+          <div style="width: 10em;">
+    
+
+          <p>Spin the wheel and get a number from 1 to 5:</p>
+          <button (click)="spinWheel()">Spin the Wheel</button>
+          <p *ngIf="wheelResult !== null">Result: {{ wheelResult }}</p>
+          <button (click)="reset()">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <app-nav-bar></app-nav-bar>
+<!-- floating-bell.component.html -->
+<div class="floating-bell" (click)="openFloatingBellPopup()">
+  <i class="fa fa-user" style="    position: relative;
+  left: 0px;
+  font-size: 33px;"></i>
+ 
+<span class="call-waiter-box">
+  Call Waiter
+</span>
+</div>
+
+
+<!-- Popup Content -->
+<div class="notification-popup" *ngIf="isPopupOpen">
+  <div class="popup-container">
+    <h3 style="font-size: 16px;
+    font-weight: 700;
+    font-family: 'Playfair Display', serif;
+    color: #000;">Choose Floor & Table to call waiter</h3>
+    
+    <!-- Dropdown for Floor Selection -->
+    <label class="popup-label" for="floor">Floor:</label>
+    <select class="popup-select" id="floor" [(ngModel)]="selectedFloor">
+      <option *ngFor="let floor of floors" [value]="floor">{{ floor }}</option>
+    </select>
+
+    <!-- Input for Table Number -->
+    <label class="popup-label" for="tableNumber">Table Number:</label>
+    <input class="popup-input" id="tableNumber" type="number" [(ngModel)]="tableNumber"  />
+
+    <!-- Input for message  -->
+    <label class="popup-label" for="message">message(if needed):</label>
+    <input class="popup-input" id="message" type="text" [(ngModel)]="message"  />
+    
+
+    <!-- Button section -->
+    <div class="popup-button-group">
+      <button class="popup-btn" [disabled]="!selectedFloor || !tableNumber" (click)="submitDetails()">Submit</button>
+      <button class="popup-btn" (click)="closePopup()">Close</button>
+    </div>
+  </div>
+</div>
+    <router-outlet></router-outlet>
+
+    <app-footer></app-footer>
+
+
+
+  </div>
+

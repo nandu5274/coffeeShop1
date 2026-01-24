@@ -1,0 +1,74 @@
+<div *ngIf="showSpinner" class="spinner-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <div *ngIf="!isLoginFlag ">
+    <section id="menu" class="menu section-bg" style="padding-top: 9em;">
+      <div class="login-container">
+        <h2 class="login">Login</h2>
+        <div *ngIf="showError" class="error-banner">
+          Invalid username or password. Please try again.
+        </div>
+  
+  
+        <form>
+          <div class="form-group ">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" class="username" [(ngModel)]="username" required>
+          </div>
+          <div class="form-group password-input-container">
+            <label for="password">Password:</label>
+            <div class="password-wrapper">
+              <input type="{{ showPassword ? 'text' : 'password' }}" id="password" name="password" [(ngModel)]="password"
+                required>
+              <button type="button" (click)="togglePasswordVisibility()">
+                <i class="far" [ngClass]="{'fa-eye': !showPassword, 'fa-eye-slash': showPassword}"></i>
+              </button>
+            </div>
+          </div>
+          <button type="button" class="login-btn" (click)="login()">Login</button>
+        </form>
+      </div>
+    </section>
+
+  </div>
+
+  <div *ngIf="isLoginFlag ">
+    <section id="menu" class="menu section-bg" style="padding-top: 9em;">
+      <div class="login-container">
+        <h2 class="login">profile Check</h2>
+        <div *ngIf="noProfileError" class="error-banner">
+          Membership not found
+        </div>
+  
+  
+        <form>
+          <div class="form-group ">
+           
+            <label for="username">Customer Number:</label>
+            <input type="text" id="customerNumber" name="customerNumber" class="username" [(ngModel)]="customerNumber" required>
+          </div>
+
+          <button type="button" class="login-btn" (click)="CheckProfile()">Check</button>
+        </form>
+
+        <div *ngIf="profileFound" class="profile-details">
+          <p class="membership-header">Customer Details</p>
+          <p><strong>Name:</strong> {{ customerDetails.customer_detail.name }}</p>
+          <p><strong>Email ID:</strong> {{ customerDetails.customer_detail.email_id }}</p>
+          <p><strong>Number:</strong> {{ customerDetails.customer_detail.mobile_number}}</p>
+          <p class="membership-header">Membership Details</p>
+          <p><strong>Membership ID:</strong> {{ customerDetails.member_ship_id }}</p>
+          <p><strong>Expire Date:</strong> {{ customerDetails.expiry_date }}</p>
+          <p>
+            <strong>Status:</strong> 
+            <span class="status {{ customerDetails.status === 'Active' ? 'active' : 'expired' }}">
+              {{ customerDetails.status }}
+            </span>
+          </p>
+        </div>
+      </div>
+
+
+    </section>
+    </div>

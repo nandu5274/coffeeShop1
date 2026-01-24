@@ -1,0 +1,121 @@
+
+<div  *ngIf="showSpinner"  class="spinner-overlay">
+  <div class="spinner"></div>
+</div>
+
+<div  *ngIf="cartDataList.length > 0" class="summary_card"  style="overflow: auto;">
+  <div *ngFor="let cartData of cartDataList">
+    <div class="card_item" >
+      <div class="product_img">
+        <img [src]="cartData.imagePath"  class="menu-img" alt="">
+      </div>
+      <div class="product_info">
+        <h1>{{cartData.name}}</h1>
+        <p>{{cartData.description}}</p>
+        <div class="close-btn" (click) = "removeItem(cartData)">
+         x
+        </div>
+        <div class="product_rate_info info-width" >
+          <h1><span>&#8377; {{cartData.totalCartCost | number:'1.2-2'}}</span></h1>
+          <span class="pqt-minus"(click) = "decrement(cartData)">-</span>
+          <span class="pqt"> {{cartData.quantity}}</span>
+          <span class="pqt-plus" (click) = "increment(cartData)">+</span>
+        </div>
+      </div>
+    </div>
+    <hr/>
+  </div>
+  <hr />
+
+</div>
+<div  class="summary_card"  style="overflow: auto;" *ngIf="cartDataList.length == 0" >
+ 
+  <div class="order_price no-items-cart">
+    <div >
+    <p> Add your items </p>
+    </div>
+    <div >
+      <button class="prepare-btn" (click)="navigateToMenu('menu')"> Menu </button>
+  </div>
+  </div>
+
+
+</div>
+  <div>
+
+    <div class="order_total">
+      <p>Total Amount</p>
+      <h4><span>&#8377;{{totalAmount  | number:'1.2-2'}}</span></h4>
+    </div>
+</div>
+
+
+
+<div *ngIf="!orderButtonDisabled" class="button-container">
+  <button class="left-btn"(click) = "openCommentModal()">Note</button>
+  <button class="left-btn"(click) = "openUserMobileModal()">user</button>
+  <button class="prepare-btn" (click) = "sentOrder()"> Order </button>
+</div>
+<div>
+  <div *ngIf="UserMobileNumber != ''" class="comment-display" style="width: 40%;
+margin-right: 3px;
+display: inline-block;
+background: #ffc83d; display: inline-block;">
+  <p><span style="font-weight: 900;">Number:</span> {{ UserMobileNumber }}</p>
+  
+</div>
+<div *ngIf="commentText != ''" class="comment-display" style="    width: 58%; margin-left: 3px;display: inline-block;">
+  <p><span style="font-weight: 900;">Note:</span> {{ commentText }}</p>
+  
+</div>
+
+</div>
+
+
+<!-- Modal Popup -->
+<div *ngIf="isCommentModalOpen" class="comment-modal">
+  <div class="comment-modal-content">
+    <h2>Add Comments</h2>
+
+    <!-- Dropdown for predefined messages -->
+    <label for="predefinedComments">Quick Comments:</label>
+    <select id="predefinedComments" (change)="addMessage($event)">
+      <option value="">--Select a message--</option>
+      <option *ngFor="let comment of predefinedComments" [value]="comment">{{ comment }}</option>
+    </select>
+
+
+    <!-- Textarea for custom comments -->
+    <textarea [(ngModel)]="commentText" maxlength="20" placeholder="Enter your comments here..."></textarea>
+    
+    <div class="comment-modal-buttons">
+      <button (click)="saveComment()">Save</button>
+      <button (click)="closeCommentModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+
+<div *ngIf="isUserMobileModalOpen" class="comment-modal">
+
+  <div class="mobile-modal-content">
+    <div *ngIf="showUserNotFoundError" class="error-banner">
+      User not found.
+    </div>
+    <div *ngIf="showUserFoundBanner" class="success-banner">
+      User exist.
+    </div>
+    <h2>User Mobile Number</h2>
+   
+    <!-- Dropdown for predefined messages -->
+  <div>
+    <!-- Textarea for custom comments -->
+    <input type="text" [(ngModel)]="UserMobileNumber" style="width:fit-content" maxlength="20" [disabled]="showUserFoundBanner" />
+    </div>
+    <div class="comment-modal-buttons">
+      <button   (click)="saveMobileNumberModal()">Save</button>
+      
+      <button (click)="closeMobileNumberModal()">Close</button>
+    </div>
+  </div>
+</div>

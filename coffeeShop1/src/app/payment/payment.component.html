@@ -1,0 +1,537 @@
+
+<!-- SUCCESS POPUP -->
+<div
+  *ngIf="successMessage"
+  style="
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    min-width: 280px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    background: #28a745;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 2147483647;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    animation: toastSlide 0.4s ease forwards;
+  "
+>
+  {{ successMessage }}
+</div>
+
+<!-- ERROR POPUP -->
+<div
+  *ngIf="errorMessage"
+  style="
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    min-width: 280px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    background: #dc3545;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 2147483647;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    animation: toastSlide 0.4s ease forwards;
+  "
+>
+  {{ errorMessage }}
+</div>
+
+<!-- INLINE ANIMATION -->
+<style>
+@keyframes toastSlide {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+</style>
+
+
+
+
+<div  *ngIf="showSpinner"  class="spinner-overlay">
+  <div class="spinner"></div>
+</div>
+
+<div  *ngIf="showPaidSpinner"  class="spinner-overlay">
+  <div class="spinner"></div>
+</div>
+
+<div class="status-container">
+  <span [ngClass]="isConnected ? 'status-dot connected' : 'status-dot disconnected'"></span>
+  WS: {{ isConnected ? 'Connected' : 'Disconnected' }}
+</div>
+
+<div  *ngIf="!loggedIn" > <app-login (loginStatus)="handleLoginStatus($event)"></app-login></div>
+
+
+<div class="alert-message" *ngIf="showAlert">
+  <p style="margin: 0;">  edit access given, revert in {{ countdown }} seconds... </p>
+</div>
+
+<div class="alert-message alert-message-revoke" *ngIf="showEditRevokeAlert">
+  <p style="margin: 0;">  edit access removed </p>
+</div>
+
+
+
+<!-- Container to hold all notification messages -->
+<div class="alert-container" *ngIf="showBellmsgAlert">
+  <!-- Loop through the array of notification messages -->
+  <div *ngFor="let message of alertMessages" class="notification-message notification-message-revoke">
+    <p style="margin: 0;">{{ message }}</p>
+  </div>
+</div>
+<div  *ngIf="loggedIn" > 
+
+    <section id="menu" class="menu section-bg" style="padding-top: 9em;">
+       
+  <div class="tabs"   [class.sticky-tabs]="isSticky">
+    <div class="tab tab-btn " (click)="selectTab('waiting_order')" [class.active]="selectedTab === 'waiting_order'" >checkout order</div>
+    <div class="tab tab-btn " (click)="selectTab('Accepted_order')" [class.active]="selectedTab === 'Accepted_order'">paid order</div>
+  </div>
+  
+  <div class="tab-content">
+    <div *ngIf="selectedTab === 'waiting_order'"  >
+
+      <div class="container" data-aos="fade-up">
+
+        <div class="section-title" style="padding-top: 1em;">
+          <h2>Payment</h2>
+          <div  style="display: flex; flex-direction: row;" class="refresh">
+            <p>Check out orders</p>
+            <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
+            <button style=" background-color: #d49b3b; color: #11100e;" (click) = "refreshOrder()">Refresh</button>
+               <!--  <button style=" background-color: #d49b3b; color: #11100e;" (click) = "openModal('d')">show c</button> -->
+            </div>
+          
+          </div>
+         
+        </div>
+    
+    
+        <div  data-aos="fade-up" data-aos-delay="100">
+          <div class="col-lg-12 d-flex justify-content-center">
+            <div class="card-container">
+    
+              <div class="card" *ngFor="let waitingApprovalOrder of checkOutOrderList">
+                <div class="content">
+                 <div class="table">
+                  <a  style=" font-family: sans-serif !important; font-size: x-large; ">Table : {{waitingApprovalOrder.order[0].table_no}}</a>
+                  <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e; cursor: pointer;" (click) = "openEditOrderPasswordPopup(waitingApprovalOrder)"> EDIT</a>
+                 </div>
+                 
+      
+                  <div style="text-align: center;    justify-content: space-between;
+                  display: flex;
+                  text-align: center;">
+                    <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e; ">Items</a>
+                    <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e; ">Quantity</a>
+                   </div>
+                   <hr>
+                  <ul  class="item-list">
+                    <li *ngFor="let waitingApprovalOrderItem of waitingApprovalOrder.orderItems">
+                      <div style="display: flex;
+                      place-content: space-between;">
+                        <a> {{waitingApprovalOrderItem.item_name}} </a>
+                   
+                        <a> {{waitingApprovalOrderItem.item_quantity }} </a>
+                      </div>
+                      
+                    </li>
+                  </ul>
+                  <hr>
+                  <div class="buttons">
+                    <button style="background-color: #198754!important" (click) = "showInvoice(waitingApprovalOrder)" >Invoice</button>
+                    <button style="background-color: #261987!important" (click) = "paymentDone(waitingApprovalOrder)" >Paid</button>
+                    <button style="background-color: #dc3545!important" (click) = "paymentDoneOwner(waitingApprovalOrder)" >Owner</button>
+                  </div>
+                </div>
+              </div>  
+              <!-- Add more cards here -->
+            </div>
+        </div>
+      </div>
+    
+    
+      
+    </div>
+
+    <!-- tab 1 ending -->
+
+    </div>
+    <div *ngIf="selectedTab === 'Accepted_order'" >
+
+      <div class="container" data-aos="fade-up">
+
+        <div class="section-title" style="padding-top: 1em;">
+          <h2>Payment</h2>
+          <div  style="display: flex; flex-direction: row;" class="refresh">
+            <p>Paid orders</p>
+            <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
+              <button style=" background-color: #d49b3b; color: #11100e;        height: fit-content;" (click) = "refreshPaidOrder()">Refresh</button>
+          
+<button *ngIf="showReportButton"  
+  style="background-color: #d49b3b; color: #11100e; height: fit-content;"
+  (click)="openReportPopup()"
+>
+  Report
+</button>
+            <div style=" display: flex;
+            flex-direction: column;">
+          
+          <a style="    font-size: large;
+          font-weight: bold;">
+            saleDate = {{saleDate}}
+           </a>
+           <a style="    font-size: large;
+           font-weight: bold;">
+             total orders = {{paidOrderList.length}}
+            </a>
+            <a>
+              cash = {{TotalCashAmount   | number:'1.2-2'}}
+             </a>
+             <a>
+              online = {{TotalOnlineAMpunt | number:'1.2-2'}}
+             </a>
+
+              <a>
+              paid_amount = {{TotalPaidAmount  | number:'1.2-2'}}
+              
+             </a>
+             <a>
+              actual_amount = {{TotalActualAmount  | number:'1.2-2'}}
+             </a>
+             <a>
+              difference = {{TotalActualAmount - TotalPaidAmount  | number:'1.2-2'}}
+             </a>
+
+            </div>
+            </div>
+          
+          
+          </div>
+         
+        </div>
+    
+    
+        <div  data-aos="fade-up" data-aos-delay="100">
+          <div class="col-lg-12 d-flex justify-content-center">
+            <div class="card-container">
+    
+              <div class="card" *ngFor="let waitingApprovalOrder of paidOrderList">
+                <div class="content">
+                 <div class="table">
+                  <a  style=" font-family: sans-serif !important; font-size: x-large; ">Table : {{waitingApprovalOrder.order[0].table_no}}</a>
+                  <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e;"> {{waitingApprovalOrder.order[0].id}}</a>
+                 </div>
+                 
+      
+                  <div style="text-align: center;    justify-content: space-between;
+                  display: flex;
+                  text-align: center;">
+                    <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e; ">Items</a>
+                    <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e; ">Quantity</a>
+                   </div>
+                   <hr>
+                  <ul  class="item-list">
+                    <li *ngFor="let waitingApprovalOrderItem of waitingApprovalOrder.orderItems">
+                      <div style="display: flex;
+                      place-content: space-between;">
+                        <a> {{waitingApprovalOrderItem.item_name}} </a>
+                   
+                        <a> {{waitingApprovalOrderItem.item_quantity }} </a>
+                      </div>
+                      
+                    </li>
+                  </ul>
+                  <hr>
+                <div>
+                 
+
+                
+                    <div class="paid-amount">
+                      <div style="    display: flex; justify-content: space-between;">
+                        <a  style=" font-family: sans-serif !important; font-size: medium "> Amount  </a>
+                        <a  style=" font-family: sans-serif !important; font-size: medium; color: #cda45e;"> {{waitingApprovalOrder.paidDetails[0].actual_amount}}  </a>
+                      </div>
+                      <div style="    display: flex; justify-content: space-between;">
+                      <a  style=" font-family: sans-serif !important; font-size: medium "> Paid  </a>
+                      <a  style=" font-family: sans-serif !important; font-size: medium; color: #cda45e;"> {{waitingApprovalOrder.paidDetails[0].paid_amount}}  </a>
+                    </div>
+                      <div style="    display: flex; justify-content: space-between;">
+                        <a  style=" font-family: sans-serif !important; font-size:medium; "> Mode </a>
+                        <a  style=" font-family: sans-serif !important; font-size: medium; color: #cda45e;">{{waitingApprovalOrder.paidDetails[0].mode}}
+                        </a>
+                       </div> 
+                       <div style="    display: flex; justify-content: space-between;">
+                        <a  style=" font-family: sans-serif !important; font-size: medium; "> Time </a>
+                        <a  style=" font-family: sans-serif !important; font-size: medium; color: #cda45e;">{{waitingApprovalOrder.paidDetails[0].period}}
+                        </a>
+                       </div> 
+                     </div> 
+
+                 
+         
+                </div>
+                </div>
+              </div>  
+              <!-- Add more cards here -->
+            </div>
+        </div>
+      </div>
+    
+      
+    </div>
+
+
+    </div>
+    
+    <div *ngIf="selectedTab === 'tab3'" >Content for Tab 3</div>
+  </div>
+  
+
+
+        </section>
+
+</div>
+
+
+
+<div class="main-content">
+
+  <div class="popup-overlay" *ngIf="isPopupOpen" (click)="closePopup()">
+    <div class="popup-content">
+      <app-pos-invoice [printData]="printValue"></app-pos-invoice>
+
+      <button class="bnts"(click)="closePopup()" >Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="main-content">
+  <div class="popup-overlay" *ngIf="isPaymentTypePopupOpen" (click)="closePopup()">
+    <div class="popup-content" style="    background: #d49b3b;
+    color: black;">
+     <div>  <h2>Payment</h2> </div>
+     <div style="padding: inherit;">
+      <div style="    margin: 1em;">
+        Amount : <input type = "number"  [(ngModel)]="amount" (ngModelChange)="isAmountUndefined()">
+      </div>
+      <div >
+        <p style="margin: auto;"> Payment Type : {{paymentMode}}</p>
+        <div style="align-items: center;
+        justify-content: center;
+        width: 104%;
+        display: flex;
+        flex-direction: row;">
+          <label>Cash</label>
+          <label class="switch">
+          <input type="checkbox" [(ngModel)]="isNewProfile" (change) = "paymentMde(isNewProfile)">
+          <span class="slider round"></span>
+          </label>
+          <label>Online</label>
+  </div>
+      </div>
+<div  *ngIf="trigger_loyalty_Call">
+      <hr>
+      <div style="    margin: 1em;">
+        Customer: {{customerName}}
+        <br>
+        number : {{selected_customer_number}}
+        <br>
+        Loyalty points: {{existing_loyalty_points}}
+        <br>
+        membership Status: {{membership_Status}}
+      </div>
+      <hr>
+      <div style="    margin: 1em;">
+        New Loyalty Points : {{new_loyalty_points}}
+      </div>
+    </div>
+      <div class="buttons">
+        <button  [disabled]="isAmountUndefined()" style="background-color: #198754" (click) = "makePaymentCompleted()">Done</button>
+        <button style="background-color: #198754" (click) = "closePaymentTypePopup()">Close</button>
+      </div>
+     </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="main-content"  *ngIf="isPasswordPopupOpen">
+
+  <div class="popup-overlay" >
+    <div class="popup-content" style="background: #1a1814;">
+      
+
+      
+      <section id="menu" class="menu section-bg" style="padding: 0px;">
+        <div class="login-container">
+         
+
+          <form>
+            <div class="form-group " >
+              <label for="username">Admin Password:</label>
+              <input type="password" id="username" name="username" class = "username" [(ngModel)]="username" required>
+            </div>
+            <div>
+            <button type="button"  class = "login-btn" (click)="checkAdminLogin()"  >Login</button>
+            <button type="button"  class = "login-btn" (click)="closePasswordPopup()" >Close</button>
+            <button type="button"  class = "login-btn" (click)="editApproval()" >Approve</button>
+    
+          </div>
+          </form>
+          </div>
+        </section>
+
+
+     
+    </div>
+  </div>
+</div>
+
+
+
+<div class="main-content"  *ngIf="isOwnerPopupOpen">
+
+  <div class="popup-overlay" >
+    <div class="popup-content" style="background: #1a1814;">
+      
+
+      
+      <section id="menu" class="menu section-bg" style="padding: 0px;">
+        <div class="login-container">
+         
+
+          <form>
+            <div class="form-group " >
+              <label for="username">Admin Password:</label>
+              <input type="password" id="username" name="username" class = "username" [(ngModel)]="username" required>
+            </div>
+            <div>
+            <button type="button"  class = "login-btn" (click)="makeOwnerPaymentCompleted()"  >Login</button>
+            <button type="button"  class = "login-btn" (click)="closeOwnerPasswordPopup()" >Close</button>
+    
+          </div>
+          </form>
+          </div>
+        </section>
+
+
+     
+    </div>
+  </div>
+</div>
+
+
+
+
+<div class="main-content"  *ngIf="isEditOrderPopUpOpen">
+
+  <div class="popup-overlay" >
+    <div class="popup-content" style="background: #1a1814;">
+      
+      <div style="display: flex; align-items: center; margin-bottom: 1em; color: white;">
+        <label for="discountSelect" style="margin-right: 10px;">Select Discount:</label>
+        <select id="discountSelect" [(ngModel)]="selectedDiscount" class="custom-dropdown" style="margin-right: 10px;">
+          <option [value]="0">No Discount</option>
+          <option [value]="10">10%</option>
+          <option [value]="15">15%</option>
+        </select>
+        <button type="button" class="login-btn" (click)="applyDiscount()">Apply</button>
+      </div> 
+      
+      <div style="display: flex; align-items: center; margin-bottom: 1em; color: white;">
+        <label for="discountSelect" style="margin-right: 10px;">MemberShip:</label>
+        status
+        <button type="button" class="login-btn" (click)="applyDiscount()">check</button>
+      </div>
+
+      
+      <section id="menu" class="menu section-bg" style="padding: 0px;    max-height: 30em;
+      overflow: overlay;">
+        
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Item Quantity</th>
+              <th>Item Cost</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of editableOrder.orderItems; let i = index">
+              <td>{{ item.item_name }}</td>
+              <td>
+                <span *ngIf="!editMode[i]" class="non-editable">{{ item.item_quantity }}</span>
+                <input *ngIf="editMode[i]" class="editable" type="number" style="width: 62px;" [(ngModel)]="editableOrder.orderItems[i].item_quantity">
+              </td>
+              <td>{{ item.item_cost }}</td>
+              <td><button (click)="toggleEditMode(i)">{{ editMode[i] ? 'Save' : 'Edit' }}</button></td>
+            </tr>
+          </tbody>
+        </table>
+      
+
+        </section>
+        <button type="button"  class = "login-btn" (click)="updateEditOrder()" >Save</button>
+        <button type="button"  class = "login-btn" (click)="closePEditOrderPopUp()" >Close</button>
+     
+    </div>
+  </div>
+</div>
+
+
+<div class="main-content" *ngIf="isReportPopupOpen">
+  <div class="popup-overlay">
+    <div class="popup-content" style="background:#1a1814; color:white; width:350px;">
+
+      <h3 style="margin-bottom:1em;">Online Platform Settlement</h3>
+
+      <div class="form-group">
+        <label>Swiggy</label>
+        <input type="number" [(ngModel)]="reportAmounts.swiggy">
+      </div>
+
+      <div class="form-group">
+        <label>Zomato</label>
+        <input type="number" [(ngModel)]="reportAmounts.zomato">
+      </div>
+
+      <div class="form-group">
+        <label>Swiggy Dine-In CR</label>
+        <input type="number" [(ngModel)]="reportAmounts.swiggyDineIn">
+      </div>
+
+      <div class="form-group">
+        <label>Dstrict</label>
+        <input type="number" [(ngModel)]="reportAmounts.dstrict">
+      </div>
+
+      <div class="buttons" style="margin-top:1em;">
+        <button style="background:#198754" (click)="confirmReport()">
+          Generate Report
+        </button>
+        <button style="background:#dc3545" (click)="closeReportPopup()">
+          Cancel
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+

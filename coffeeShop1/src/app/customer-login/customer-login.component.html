@@ -1,0 +1,230 @@
+<div *ngIf="showSpinner" class="spinner-overlay">
+    <div class="spinner"></div>
+  </div>
+<!--   
+  <div *ngIf="pageType != 'cap' ">
+    <section id="menu" class="menu section-bg" style="padding-top: 9em;">
+      <div class="login-container">
+        <h2 class="login">Login</h2>
+        <div *ngIf="showError" class="error-banner">
+          Invalid username or password. Please try again.
+        </div>
+  
+  
+        <form>
+          <div class="form-group ">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" class="username" [(ngModel)]="username" required>
+          </div>
+          <div class="form-group password-input-container">
+            <label for="password">Password:</label>
+            <div class="password-wrapper">
+              <input type="{{ showPassword ? 'text' : 'password' }}" id="password" name="password" [(ngModel)]="password"
+                required>
+              <button type="button" (click)="togglePasswordVisibility()">
+                <i class="far" [ngClass]="{'fa-eye': !showPassword, 'fa-eye-slash': showPassword}"></i>
+              </button>
+            </div>
+          </div>
+          <button type="button" class="login-btn" (click)="login()">Login</button>
+        </form>
+      </div>
+    </section>
+  </div>
+  
+   -->
+  <div *ngIf="pageType == 'cap' ">
+    <section id="menu" class="menu section-bg" style="    padding: 1em; border-radius: 42px;" >
+      <div class="tabs">
+  
+        <div class="tab tab-btn " (click)="selectTab('sign_in')" [class.active]="selectedTab === 'sign_in'">Sign In</div>
+        <div class="tab tab-btn " (click)="selectTab('sign_up')" [class.active]="selectedTab === 'sign_up'">Sign up</div>
+      </div>
+  
+      <div class="tab-content">
+        <div *ngIf="selectedTab === 'sign_up'">
+  
+  
+          <div class="login-container">
+            <h2 class="login">Sign up</h2>
+            <div *ngIf="showError" class="error-banner">
+              Invalid username or password. Please try again.
+            </div>
+  
+            <div *ngIf="showSignUpSuccessBanner" class="success-banner">
+              Account created successfully, please sign in
+            </div>
+            <div *ngIf="showSignUpOtpBanner" class="error-banner">
+              Invalid OTP . Please try again.
+            </div>
+            <div *ngIf="errorOccurredBanner" class="error-banner">
+              error occurred. mobile number, email or user name might present. Try again with other details.
+            </div>
+            <form *ngIf="!showOtpPannel">
+              <div class="form-group ">
+                <label for="Sign_up_username">Username:</label>
+                <input type="text" id="Sign_up_username" name="Sign_up_username" class="username"
+                  [(ngModel)]="Sign_up_username" required>
+              </div>
+              <div class="form-group ">
+                <label for="Sign_up_email_id">Email id : (Valid Gmail)</label>
+                <input ype="email" pattern="^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$"
+              id="Sign_up_email_id" name="Sign_up_email_id" class="username"
+                  [(ngModel)]="Sign_up_email_id" required>
+              </div>
+              <div class="form-group ">
+                <label for="Sign_up_mobileNumber">Mobile number: (valid contact)</label>
+                <input type="text" id="Sign_up_mobileNumber" name="Sign_up_mobileNumber" maxlength="10" pattern="[1-9]{1}[0-9]{9}" class="username"
+                  [(ngModel)]="Sign_up_mobileNumber" required>
+              </div>
+              <div class="form-group password-input-container">
+                <label for="Sign_up_password">Password:</label>
+                <div class="password-wrapper">
+                  <input type="{{ showPassword ? 'text' : 'password' }}" id="Sign_up_password" name="Sign_up_password"
+                    [(ngModel)]="Sign_up_password" required>
+                  <button type="button" (click)="togglePasswordVisibility()">
+                    <i class="far" [ngClass]="{'fa-eye': !showPassword, 'fa-eye-slash': showPassword}"></i>
+                  </button>
+                </div>
+              </div>
+  
+              <button type="button" class="login-btn" (click)="sendSignupOtp()" *ngIf="isFormValid()">Getotp</button>
+            </form>
+  
+            <form *ngIf="showOtpPannel">
+              <div class="form-group ">
+                <label for="Sign_up_username">Username:</label>
+                <input type="text" id="Sign_up_username" name="Sign_up_username" class="username"
+                  [(ngModel)]="Sign_up_username" required>
+              </div>
+              <div class="form-group password-input-container">
+                <label for="Sign_up_otp">otp: (otp sent to mail)</label>
+                <div class="password-wrapper">
+                  <input type="{{ showPassword ? 'text' : 'password' }}" id="Sign_up_otp" name="Sign_up_otp"
+                    [(ngModel)]="Sign_up_otp" required>
+                  <button type="button" (click)="togglePasswordVisibility()">
+                    <i class="far" [ngClass]="{'fa-eye': !showPassword, 'fa-eye-slash': showPassword}"></i>
+                  </button>
+                </div>
+              </div>
+              <button type="button" class="login-btn" (click)="createSignUpUser()">create</button>
+              <button type="button" class="login-btn" (click)="backToSignup()">Back</button>
+            </form>
+          </div>
+  
+  
+  
+        </div>
+  
+        <div *ngIf="selectedTab === 'sign_in'">
+  
+  
+          <div class="login-container">
+            <h2 class="login">Sign in</h2>
+            <div *ngIf="loginShowErrorBanner" class="error-banner">
+              Invalid username or password. Please try again.
+            </div>
+            <div *ngIf="loginSessionExpiredBanner" class="error-banner">
+              Session expired Please renew your session.
+            </div>
+            <form>
+              <div class="form-group ">
+                <label for="sign_in_username">Mobile Number:</label>
+                <input type="text" id="sign_in_username" name="sign_in_username" class="username"
+                  [(ngModel)]="sign_in_username" required>
+              </div>
+              <div class="form-group password-input-container">
+                <label for="sign_in_password">password:</label>
+                <div class="password-wrapper">
+                  <input type="{{ showPassword ? 'text' : 'password' }}" id="sign_in_password" name="sign_in_password"
+                    [(ngModel)]="sign_in_password" required>
+                  <button type="button" (click)="togglePasswordVisibility()">
+                    <i class="far" [ngClass]="{'fa-eye': !showPassword, 'fa-eye-slash': showPassword}"></i>
+                  </button>
+                </div>
+                <span class="forgot-password" (click)="selectTab('forget_pass')">Forgot Password?</span>
+              </div>
+           
+           
+  
+              <button type="button" class="login-btn" (click)="loginCustomer()">Login</button>
+            </form>
+          </div>
+  
+  
+  
+        </div>
+
+  
+        <div *ngIf="selectedTab === 'forget_pass'">
+  
+  
+  
+          <div class="login-container">
+            <h2 class="login">Password Reset</h2>
+            <div *ngIf="showEmailIdNotFOundError" class="error-banner">
+             Email id not found
+            </div>
+  
+            <div *ngIf="showRenewSuccessBanner" class="success-banner">
+              Password Updated successfully, please sign in
+            </div>
+            <div *ngIf="showRenewOtpBanner" class="error-banner">
+              Invalid OTP . Please try again.
+            </div>
+            <div *ngIf="renewErrorOccurredBanner" class="error-banner">
+              error occurred . User name might not be present, Please try again with other username.
+            </div>
+            <form *ngIf="!showRenewOtpPannel">
+              <div class="form-group ">
+                <label for="renew_up_username">Registered Email:</label>
+                <input type="text" id="renew_up_username" name="renew_up_username" class="username"
+                  [(ngModel)]="renew_up_username" required>
+              </div>
+
+              <div class="form-group password-input-container">
+                <label for="reset_password">New password:</label>
+                <div class="password-wrapper">
+                  <input type="{{ showPassword ? 'text' : 'password' }}" id="reset_password" name="reset_password"
+                    [(ngModel)]="reset_password" required>
+                  <button type="button" (click)="togglePasswordVisibility()">
+                    <i class="far" [ngClass]="{'fa-eye': !showPassword, 'fa-eye-slash': showPassword}"></i>
+                  </button>
+                </div>
+          
+              </div>
+           
+              <button type="button" class="login-btn" (click)="sendPasswordResetOtp()">Getotp</button>
+            </form>
+  
+            <form *ngIf="showRenewOtpPannel">
+              <div class="form-group ">
+                <label for="renew_up_username">Registered Email:</label>
+                <input type="text" id="renew_up_username" name="renew_up_username" class="username"
+                  [(ngModel)]="renew_up_username" disabled>
+              </div>
+              <div class="form-group password-input-container">
+                <label for="renew_up_otp">otp (otp sent to mail):</label>
+                <div class="password-wrapper">
+                  <input type="{{ showPassword ? 'text' : 'password' }}" id="renew_up_otp" name="renew_up_otp"
+                    [(ngModel)]="renew_up_otp" required>
+                  <button type="button" (click)="togglePasswordVisibility()">
+                    <i class="far" [ngClass]="{'fa-eye': !showPassword, 'fa-eye-slash': showPassword}"></i>
+                  </button>
+                </div>
+              </div>
+              <button type="button" class="login-btn" (click)="updateCustomerPasswordTime()">update</button>
+              <button type="button" class="login-btn" (click)="backToRestPage()">Back</button>
+            </form>
+          </div>
+  
+  
+  
+  
+        </div> 
+  
+      </div>
+  
+  
+    </section>
+  </div>

@@ -1,0 +1,28 @@
+<div  *ngIf="showSpinner"  class="spinner-overlay">
+  <div class="spinner"></div>
+</div>
+
+
+
+
+
+
+<!-- Overlay -->
+<div class="overlay" *ngIf="showPopup">
+  <div class="popup">
+    <h3>Select Style</h3>
+
+    <div class="btn-group">
+      <button class="login-btn" (click)="chooseStyle('normal')">
+        Normal Style
+      </button>
+
+      <button class="login-btn" (click)="chooseStyle('counter')">
+        Counter Style
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
