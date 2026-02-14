@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1771058584257,
+  "timestamp": 1771058818103,
   "index": "https://nandu5274.github.io/coffeeShop1/index.html",
   "assetGroups": [
     {
@@ -16,7 +16,7 @@
         "https://nandu5274.github.io/coffeeShop1/678.3e629a584d39cfc9.js",
         "https://nandu5274.github.io/coffeeShop1/favicon.ico",
         "https://nandu5274.github.io/coffeeShop1/index.html",
-        "https://nandu5274.github.io/coffeeShop1/main.f156952ade2e59e9.js",
+        "https://nandu5274.github.io/coffeeShop1/main.1c3469476fede99d.js",
         "https://nandu5274.github.io/coffeeShop1/manifest.webmanifest",
         "https://nandu5274.github.io/coffeeShop1/polyfills.1516670616894585.js",
         "https://nandu5274.github.io/coffeeShop1/runtime.d3f73159170267af.js",
@@ -1008,8 +1008,8 @@
     "https://nandu5274.github.io/coffeeShop1/assets/vendor/swiper/swiper-bundle.min.js": "f4dc8d46086739c58121185b2d0f4e190710f11b",
     "https://nandu5274.github.io/coffeeShop1/assets/vendor/swiper/swiper-bundle.min.js.map": "8476a6a709730180c88f23d341d400ee50aad267",
     "https://nandu5274.github.io/coffeeShop1/favicon.ico": "22f6a4a3bcaafafb0254e0f2fa4ceb89e505e8b2",
-    "https://nandu5274.github.io/coffeeShop1/index.html": "a6b510165c452881b8db43dcfb3539984726a383",
-    "https://nandu5274.github.io/coffeeShop1/main.f156952ade2e59e9.js": "feb4513a1a6b30ab0021efabf894cc3450ccb2d6",
+    "https://nandu5274.github.io/coffeeShop1/index.html": "1c5beb78c0f8a4bcba3637ea29c5beb79044c5d5",
+    "https://nandu5274.github.io/coffeeShop1/main.1c3469476fede99d.js": "38553726805db9607655b5383f883a4b8fab268c",
     "https://nandu5274.github.io/coffeeShop1/manifest.webmanifest": "d60dcd6811325a69a3c68475d205b1288b2003a4",
     "https://nandu5274.github.io/coffeeShop1/polyfills.1516670616894585.js": "9f1ff95e833f87d4f9d4e0aa0c010bb481ae11fa",
     "https://nandu5274.github.io/coffeeShop1/runtime.d3f73159170267af.js": "1346174c5a7d7960eb3110a217d26867a729885c",
