@@ -8,12 +8,26 @@
 
 #card{
     width: 285px;
-    height: 238px;
+   
     background-color: rgb(41, 41, 41);
     border-radius: 0 .5rem .5rem 0;
     
 }
 
+.menu-ingredients select {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  outline: none;
+}
+
+/* Focus effect */
+.menu-ingredients select:focus {
+  border-color: #555;
+}
 .order-detail-img {
     width: 155px;
     height: 238px;
@@ -290,7 +304,7 @@ font-family: open-sans, Arial, Helvetica, sans-serif;
     #card {
         
         width: 285px;
-        height: 238px;
+       
         background-color: rgb(41, 41, 41);
         border-radius: 0rem 0rem 0.5rem 0.5rem;
 

@@ -106,7 +106,7 @@ export class AppComponent implements OnInit  {
         this.hearts.push(newHeart);
         this.scrollToBottom();
         counter++;
-      }, 500);
+      }, 900);
     }
   
     scrollToBottom(): void {
@@ -164,10 +164,10 @@ this.updateImageBasedOnScreenSize()
     const screenWidth = window.innerWidth;
     if (screenWidth < 768) {
       // Set image for small screens
-      this.imageUrl = 'assets/img/event/biriyani.jpeg';
+      this.imageUrl = 'assets/img/event/wing.jpeg';
     } else {
       // Set image for larger screens
-      this.imageUrl = 'assets/img/event/biriyani.jpeg';
+      this.imageUrl = 'assets/img/event/wing.jpeg';
     }
   }
   showPopup: boolean = false;

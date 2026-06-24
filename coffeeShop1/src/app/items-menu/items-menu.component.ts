@@ -1,10 +1,12 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, OnInit, Output, ViewChild, Renderer2, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CartItemDto } from '../dtos/CartItemDto';
 import { SharedService } from '../service/shared-service';
 import * as menuListJsonData from 'src/app/sampleResponse/menu-list.json';
 import * as menuCourseCuisineListJsonData from 'src/app/sampleResponse/cuisine-list.json';
 import { CustomerService } from '../service/customer.service';
-import { Subject } from 'rxjs';
+import { KUBERA_ACCOUNT_MENU_GRAPHQL_QUERY_API, KUBERA_ACCOUNT_MENU_GRAPHQL_KEY } from '../common/constanst';
+import { firstValueFrom, Observable, Subject } from 'rxjs';
 
 
 @Component({
@@ -16,10 +18,13 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
   filteredMenuItems: any;
 
   constructor(private sharedService: SharedService, private renderer: Renderer2,
-    private customerService: CustomerService, private el: ElementRef, private cdRef: ChangeDetectorRef,) { }
+    private customerService: CustomerService, private el: ElementRef, private cdRef: ChangeDetectorRef, private http: HttpClient) { }
   showMenu: any = false
   showCourse: any = false
+  useRemoteMenuData: boolean = true;
+  menuEndpointUrl: string = KUBERA_ACCOUNT_MENU_GRAPHQL_QUERY_API;
   ngOnInit(): void {
+    this.useRemoteMenuData = true;
     this.populateMenuList();
     this.sharedService.getIsLoginFlag().subscribe((data) => {
       this.is_login = sessionStorage.getItem('is_login');
@@ -69,23 +74,8 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
       this.getLoyalPoints();
     }
 
-    setTimeout(() => {
-      const loadEvent = new Event('load');
-      window.dispatchEvent(loadEvent);
-    }, 20);
+  
 
-    setTimeout(() => {
-      this.showMenu = this.sharedService.getShowMenuFlagData();
-      this.showCourse = this.sharedService.getShowMenuFlagData();
-
-      this.sharedService.getShowMenuFlagDataObservable().subscribe((data) => {
-        this.showMenu = data;
-        this.showCourse = data;
-      })
-
-
-
-    })
   }
   handleCustomEvent(event: Event): void {
 
@@ -106,27 +96,114 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
   originalId: any;
   originalName: any
   originalCost: any
-  openModal(item: any) {
+  // openModal(item: any) {
 
-    this.showModal = true;
-    this.selectedItem = { ...item };
-    this.quantity = 1;
-    document.body.style.overflow = 'hidden';
+  //   this.showModal = true;
+  //   this.selectedItem = { ...item };
+  //   this.quantity = 1;
+  //   document.body.style.overflow = 'hidden';
 
-    if (item.isSizes) {
-      this.selectedSize = this.selectedItem.sizes[0];
-      this.selectedItem.cost = this.selectedItem.sizes[0].cost;
-      const originalId = this.selectedItem.id
-      const originalName = this.selectedItem.name;
-      const originalCost = this.selectedItem.cost;
-      this.originalId = originalId
-      this.originalName = originalName
-      this.originalCost = originalCost
-      this.selectedItem.id = parseInt(this.selectedItem.id.toString() + this.selectedItem.sizes[0].id.toString(), 10)
-      this.selectedItem.name = this.selectedItem.name + " - " + this.selectedItem.sizes[0].size
-    }
+  //   if (item.isSizes) {
+  //     this.selectedSize = this.selectedItem.sizes[0];
+  //     this.selectedItem.cost = this.selectedItem.sizes[0].cost;
+  //     const originalId = this.selectedItem.id
+  //     const originalName = this.selectedItem.name;
+  //     const originalCost = this.selectedItem.cost;
+  //     this.originalId = originalId
+  //     this.originalName = originalName
+  //     this.originalCost = originalCost
+  //     this.selectedItem.id = parseInt(this.selectedItem.id.toString() + this.selectedItem.sizes[0].id.toString(), 10)
+  //     this.selectedItem.name = this.selectedItem.name + " - " + this.selectedItem.sizes[0].size
+  //   }
 
+  // }
+
+openModal(item: any) {
+
+  this.showModal = true;
+  this.selectedItem = { ...item };
+  this.quantity = 1;
+  document.body.style.overflow = 'hidden';
+  this.openItem(item);
+
+  // Store original values
+  this.originalId = this.selectedItem.id;
+  this.originalName = this.selectedItem.name;
+  this.originalCost = this.selectedItem.cost;
+
+  /* ===== SIZE LOGIC ===== */
+  if (item.isSizes && this.selectedItem.sizes?.length) {
+
+    this.selectedSize = this.selectedItem.sizes[0];
+
+    this.selectedItem.cost = this.selectedSize.cost;
+
+    this.selectedItem.id = parseInt(
+      this.originalId.toString() + this.selectedSize.id.toString(),
+      10
+    );
+
+    this.selectedItem.name =
+      this.originalName + " - " + this.selectedSize.size;
+
+    this.originalCost = this.selectedSize.cost;
   }
+
+  /* ===== FLAVOUR DEFAULT ===== */
+  if (this.selectedItem.list?.length) {
+    this.selectedItem.selectedFlavour = '';
+  }
+
+}
+openItem(item: any) {
+
+   
+this.selectedItem = {
+    ...item,
+    selectedFlavour: ''   // MUST be empty string
+  };
+
+  this.originalCost = item.cost;
+  this.originalName = item.name;
+  this.originalId = item.id;
+  }
+originalOrder = (a: any, b: any): number => {
+    return 0;
+  };
+
+
+onFlavourChange() {
+
+  // Reset base values
+  this.selectedItem.cost = this.originalCost;
+  this.selectedItem.name = this.originalName;
+  this.selectedItem.id = this.originalId;
+
+  let totalCost = this.originalCost;
+
+  // Apply flavour price
+  if (this.selectedItem.selectedFlavour) {
+
+    const flavourName = this.selectedItem.selectedFlavour;
+
+    const flavourPrice =
+      this.selectedItem.list?.[flavourName] || 0;
+
+    totalCost += flavourPrice;
+
+    this.selectedItem.name =
+      this.originalName + " (" + flavourName + ")";
+
+    // Unique ID for cart
+    const timestamp = Date.now();
+    this.selectedItem.id = parseInt(
+      this.originalId.toString() + timestamp.toString(),
+      10
+    );
+  }
+
+  this.selectedItem.cost = totalCost;
+}
   selectSize(menuItem: any) {
     this.selectedSize = menuItem;
     this.selectedItem.cost = menuItem.cost;
@@ -167,9 +244,70 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
     }
   }
 
-  populateMenuList() {
+  async populateMenuList() {
+    if (this.useRemoteMenuData && this.menuEndpointUrl) {
+      try {
+        const result = await firstValueFrom(this.fetchRemoteMenuData());
+        this.menuListData = this.normalizeRemoteMenuData(result);
+        this.processMenuData(this.menuListData);
+      } catch (error: any) {
+        console.error('Remote menu fetch failed, falling back to local JSON.', error);
+        this.menuListData = menuListJsonData;
+        this.processMenuData(this.menuListData);
+      }
+      return;
+    }else{
+      
+    }
 
-    this.menuList = this.menuListData.menu;
+    this.processMenuData(this.menuListData);
+  }
+
+  private fetchRemoteMenuData(): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'x-hasura-admin-secret': KUBERA_ACCOUNT_MENU_GRAPHQL_KEY,
+    });
+
+    return this.http.get<any>(this.menuEndpointUrl, { headers });
+  }
+
+  private normalizeRemoteMenuData(response: any): any {
+    if (Array.isArray(response?.menu_json_mv) && response.menu_json_mv.length > 0) {
+      return response.menu_json_mv[0]?.menu_json ?? response;
+    }
+    return response?.menu ? response : response?.data ? response.data : response;
+  }
+
+  private processMenuData(menuData: any): void {
+
+    setTimeout(() => {
+      this.showMenu = this.sharedService.getShowMenuFlagData();
+      this.showCourse = this.sharedService.getShowMenuFlagData();
+
+      this.sharedService.getShowMenuFlagDataObservable().subscribe((data) => {
+        this.showMenu = data;
+        this.showCourse = data;
+      })
+
+
+
+    })
+
+      setTimeout(() => {
+      const loadEvent = new Event('load');
+      window.dispatchEvent(loadEvent);
+    }, 20);
+
+
+    this.menuList = menuData?.menu ?? menuData;
+    if (!Array.isArray(this.menuList)) {
+      this.menuList = [];
+    }
+
+    this.menuCourseList = [];
+    this.menuItemsList = [];
+    this.filteredMenuCourseList = [];
 
     this.menuList.forEach((course: any) => {
 

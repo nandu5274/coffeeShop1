@@ -84,7 +84,7 @@ import { CounterCapComponent } from './counter-cap/counter-cap.component';
       registrationStrategy: 'registerWhenStable:30000'
     })
   ],
-  providers: [SharedService,DatePipe],
+  providers: [SharedService, DatePipe],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

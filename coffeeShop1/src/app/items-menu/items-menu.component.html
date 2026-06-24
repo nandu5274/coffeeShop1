@@ -126,10 +126,10 @@
             <p class="shine-text">MUST TRY</p>
           </div>
         </div>
-      </div>
+   
 
-
-    
+  
+       </div>
     </div>
     <div  *ngIf="!showMenu"  class="invalid-route">
         please, close the browser and scan QR code from the table to view menu
@@ -166,9 +166,50 @@
         <div class="dish">
           <h1 class="item-name">{{selectedItem.name}} </h1>
        
-        </div>
-  
+    <!-- ✅ FLAVOUR DROPDOWN -->
+<div class="menu-ingredients"
+     *ngIf="selectedItem?.list && (selectedItem.list | keyvalue).length"
+     style="margin: 2px 18px;
+            font-size: 1.4rem;
+            font-family: poppins, Arial, Helvetica, sans-serif;
+          
+            font-weight: 400;">
 
+  <label style="font-weight: 600; font-size: 14px;">
+    {{selectedItem.ItemLabel}}
+  </label>
+
+  <select class="form-control mt-2"
+          [(ngModel)]="selectedItem.selectedFlavour"
+          style="  background-color: #cda45e;"
+          (change)="onFlavourChange()">
+
+
+ <!-- ✅ Default option -->
+    <option value="" selected>
+      Select 
+    </option>
+
+
+    <!-- ✅ Flavour options (No sorting) -->
+    <option *ngFor="let flavour of selectedItem.list | keyvalue: originalOrder"
+            [ngValue]="flavour.key">
+
+      {{ flavour.key }}
+
+      <span *ngIf="$any(flavour.value) > 0">
+        (+₹{{ flavour.value }})
+      </span>
+
+      <span *ngIf="$any(flavour.value) === 0">
+        (Free)
+      </span>
+
+    </option>
+
+  </select>
+
+</div>
         <div class="description"   style="width: -webkit-fill-available;
         height: 70px;">
            <p style="    display: flex;
@@ -197,8 +238,12 @@
             <h3><span>&#8377; {{selectedItem.cost}}</span></h3>
           </ng-template>
 
-        
+
         </div>
+
+
+
+        
         <div class="quantity-input" style="position: unset !important">
           <button (click)="decrement()">-</button>
           <input type="text" [(ngModel)]="quantity" />

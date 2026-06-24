@@ -79,8 +79,9 @@
     {
       "cuisine": {
         "type": "Continental",
-        "class": ".filter-Salads",
+        "class": ".filter-Wings",
         "items": [
+           "Wings",
           "Salads",
           "Fries",
           "Breads",
@@ -89,8 +90,8 @@
           "Pizzas",
           "Pastas",
           "Grills",
-          "RiceBowl",
-          "Bruschetta"
+          "RiceBowl"
+     
         ]
       }
     },

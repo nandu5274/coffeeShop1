@@ -4,7 +4,7 @@
   
   <div  *ngIf="showModal" class="modal">
     <div class="modal-content">
-      <button (click) = "closeModal()" style="width: 9em; background: #1a1814;
+      <button (click) = "closeModal()" style="width: 9em; background: #5c2120;
       align-self: center;     position: fixed;" class=" pop-up-btm">close</button>
    
       <div class="test" style=" height: 86vh;
@@ -76,52 +76,13 @@
       </div>
    
   
-<div class="container" #container>
+<div class="container" #container style="z-index:999;max-height: 1em;">
     
-  <!-- <img src="assets/img/specials-2.png"  class="heart" *ngFor="let heart of hearts; let i = index" [style.left.px]="heart.left" [style.animation-duration.s]="heart.duration" /> -->
-  <!-- <div class="heart" *ngFor="let heart of hearts; let i = index" [style.left.px]="heart.left" [style.animation-duration.s]="heart.duration"></div> -->
+  
+ <!-- <div class="heart" *ngFor="let heart of hearts; let i = index" [style.left.px]="heart.left" [style.animation-duration.s]="heart.duration"></div> -->
   </div> 
 
 
-  <div id="ipl" style="z-index: 999;">
-   
-
-    <div class="container">
-      <!-- <button (click)="openPopup()">Open Popup</button> -->
-      <div *ngIf="showPopup" class="popup">
-        <div *ngIf="step === 0">
-          <p>This is a disclaimer.</p>
-          <button (click)="continue()">Accept</button>
-        </div>
-        <div *ngIf="step === 1" class="slide" [@slideInOut]>
-          <label for="name">Name:</label>
-          <input type="text" id="name" [(ngModel)]="name">
-          <br>
-          <label for="mobile">Mobile:</label>
-          <input type="text" id="mobile" [(ngModel)]="mobile">
-          <br>
-          <button (click)="continue()">Continue</button>
-        </div>
-        <div *ngIf="step === 2" class="slide"[@slideInOut] >
-          <p>Choose an option:</p>
-          <input type="radio" id="option1" name="option" [(ngModel)]="selectedOption" value="Option 1">
-          <label for="option1">Option 1</label><br>
-          <input type="radio" id="option2" name="option" [(ngModel)]="selectedOption" value="Option 2">
-          <label for="option2">Option 2</label><br>
-          <button (click)="next()">Next</button>
-        </div>
-        <div *ngIf="step === 3" class="slide" [@slideInOut]>
-          <div style="width: 10em;">
-    
-
-          <p>Spin the wheel and get a number from 1 to 5:</p>
-          <button (click)="spinWheel()">Spin the Wheel</button>
-          <p *ngIf="wheelResult !== null">Result: {{ wheelResult }}</p>
-          <button (click)="reset()">Reset</button>
-        </div>
-      </div>
-    </div>
-  </div>
 
     <app-nav-bar></app-nav-bar>
 <!-- floating-bell.component.html -->
