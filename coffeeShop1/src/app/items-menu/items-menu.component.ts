@@ -335,11 +335,12 @@ onFlavourChange() {
         if (this.isCap) {
          let menuItems = course.course.items
           menuItems.forEach((item: any) => {
-            //console.log(item.name);
-            let menuItem = item;
-            menuItem.class = "filter-" + course.course.type
-            menuItem.cuisine = course.course.type,
+            if (!item.available || item.available.toLowerCase() === 'y') {
+              let menuItem = item;
+              menuItem.class = "filter-" + course.course.type
+              menuItem.cuisine = course.course.type;
               this.menuItemsList.push(menuItem);
+            }
           })
 
         }
@@ -348,11 +349,12 @@ onFlavourChange() {
 
         let menuItems = course.course.items
         menuItems.forEach((item: any) => {
-          //console.log(item.name);
-          let menuItem = item;
-          menuItem.class = "filter-" + course.course.type
-          menuItem.cuisine = course.course.type,
+          if (!item.available || item.available.toLowerCase() === 'y') {
+            let menuItem = item;
+            menuItem.class = "filter-" + course.course.type
+            menuItem.cuisine = course.course.type;
             this.menuItemsList.push(menuItem);
+          }
         })
 
 
