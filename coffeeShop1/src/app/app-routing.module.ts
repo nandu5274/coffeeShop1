@@ -12,10 +12,12 @@ import { MembershipCardComponent } from './membership-card/membership-card.compo
 import { CustomerProfileComponent } from './customer-profile/customer-profile.component';
 import { CapSelectorComponent } from './cap-selector/cap-selector.component';
 import { CounterCapComponent } from './counter-cap/counter-cap.component';
+import { MenuUpdateComponent } from './menu-update/menu-update.component';
 
 const routes: Routes = [
   { path: '', component: HomePageComponent },
   { path: 'menu', component: ItemsMenuComponent,  data: { fragment: 'menu' } },
+  { path: 'menu-update', component: MenuUpdateComponent },
   { path: 'cap', component: CapSelectorComponent },
   { path: 'captain', component: CaptainPageComponent },
   { path: 'counter', component: CounterCapComponent },

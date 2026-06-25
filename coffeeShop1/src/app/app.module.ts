@@ -37,6 +37,7 @@ import { CustomerProfileComponent } from './customer-profile/customer-profile.co
 import { AdminPaymentFormComponent } from './admin-payment-form/admin-payment-form.component';
 import { CapSelectorComponent } from './cap-selector/cap-selector.component';
 import { CounterCapComponent } from './counter-cap/counter-cap.component';
+import { MenuUpdateComponent } from './menu-update/menu-update.component';
 
 
 @NgModule({
@@ -66,7 +67,8 @@ import { CounterCapComponent } from './counter-cap/counter-cap.component';
     CustomerProfileComponent,
     AdminPaymentFormComponent,
     CapSelectorComponent,
-    CounterCapComponent
+    CounterCapComponent,
+    MenuUpdateComponent
   ],
   imports: [
     BrowserModule,

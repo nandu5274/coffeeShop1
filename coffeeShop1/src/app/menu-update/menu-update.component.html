@@ -1,0 +1,1049 @@
+<section id="menu-update-sec" class="menu section-bg" style="padding-top: 9em; min-height: 100vh;">
+  <div class="container" data-aos="fade-up">
+
+    <!-- Success/Error Alert messages -->
+    <div *ngIf="alertMessage" class="custom-alert" [ngClass]="alertType">
+      <span>{{ alertMessage }}</span>
+    </div>
+
+    <!-- Login Panel (Not Logged In) -->
+    <div *ngIf="!isLoggedIn" class="login-wrapper">
+      <div class="login-card">
+        <div class="login-header">
+          <i class="fa fa-lock gold-icon"></i>
+          <h2>Authorized Access Only</h2>
+          <p *ngIf="!showOtpPanel">Please log in with your credentials to update the menu.</p>
+          <p *ngIf="showOtpPanel" style="color: #ffc107;">An OTP has been sent to your registered email address.</p>
+        </div>
+
+        <!-- Form 1: Username / Password Entry -->
+        <form *ngIf="!showOtpPanel" (ngSubmit)="handleLogin()" class="login-form">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <div class="input-container">
+              <i class="fa fa-user input-icon"></i>
+              <input 
+                type="text" 
+                id="username" 
+                name="username" 
+                [(ngModel)]="usernameInput" 
+                placeholder="Enter username" 
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-container">
+              <i class="fa fa-key input-icon"></i>
+              <input 
+                [type]="showPassword ? 'text' : 'password'" 
+                id="password" 
+                name="password" 
+                [(ngModel)]="passwordInput" 
+                placeholder="Enter password" 
+                required
+              />
+              <button 
+                type="button" 
+                class="password-toggle" 
+                (click)="togglePasswordVisibility()"
+              >
+                <i class="fa" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="loginError && !showOtpPanel" class="error-message">
+            <i class="fa fa-exclamation-triangle"></i> {{ loginError }}
+          </div>
+
+          <button type="submit" class="btn-login-submit" [disabled]="loading">
+            <span *ngIf="!loading">Get OTP</span>
+            <span *ngIf="loading"><i class="fa fa-spinner fa-spin"></i> Sending OTP...</span>
+          </button>
+        </form>
+
+        <!-- Form 2: OTP Verification -->
+        <form *ngIf="showOtpPanel" (ngSubmit)="verifyOtpAndLogin()" class="login-form">
+          <div class="form-group">
+            <label for="otpCode">OTP Verification Code</label>
+            <div class="input-container">
+              <i class="fa fa-shield input-icon"></i>
+              <input 
+                type="text" 
+                id="otpCode" 
+                name="otpCode" 
+                [(ngModel)]="otpInput" 
+                placeholder="Enter 4-digit OTP" 
+                required
+                maxlength="4"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+
+          <div *ngIf="loginError" class="error-message">
+            <i class="fa fa-exclamation-triangle"></i> {{ loginError }}
+          </div>
+
+          <button type="submit" class="btn-login-submit">Verify & Login</button>
+          
+          <div class="back-link-container" style="text-align: center; margin-top: 15px;">
+            <a href="javascript:void(0)" (click)="goBackToCredentials()" class="back-link" style="color: #cda45e; font-size: 14px; text-decoration: none;">
+              <i class="fa fa-arrow-left"></i> Change Credentials
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Authenticated Menu Update Panel -->
+    <div *ngIf="isLoggedIn" class="menu-dashboard-wrapper">
+      <div class="section-title">
+        <div class="title-header-left">
+          <h2>Menu Update</h2>
+          <p class="section-subtitle">Manage Cafe Items</p>
+        </div>
+        <div class="user-logout-wrapper">
+          <span class="logged-in-user-tag">
+            <i class="fa fa-user-circle-o"></i>
+            <span>{{ usernameInput }}</span>
+          </span>
+          <button (click)="handleLogout()" class="btn-logout header-logout">
+            <i class="fa fa-sign-out"></i> Logout
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="dashboard-tabs">
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab === 'menu'" 
+          (click)="switchTab('menu')"
+        >
+          <i class="fa fa-th-list"></i> Menu Management
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab === 'history'" 
+          (click)="switchTab('history')"
+        >
+          <i class="fa fa-history"></i> Publish History
+        </button>
+      </div>
+
+      <!-- Menu Management Tab Content -->
+      <div *ngIf="activeTab === 'menu'">
+        <!-- Dedicated Action Toolbar -->
+        <div class="action-toolbar">
+          <button (click)="fetchMenuDetails()" class="btn-refresh" [disabled]="loading">
+            <i class="fa" [ngClass]="loading ? 'fa-spinner fa-spin' : 'fa-refresh'"></i> Refresh
+          </button>
+          <button (click)="openAddModal()" class="btn-add-item">
+            <i class="fa fa-plus"></i> Add Item
+          </button>
+          <button (click)="publishMenu()" class="btn-publish" [disabled]="loading">
+            <i class="fa fa-paper-plane"></i> Publish Menu
+            <span *ngIf="unpublishedChangesCount > 0" class="publish-badge">
+              {{ unpublishedChangesCount }}
+            </span>
+          </button>
+        </div>
+
+        <!-- Search and Loading Bar -->
+        <div class="search-bar-container">
+          <div class="search-filters-left">
+            <div class="search-input-wrapper">
+              <i class="fa fa-search search-icon"></i>
+              <input 
+                type="text" 
+                [(ngModel)]="searchTerm" 
+                (input)="filterItems()" 
+                placeholder="Search items by name, category, or ID..."
+                class="search-input"
+              />
+              <button *ngIf="searchTerm" (click)="searchTerm = ''; filterItems()" class="clear-search">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+
+            <!-- Course/Category Filter -->
+            <div class="filter-select-wrapper">
+              <i class="fa fa-folder-open filter-icon"></i>
+              <select 
+                [(ngModel)]="selectedCourseFilter" 
+                (change)="filterItems()" 
+                class="filter-select"
+              >
+                <option value="all">All Courses</option>
+                <option *ngFor="let category of categoriesList" [value]="category">
+                  {{ category }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="filter-select-wrapper">
+              <i class="fa fa-eye filter-icon"></i>
+              <select 
+                [(ngModel)]="selectedStatusFilter" 
+                (change)="filterItems()" 
+                class="filter-select"
+              >
+                <option value="all">All Statuses</option>
+                <option value="y">Active</option>
+                <option value="n">Inactive</option>
+                <option value="d">Deleted</option>
+              </select>
+            </div>
+          </div>
+          <div class="total-items-badge">
+            Total Items: <span class="badge-count">{{ filteredMenuItemsList.length }}</span>
+          </div>
+        </div>
+
+        <!-- Spinner -->
+        <div *ngIf="loading" class="spinner-inline">
+          <div class="double-bounce1"></div>
+          <div class="double-bounce2"></div>
+          <p>Fetching menu data...</p>
+        </div>
+
+        <!-- Table View -->
+        <div *ngIf="!loading" class="table-responsive custom-table-wrapper">
+          <table class="table custom-menu-table">
+            <thead>
+              <tr>
+                <th class="col-id">ID</th>
+                <th class="col-category">Category</th>
+                <th>Name</th>
+                <th class="col-cost">Cost</th>
+                <th class="col-type">Type</th>
+                <th>Status</th>
+                <th class="col-desc">Description</th>
+                <th class="col-customizations">Customizations</th>
+                <th class="col-action text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of filteredMenuItemsList">
+                <td class="col-id">#{{ item.id }}</td>
+                <td class="col-category">
+                  <span class="category-badge">
+                    <span class="emoji">{{ item.emoji }}</span> {{ item.category }}
+                  </span>
+                </td>
+                <td class="col-name font-weight-bold">{{ item.name }}</td>
+                <td class="col-cost">₹{{ item.cost }}</td>
+                <td class="col-type">
+                  <span [class]="'type-indicator ' + item.type.toLowerCase()">
+                    {{ item.type }}
+                  </span>
+                </td>
+                <td class="col-status">
+                  <span class="status-badge" [ngClass]="item.available?.toLowerCase() === 'y' ? 'active' : (item.available?.toLowerCase() === 'd' ? 'deleted' : 'inactive')">
+                    <span class="status-dot"></span>
+                    <span class="status-text">{{ item.available?.toLowerCase() === 'y' ? 'Active' : (item.available?.toLowerCase() === 'd' ? 'Deleted' : 'Inactive') }}</span>
+                  </span>
+                </td>
+                <td class="col-desc">
+                  <div class="truncate-text" title="{{ item.description }}">
+                    {{ item.description || '-' }}
+                  </div>
+                </td>
+                <td class="col-customizations">
+                  <div class="customizations-list" *ngIf="getKeys(item.list).length > 0">
+                    <span *ngFor="let option of item.list | keyvalue" class="option-badge">
+                      {{ option.key }}: +₹{{ option.value }}
+                    </span>
+                  </div>
+                  <span *ngIf="getKeys(item.list).length === 0" class="no-customizations">-</span>
+                </td>
+                <td class="col-action text-center">
+                  <div class="action-btn-group">
+                    <button class="btn-action-col btn-edit" (click)="openEditModal(item)" data-tooltip="Edit">
+                      <i class="fa fa-pencil"></i>
+                    </button>
+                    <button 
+                      class="btn-action-col btn-toggle-status" 
+                      [ngClass]="item.available?.toLowerCase() === 'y' ? 'btn-make-inactive' : 'btn-make-active highlighted'"
+                      (click)="toggleItemAvailability(item)"
+                      [attr.data-tooltip]="item.available?.toLowerCase() === 'y' ? 'Inactive' : 'Active'"
+                    >
+                      <i class="fa" [ngClass]="item.available?.toLowerCase() === 'y' ? 'fa-ban' : 'fa-check-circle'"></i>
+                    </button>
+                    <button 
+                      *ngIf="item.available?.toLowerCase() !== 'd'"
+                      class="btn-action-col btn-delete" 
+                      (click)="confirmDeleteMenuItem(item)" 
+                      data-tooltip="Delete"
+                    >
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="filteredMenuItemsList.length === 0">
+                <td colspan="8" class="text-center no-data">No menu items found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Publish History Tab Content -->
+      <div *ngIf="activeTab === 'history'" class="history-tab-content">
+        <!-- History Action & Search Toolbar -->
+        <div class="search-bar-container" style="margin-bottom: 25px;">
+          <div class="search-filters-left">
+            <div class="search-input-wrapper" style="max-width: 400px; width: 100%;">
+              <i class="fa fa-search search-icon"></i>
+              <input 
+                type="text" 
+                [(ngModel)]="historySearchTerm" 
+                (keyup.enter)="onHistorySearch()" 
+                placeholder="Search history by user or notes..."
+                class="search-input"
+              />
+              <button *ngIf="historySearchTerm" (click)="clearHistorySearch()" class="clear-search">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+            <button (click)="onHistorySearch()" class="btn-refresh" [disabled]="historyLoading" style="border: 1px solid rgba(204, 153, 51, 0.4); padding: 8px 16px; border-radius: 20px; color: #cda45e;">
+              <i class="fa fa-search"></i> Search
+            </button>
+            <button (click)="fetchPublishHistory()" class="btn-refresh" [disabled]="historyLoading">
+              <i class="fa" [ngClass]="historyLoading ? 'fa-spinner fa-spin' : 'fa-refresh'"></i> Refresh
+            </button>
+          </div>
+          <div class="total-items-badge">
+            Logs Found: <span class="badge-count">{{ historyTotalCount }}</span>
+          </div>
+        </div>
+
+        <!-- History Loading Indicator -->
+        <div *ngIf="historyLoading" class="spinner-inline">
+          <div class="double-bounce1"></div>
+          <div class="double-bounce2"></div>
+          <p>Loading publish history...</p>
+        </div>
+
+        <!-- Empty History Message -->
+        <div *ngIf="!historyLoading && publishHistoryList.length === 0" class="empty-state-container" style="text-align: center; padding: 50px 0;">
+          <i class="fa fa-history" style="font-size: 3em; color: rgba(204, 153, 51, 0.4); margin-bottom: 15px; display: block;"></i>
+          <h3 style="color: #cda45e; margin-bottom: 8px;">No Publish History Found</h3>
+          <p style="color: #a49b89;">Try adjusting your search criteria or publish menu changes to create history logs.</p>
+        </div>
+
+        <!-- Publish History Cards/List -->
+        <div *ngIf="!historyLoading && publishHistoryList.length > 0" class="history-list-container">
+          <div *ngFor="let record of publishHistoryList" class="history-card">
+            <div class="history-card-header">
+              <div class="history-user-info">
+                <i class="fa fa-user-circle"></i>
+                <span class="history-username">{{ record.username }}</span>
+              </div>
+              <span class="history-date">
+                <i class="fa fa-clock-o"></i>
+                {{ record.created_at | date:'dd MMM yyyy, hh:mm a':'+0000' }} IST
+              </span>
+            </div>
+            <div class="history-card-body">
+              <h5 class="history-notes-title">Publish Notes</h5>
+              <pre class="history-notes">{{ record.publish_notes }}</pre>
+            </div>
+          </div>
+
+          <!-- Pagination Controls -->
+          <div class="pagination-container" style="display: flex; justify-content: space-between; align-items: center; margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.08); flex-wrap: wrap; gap: 15px;">
+            <span style="color: #a49b89; font-size: 14px;">
+              Page <strong>{{ historyCurrentPage }}</strong> of <strong>{{ totalPages }}</strong> (Total: {{ historyTotalCount }} logs)
+            </span>
+            <div style="display: flex; gap: 10px;">
+              <button 
+                (click)="prevPage()" 
+                [disabled]="historyCurrentPage === 1" 
+                class="btn-refresh" 
+                style="padding: 6px 14px; font-size: 13px;"
+              >
+                <i class="fa fa-chevron-left"></i> Prev
+              </button>
+              <button 
+                (click)="nextPage()" 
+                [disabled]="historyCurrentPage === totalPages" 
+                class="btn-refresh" 
+                style="padding: 6px 14px; font-size: 13px;"
+              >
+                Next <i class="fa fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Modal Dialog -->
+    <div *ngIf="showEditModal" class="modal-backdrop-custom">
+      <div class="modal-content-custom">
+        <div class="modal-header-custom">
+          <h3>
+            <i class="fa fa-edit gold-icon"></i> 
+            Edit Menu Item <span class="item-id-title">#{{ selectedEditItem?.id }}</span>
+          </h3>
+          <button class="modal-close-btn" (click)="closeEditModal()">&times;</button>
+        </div>
+
+        <form (ngSubmit)="saveEdit()" class="modal-form-custom">
+          <!-- Row 1: Name -->
+          <div class="form-row-custom">
+            <div class="form-group-custom full-width">
+              <label for="editName">Item Name</label>
+              <input 
+                type="text" 
+                id="editName" 
+                name="editName" 
+                [(ngModel)]="editForm.name" 
+                required 
+                class="form-control-custom"
+              />
+            </div>
+          </div>
+
+          <!-- Row 2: Price & Food Type -->
+          <div class="form-row-custom two-cols">
+            <div class="form-group-custom">
+              <label for="editCost">Price (₹)</label>
+              <input 
+                type="number" 
+                id="editCost" 
+                name="editCost" 
+                [(ngModel)]="editForm.cost" 
+                required 
+                min="0" 
+                class="form-control-custom"
+              />
+            </div>
+
+            <div class="form-group-custom">
+              <label for="editType">Food Type</label>
+              <select 
+                id="editType" 
+                name="editType" 
+                [(ngModel)]="editForm.type" 
+                class="form-control-custom"
+              >
+                <option value="veg">Veg</option>
+                <option value="nv">Non-Veg</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 3: List Name & Course ID -->
+          <div class="form-row-custom two-cols">
+            <div class="form-group-custom">
+              <label for="editListName">List Name (Category)</label>
+              <select 
+                id="editListName" 
+                name="editListName" 
+                [(ngModel)]="editForm.list_name" 
+                (change)="onEditCategoryChange()"
+                class="form-control-custom"
+              >
+                <option *ngFor="let cat of categoriesList" [value]="cat">{{ cat }}</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group-custom">
+              <label for="editCourseId">Course ID</label>
+              <input 
+                type="number" 
+                id="editCourseId" 
+                name="editCourseId" 
+                [(ngModel)]="editForm.course_id" 
+                readonly
+                class="form-control-custom"
+                style="opacity: 0.7; cursor: not-allowed;"
+              />
+            </div>
+          </div>
+
+          <!-- Row 4: Image Path & Type Path -->
+          <div class="form-row-custom two-cols">
+            <div class="form-group-custom">
+              <label for="editImagePath">Image Path / URL</label>
+              <input 
+                type="text" 
+                id="editImagePath" 
+                name="editImagePath" 
+                [(ngModel)]="editForm.image_path" 
+                placeholder="https://example.com/images/ramen.jpg"
+                class="form-control-custom"
+              />
+            </div>
+
+            <div class="form-group-custom">
+              <label for="editTypePath">Type Path / Icon Path</label>
+              <input 
+                type="text" 
+                id="editTypePath" 
+                name="editTypePath" 
+                [(ngModel)]="editForm.type_path" 
+                placeholder="main/ramen"
+                class="form-control-custom"
+              />
+            </div>
+          </div>
+
+          <!-- Row 5: Item Label & Rating -->
+          <div class="form-row-custom two-cols">
+            <div class="form-group-custom">
+              <label for="editItemLabel">Item Label</label>
+              <input 
+                type="text" 
+                id="editItemLabel" 
+                name="editItemLabel" 
+                [(ngModel)]="editForm.item_label" 
+                placeholder="e.g. Chef Special, New, Spicy"
+                class="form-control-custom"
+              />
+            </div>
+
+            <div class="form-group-custom">
+              <label for="editRating">Rating (1-5)</label>
+              <select 
+                id="editRating" 
+                name="editRating" 
+                [(ngModel)]="editForm.rating" 
+                class="form-control-custom"
+              >
+                <option [value]="5">⭐⭐⭐⭐⭐ (5)</option>
+                <option [value]="4">⭐⭐⭐⭐ (4)</option>
+                <option [value]="3">⭐⭐⭐ (3)</option>
+                <option [value]="2">⭐⭐ (2)</option>
+                <option [value]="1">⭐ (1)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 6: Toggles & Flags -->
+          <div class="form-row-custom two-cols" style="align-items: center; margin-top: 10px;">
+            <div class="form-group-custom" style="flex-direction: row; align-items: center; gap: 10px;">
+              <input 
+                type="checkbox" 
+                id="editMustTry" 
+                name="editMustTry" 
+                [(ngModel)]="editForm.must_try" 
+                style="width: 18px; height: 18px; cursor: pointer;"
+              />
+              <label for="editMustTry" style="margin: 0; cursor: pointer; text-transform: none;">Must Try Item</label>
+            </div>
+
+            <div class="form-group-custom" style="flex-direction: row; align-items: center; gap: 10px;">
+              <input 
+                type="checkbox" 
+                id="editItemAvailable" 
+                name="editItemAvailable" 
+                [(ngModel)]="editForm.item_available"
+                style="width: 18px; height: 18px; cursor: pointer;"
+              />
+              <label for="editItemAvailable" style="margin: 0; cursor: pointer; text-transform: none;">Item Available (Boolean)</label>
+            </div>
+          </div>
+
+          <!-- Row 7: Availability Status -->
+          <div class="form-row-custom">
+            <div class="form-group-custom full-width">
+              <label for="editAvailable">Availability Status Code</label>
+              <div class="availability-toggle-group">
+                <label class="radio-container">
+                  <input 
+                    type="radio" 
+                    name="editAvailable" 
+                    value="y" 
+                    [(ngModel)]="editForm.available"
+                  />
+                  <span class="checkmark"></span>
+                  Active / Available (y)
+                </label>
+                <label class="radio-container">
+                  <input 
+                    type="radio" 
+                    name="editAvailable" 
+                    value="n" 
+                    [(ngModel)]="editForm.available"
+                  />
+                  <span class="checkmark"></span>
+                  Inactive (n)
+                </label>
+                <label class="radio-container">
+                  <input 
+                    type="radio" 
+                    name="editAvailable" 
+                    value="d" 
+                    [(ngModel)]="editForm.available"
+                  />
+                  <span class="checkmark"></span>
+                  Deleted (d)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 8: Description -->
+          <div class="form-row-custom">
+            <div class="form-group-custom full-width">
+              <label for="editDescription">Description</label>
+              <textarea 
+                id="editDescription" 
+                name="editDescription" 
+                [(ngModel)]="editForm.description" 
+                rows="2" 
+                class="form-control-custom"
+                placeholder="Description of this delicious food item..."
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Row 9: Item Short Description -->
+          <div class="form-row-custom">
+            <div class="form-group-custom full-width">
+              <label for="editItemDesc">Short Description (item_desc)</label>
+              <input 
+                type="text" 
+                id="editItemDesc" 
+                name="editItemDesc" 
+                [(ngModel)]="editForm.item_desc" 
+                placeholder="e.g. Our signature spicy garlic ramen dish"
+                class="form-control-custom"
+              />
+            </div>
+          </div>
+
+          <!-- Row 10: Ingredients -->
+          <div class="form-row-custom">
+            <div class="form-group-custom full-width">
+              <label for="editIngredients">Ingredients</label>
+              <textarea 
+                id="editIngredients" 
+                name="editIngredients" 
+                [(ngModel)]="editForm.ingredients" 
+                rows="2" 
+                class="form-control-custom"
+                placeholder="e.g. Pork broth, noodles, chili oil, chashu pork"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Customizations Section (Edit) -->
+          <div class="form-row-custom">
+            <div class="form-group-custom full-width">
+              <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                Customizations (Sub-items)
+                <button type="button" class="btn-add-opt-small" (click)="addEditCustomizationOption()">
+                  <i class="fa fa-plus"></i> Add Option
+                </button>
+              </label>
+              
+              <div class="customizations-edit-list">
+                <div *ngFor="let opt of editCustomizations; let idx = index" class="customization-edit-row">
+                  <input 
+                    type="text" 
+                    name="editOptName_{{idx}}" 
+                    [(ngModel)]="opt.name" 
+                    placeholder="Option name (e.g. Extra Cheese)" 
+                    class="form-control-custom"
+                    style="flex: 2;"
+                    required
+                  />
+                  <input 
+                    type="number" 
+                    name="editOptPrice_{{idx}}" 
+                    [(ngModel)]="opt.price" 
+                    placeholder="Price modifier (+₹)" 
+                    class="form-control-custom"
+                    style="flex: 1; min-width: 80px;"
+                    required
+                  />
+                  <button type="button" class="btn-delete-opt" (click)="deleteEditCustomizationOption(idx)">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+                <div *ngIf="editCustomizations.length === 0" class="no-options-msg">
+                  No customization options defined for this item. Click "Add Option" to create some.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer-custom">
+            <button type="button" class="btn-cancel-modal" (click)="closeEditModal()">Cancel</button>
+            <button type="submit" class="btn-save-modal">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add Item Modal Dialog -->
+    <div *ngIf="showAddModal" class="modal-backdrop-custom">
+      <div class="modal-content-custom">
+        <div class="modal-header-custom">
+          <h3>
+            <i class="fa fa-plus gold-icon"></i> 
+            Add New Menu Item
+          </h3>
+          <button class="modal-close-btn" (click)="closeAddModal()">&times;</button>
+        </div>
+
+        <form (ngSubmit)="saveNewItem()" class="modal-form-custom">
+          <!-- Row 1: Name & Category -->
+          <div class="form-row-custom two-cols">
+            <div class="form-group-custom">
+              <label for="addName">Item Name</label>
+              <input 
+                type="text" 
+                id="addName" 
+                name="addName" 
+                [(ngModel)]="addForm.name" 
+                required 
+                class="form-control-custom"
+                placeholder="e.g. Mocha Fudge"
+              />
+            </div>
+
+            <div class="form-group-custom">
+              <label for="addCategory">Category (Display)</label>
+              <select 
+                id="addCategory" 
+                name="addCategory" 
+                [(ngModel)]="addForm.category" 
+                (change)="onCategoryChange()"
+                class="form-control-custom"
+              >
+                <option *ngFor="let cat of categoriesList" [value]="cat">{{ cat }}</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 2: Price & Food Type -->
+          <div class="form-row-custom two-cols">
+            <div class="form-group-custom">
+              <label for="addCost">Price (₹)</label>
+              <input 
+                type="number" 
+                id="addCost" 
+                name="addCost" 
+                [(ngModel)]="addForm.cost" 
+                required 
+                min="0" 
+                class="form-control-custom"
+              />
+            </div>
+
+            <div class="form-group-custom">
+              <label for="addType">Food Type</label>
+              <select 
+                id="addType" 
+                name="addType" 
+                [(ngModel)]="addForm.type" 
+                class="form-control-custom"
+              >
+                <option value="veg">Veg</option>
+                <option value="nv">Non-Veg</option>
+              </select>
+            </div>
+          </div>
+
+
+
+          <!-- Row 4: Image Path & Type Path -->
+          <div class="form-row-custom two-cols">
+            <div class="form-group-custom">
+              <label for="addImagePath">Image Path / URL</label>
+              <input 
+                type="text" 
+                id="addImagePath" 
+                name="addImagePath" 
+                [(ngModel)]="addForm.image_path" 
+                placeholder="https://example.com/images/ramen.jpg"
+                class="form-control-custom"
+              />
+            </div>
+
+            <div class="form-group-custom">
+              <label for="addTypePath">Type Path / Icon Path</label>
+              <input 
+                type="text" 
+                id="addTypePath" 
+                name="addTypePath" 
+                [(ngModel)]="addForm.type_path" 
+                placeholder="main/ramen"
+                class="form-control-custom"
+              />
+            </div>
+          </div>
+
+          <!-- Row 5: Item Label & Rating -->
+          <div class="form-row-custom two-cols">
+            <div class="form-group-custom">
+              <label for="addItemLabel">Item Label</label>
+              <input 
+                type="text" 
+                id="addItemLabel" 
+                name="addItemLabel" 
+                [(ngModel)]="addForm.item_label" 
+                placeholder="e.g. Chef Special, New, Spicy"
+                class="form-control-custom"
+              />
+            </div>
+
+            <div class="form-group-custom">
+              <label for="addRating">Rating (1-5)</label>
+              <select 
+                id="addRating" 
+                name="addRating" 
+                [(ngModel)]="addForm.rating" 
+                class="form-control-custom"
+              >
+                <option [value]="5">⭐⭐⭐⭐⭐ (5)</option>
+                <option [value]="4">⭐⭐⭐⭐ (4)</option>
+                <option [value]="3">⭐⭐⭐ (3)</option>
+                <option [value]="2">⭐⭐ (2)</option>
+                <option [value]="1">⭐ (1)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 6: Toggles & Flags -->
+          <div class="form-row-custom two-cols" style="align-items: center; margin-top: 10px;">
+            <div class="form-group-custom" style="flex-direction: row; align-items: center; gap: 10px;">
+              <input 
+                type="checkbox" 
+                id="addMustTry" 
+                name="addMustTry" 
+                [(ngModel)]="addForm.must_try" 
+                style="width: 18px; height: 18px; cursor: pointer;"
+              />
+              <label for="addMustTry" style="margin: 0; cursor: pointer; text-transform: none;">Must Try Item</label>
+            </div>
+
+            <div class="form-group-custom" style="flex-direction: row; align-items: center; gap: 10px;">
+              <input 
+                type="checkbox" 
+                id="addItemAvailable" 
+                name="addItemAvailable" 
+                [(ngModel)]="addForm.item_available"
+                style="width: 18px; height: 18px; cursor: pointer;"
+              />
+              <label for="addItemAvailable" style="margin: 0; cursor: pointer; text-transform: none;">Item Available (Boolean)</label>
+            </div>
+          </div>
+
+          <!-- Row 7: Availability Status -->
+          <div class="form-row-custom">
+            <div class="form-group-custom full-width">
+              <label for="addAvailable">Availability Status Code</label>
+              <div class="availability-toggle-group">
+                <label class="radio-container">
+                  <input 
+                    type="radio" 
+                    name="addAvailable" 
+                    value="y" 
+                    [(ngModel)]="addForm.available"
+                  />
+                  <span class="checkmark"></span>
+                  Active / Available (y)
+                </label>
+                <label class="radio-container">
+                  <input 
+                    type="radio" 
+                    name="addAvailable" 
+                    value="n" 
+                    [(ngModel)]="addForm.available"
+                  />
+                  <span class="checkmark"></span>
+                  Inactive (n)
+                </label>
+                <label class="radio-container">
+                  <input 
+                    type="radio" 
+                    name="addAvailable" 
+                    value="d" 
+                    [(ngModel)]="addForm.available"
+                  />
+                  <span class="checkmark"></span>
+                  Deleted (d)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 8: Description -->
+          <div class="form-row-custom">
+            <div class="form-group-custom full-width">
+              <label for="addDescription">Description</label>
+              <textarea 
+                id="addDescription" 
+                name="addDescription" 
+                [(ngModel)]="addForm.description" 
+                rows="2" 
+                class="form-control-custom"
+                placeholder="Description of this delicious food item..."
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Row 9: Item Short Description -->
+          <div class="form-row-custom">
+            <div class="form-group-custom full-width">
+              <label for="addItemDesc">Short Description (item_desc)</label>
+              <input 
+                type="text" 
+                id="addItemDesc" 
+                name="addItemDesc" 
+                [(ngModel)]="addForm.item_desc" 
+                placeholder="e.g. Our signature spicy garlic ramen dish"
+                class="form-control-custom"
+              />
+            </div>
+          </div>
+
+          <!-- Row 10: Ingredients -->
+          <div class="form-row-custom">
+            <div class="form-group-custom full-width">
+              <label for="addIngredients">Ingredients</label>
+              <textarea 
+                id="addIngredients" 
+                name="addIngredients" 
+                [(ngModel)]="addForm.ingredients" 
+                rows="2" 
+                class="form-control-custom"
+                placeholder="e.g. Pork broth, noodles, chili oil, chashu pork"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Customizations Section (Add) -->
+          <div class="form-row-custom">
+            <div class="form-group-custom full-width">
+              <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                Customizations (Sub-items)
+                <button type="button" class="btn-add-opt-small" (click)="addAddCustomizationOption()">
+                  <i class="fa fa-plus"></i> Add Option
+                </button>
+              </label>
+              
+              <div class="customizations-edit-list">
+                <div *ngFor="let opt of addCustomizations; let idx = index" class="customization-edit-row">
+                  <input 
+                    type="text" 
+                    name="addOptName_{{idx}}" 
+                    [(ngModel)]="opt.name" 
+                    placeholder="Option name (e.g. Extra Cheese)" 
+                    class="form-control-custom"
+                    style="flex: 2;"
+                    required
+                  />
+                  <input 
+                    type="number" 
+                    name="addOptPrice_{{idx}}" 
+                    [(ngModel)]="opt.price" 
+                    placeholder="Price modifier (+₹)" 
+                    class="form-control-custom"
+                    style="flex: 1; min-width: 80px;"
+                    required
+                  />
+                  <button type="button" class="btn-delete-opt" (click)="deleteAddCustomizationOption(idx)">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+                <div *ngIf="addCustomizations.length === 0" class="no-options-msg">
+                  No customization options defined for this item. Click "Add Option" to create some.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer-custom">
+            <button type="button" class="btn-cancel-modal" (click)="closeAddModal()">Cancel</button>
+            <button type="submit" class="btn-save-modal">Add Item</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal Dialog -->
+    <div *ngIf="showDeleteConfirmModal" class="modal-backdrop-custom">
+      <div class="modal-content-custom delete-confirm-modal">
+        <div class="modal-header-custom">
+          <h3>
+            <i class="fa fa-exclamation-triangle warning-icon"></i> Confirm Delete
+          </h3>
+          <button class="modal-close-btn" (click)="closeDeleteConfirmModal()">&times;</button>
+        </div>
+        <div class="modal-body-custom">
+          <p class="delete-msg">Are you sure you want to delete <strong>{{ itemToDelete?.name }}</strong>?</p>
+          <p class="delete-submsg">This will soft-delete the menu item (status 'D').</p>
+        </div>
+        <div class="modal-footer-custom">
+          <button type="button" class="btn-cancel-modal" (click)="closeDeleteConfirmModal()">Cancel</button>
+          <button type="button" class="btn-danger-modal" (click)="executeDeleteMenuItem()">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Publish Confirmation Modal Dialog -->
+    <div *ngIf="showPublishConfirmModal" class="modal-backdrop-custom">
+      <div class="modal-content-custom publish-confirm-modal" style="max-width: 550px; padding: 0;">
+        <div class="modal-header-custom" style="padding: 20px 25px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+          <h3 style="margin: 0; font-size: 1.4em; display: flex; align-items: center; gap: 10px;">
+            <i class="fa fa-paper-plane gold-icon" style="font-size: 1.2em;"></i> Ready to Publish?
+          </h3>
+          <button class="modal-close-btn" (click)="closePublishConfirmModal()">&times;</button>
+        </div>
+        <div class="modal-body-custom" style="padding: 25px; max-height: 350px; overflow-y: auto;">
+          <div class="publish-summary-banner" style="background: rgba(204, 153, 51, 0.1); border-left: 4px solid var(--color-primary); padding: 12px 15px; border-radius: 4px; margin-bottom: 20px;">
+            <p style="margin: 0; font-weight: 500; color: #fff; font-size: 1.05em;">
+              You are about to publish <strong>{{ unpublishedChangesCount }}</strong> pending change(s) to the live menu.
+            </p>
+          </div>
+          <h4 style="margin-bottom: 12px; font-size: 1.1em; color: #ccc; font-weight: 600;">Change Log</h4>
+          <ul class="changes-list">
+            <li *ngFor="let change of unpublishedChangesList" class="change-item" style="display: flex; align-items: flex-start; gap: 12px; padding: 12px 15px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 6px; margin-bottom: 10px;">
+              <i class="fa fa-check-circle" style="color: var(--color-success); font-size: 1.2em; margin-top: 2px;"></i>
+              <span style="color: #e0e0e0; font-size: 0.95em; line-height: 1.4;">{{ change }}</span>
+            </li>
+          </ul>
+
+          <!-- Publish Notes Input Field -->
+          <div class="form-group publish-notes-group" style="margin-top: 20px;">
+            <label for="publishNotes" style="display: block; margin-bottom: 8px; color: #cda45e; font-weight: 500; font-size: 1.05em;">
+              Publish Notes
+            </label>
+            <textarea 
+              id="publishNotes" 
+              name="publishNotes" 
+              [(ngModel)]="publishNotes" 
+              placeholder="Describe what changes you are publishing (e.g. Updated prices or added seasonal drinks)..." 
+              rows="3"
+              style="width: 100%; padding: 10px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(204, 153, 51, 0.3); border-radius: 6px; color: #fff; font-family: inherit; font-size: 0.95em; resize: none; outline: none; transition: border-color 0.3s;"
+              onfocus="this.style.borderColor='#cda45e'"
+              onblur="this.style.borderColor='rgba(204, 153, 51, 0.3)'"
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer-custom" style="padding: 20px 25px; border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: flex-end; gap: 12px;">
+          <button type="button" class="btn-cancel-modal" (click)="closePublishConfirmModal()" style="padding: 10px 20px; font-size: 1em;">Cancel</button>
+          <button type="button" class="btn-save-modal" (click)="executePublish()" style="padding: 10px 24px; font-size: 1em; display: flex; align-items: center; gap: 8px;">
+            <i class="fa fa-cloud-upload"></i> Confirm Publish
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
