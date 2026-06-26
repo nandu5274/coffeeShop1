@@ -1,7 +1,7 @@
 import { trigger, transition, style, animate } from '@angular/animations';
 
 import { Component, ElementRef, HostListener, OnInit, Renderer2, ViewChild } from '@angular/core';
-import {VERSION} from './common/constanst';
+import { VERSION } from './common/constanst';
 import { HasuraApiService } from './service/hasura.api.service';
 import { WebSocketService } from './service/WebSocket.service';
 import { SharedService } from './service/shared-service';
@@ -15,13 +15,13 @@ import { SharedService } from './service/shared-service';
         style({ transform: 'translateX(100%)' }),
         animate('300ms ease-in', style({ transform: 'translateX(0%)' }))
       ]),
-    
+
     ])
   ]
 })
-export class AppComponent implements OnInit  { 
+export class AppComponent implements OnInit {
   title = 'cofeeshop1';
-  version:any = VERSION;
+  version: any = VERSION;
   private sound: Howl;
   isPopupOpen = false;
   selectedFloor = '';
@@ -35,109 +35,108 @@ export class AppComponent implements OnInit  {
     node.type = 'text/javascript';
     document.getElementsByTagName('head')[0].appendChild(node);
   }
-    
-     hearts: { left: number, duration: number }[] = [];
-     @ViewChild('container') container!: ElementRef;
-   
-     constructor(private renderer: Renderer2,  private dataService: HasuraApiService,
-       private webSocketService: WebSocketService, private sharedService: SharedService) { 
-      this.sound = new Howl({
-        src: ['assets/audio/ipl.mp3'],
-      });
 
-     }
-   
+  hearts: { left: number, duration: number }[] = [];
+  @ViewChild('container') container!: ElementRef;
 
+  constructor(private renderer: Renderer2, private dataService: HasuraApiService,
+    private webSocketService: WebSocketService, private sharedService: SharedService) {
+    this.sound = new Howl({
+      src: ['assets/audio/ipl.mp3'],
+    });
 
-     playSound() {
-      this.sound.play();
-    }
-  
+  }
 
 
-     ngOnInit(): void {
-      this.loadScript("assets/js/main.js");
-      this.generateHearts();
-      this.getLatestVersion()
-      this.openModal('d')
 
-//below code is for popups 
+  playSound() {
+    this.sound.play();
+  }
 
-   
-   //this.playSound();
+
+
+  ngOnInit(): void {
+    this.loadScript("assets/js/main.js");
+    this.generateHearts();
+    this.getLatestVersion()
+    //this.openModal('d')
+
+    //below code is for popups 
+
+
+    //this.playSound();
     this.updateImageBasedOnScreenSize();
-//above code is for popups 
-    }
-  
-    ngAfterViewInit(): void {
-      if (this.container) {
-        this.scrollToBottom();
-      }
-    
+    //above code is for popups 
+  }
+
+  ngAfterViewInit(): void {
+    if (this.container) {
+      this.scrollToBottom();
     }
 
-    getLatestVersion()
-    {
-      this.dataService.getLatestVersion().subscribe((response) => {
-        // Handle the response here
-        const versionNumber = response.kubera_Account_ui_version[0].verison;
-        const recursiveStatus = response.kubera_Account_ui_version[0].recursive;
-        console.log("API version - ",versionNumber); 
-        console.log("UI version - ",this.version); // Example: log the response
-      this.checkVersion(versionNumber,recursiveStatus)
-      },
+  }
+
+  getLatestVersion() {
+    this.dataService.getLatestVersion().subscribe((response) => {
+      // Handle the response here
+      const versionNumber = response.kubera_Account_ui_version[0].verison;
+      const recursiveStatus = response.kubera_Account_ui_version[0].recursive;
+      console.log("API version - ", versionNumber);
+      console.log("UI version - ", this.version); // Example: log the response
+      this.checkVersion(versionNumber, recursiveStatus)
+    },
       (error) => {
         // Handle errors here
         console.error(error);
       });
-    }
-  
-    generateHearts(): void {
-      let counter = 0;
-      const intervalId = setInterval(() => {
-        if (counter >= 50) {
-          clearInterval(intervalId);
-          return;
-        }
-        const newHeart = {
-          left: this.getRandomNumber(0, window.innerWidth - 20),
-          duration: this.getRandomNumber(3, 7) // Duration in seconds
-        };
-        this.hearts.push(newHeart);
-        this.scrollToBottom();
-        counter++;
-      }, 900);
-    }
-  
-    scrollToBottom(): void {
-      try {
-        if (this.container) {
-          this.renderer.setProperty(this.container.nativeElement, 'scrollTop', this.container.nativeElement.scrollHeight);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-  
-    getRandomNumber(min: number, max: number): number {
-      return Math.random() * (max - min) + min;
-    }
-  
-    @HostListener('window:scroll', ['$event'])
-    onScroll(event: any): void {
-      this.restartAnimation();
-    }
-  
-    restartAnimation(): void {
-      const elements = document.querySelectorAll('.heart');
-      elements.forEach((element) => {
-        element.classList.remove('animation');
-      
-        element.classList.add('animation');
-      });
-    }
+  }
 
-   
+  generateHearts(): void {
+    let counter = 0;
+    const intervalId = setInterval(() => {
+      if (counter >= 50) {
+        clearInterval(intervalId);
+        return;
+      }
+      const newHeart = {
+        left: this.getRandomNumber(0, window.innerWidth - 20),
+        duration: this.getRandomNumber(3, 7) // Duration in seconds
+      };
+      this.hearts.push(newHeart);
+      this.scrollToBottom();
+      counter++;
+    }, 900);
+  }
+
+  scrollToBottom(): void {
+    try {
+      if (this.container) {
+        this.renderer.setProperty(this.container.nativeElement, 'scrollTop', this.container.nativeElement.scrollHeight);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  getRandomNumber(min: number, max: number): number {
+    return Math.random() * (max - min) + min;
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  onScroll(event: any): void {
+    this.restartAnimation();
+  }
+
+  restartAnimation(): void {
+    const elements = document.querySelectorAll('.heart');
+    elements.forEach((element) => {
+      element.classList.remove('animation');
+
+      element.classList.add('animation');
+    });
+  }
+
+
   showModal = false;
 
   showOrderModal = false;
@@ -145,7 +144,7 @@ export class AppComponent implements OnInit  {
   openModal(item: any) {
 
     this.showModal = true;
-this.updateImageBasedOnScreenSize()
+    this.updateImageBasedOnScreenSize()
     document.body.style.overflow = 'hidden';
   }
 
@@ -182,7 +181,7 @@ this.updateImageBasedOnScreenSize()
   }
 
   continue() {
-if (this.step === 0) {
+    if (this.step === 0) {
       // Move to the next step after accepting the disclaimer
       this.step = 1;
     } else if (this.name !== '' && this.mobile !== '') {
@@ -217,25 +216,22 @@ if (this.step === 0) {
     this.step = 0; // Reset to the disclaimer step
     this.showPopup = false;
   }
-  showVersionModal:any = false
-  checkVersion(api_version:any, recursiveStatus:any)
-  {
-    if(this.version === api_version)
-    {
-      sessionStorage.setItem("reloadCount","0")
-      sessionStorage.setItem("recursive",recursiveStatus)
-    //  console.log("latest version");
+  showVersionModal: any = false
+  checkVersion(api_version: any, recursiveStatus: any) {
+    if (this.version === api_version) {
+      sessionStorage.setItem("reloadCount", "0")
+      sessionStorage.setItem("recursive", recursiveStatus)
+      //  console.log("latest version");
       this.showVersionModal = false
 
-    }else
-    {
+    } else {
       this.showVersionModal = true
-     // console.log("old version");
+      // console.log("old version");
       setTimeout(() => {
         this.reloadMultipleTimes()
-     
-      },100);
-   
+
+      }, 100);
+
     }
   }
 
@@ -250,13 +246,13 @@ if (this.step === 0) {
       this.reloadCount = Number(reloadCountCon)
       if (this.reloadCount < this.maxReloads) {
         this.reloadCount++;
-      //  console.log("retry - ",this.reloadCount)
-        sessionStorage.setItem("reloadCount",String(this.reloadCount))
-       // window.location.reload();
-  
+        //  console.log("retry - ",this.reloadCount)
+        sessionStorage.setItem("reloadCount", String(this.reloadCount))
+        // window.location.reload();
+
       }
-    }else{
-      sessionStorage.setItem("reloadCount","1")
+    } else {
+      sessionStorage.setItem("reloadCount", "1")
       window.location.reload();
     }
 
@@ -267,7 +263,7 @@ if (this.step === 0) {
   openFloatingBellPopup() {
     this.selectedFloor = '';
     this.message = '';
-    this.tableNumber  = undefined;
+    this.tableNumber = undefined;
     this.isPopupOpen = true;
   }
 
@@ -279,9 +275,8 @@ if (this.step === 0) {
     console.log('Selected Floor:', this.selectedFloor);
     console.log('Table Number:', this.tableNumber);
     this.closePopup(); // Close popup after submission
-    let msg_text = "call from "+  this.selectedFloor + " table - " + this.tableNumber + " on " + this.sharedService.updateCurrentDateTimeInIST() ;
-    if(this.message != '')
-    {
+    let msg_text = "call from " + this.selectedFloor + " table - " + this.tableNumber + " on " + this.sharedService.updateCurrentDateTimeInIST();
+    if (this.message != '') {
       msg_text = msg_text + " msg - " + this.message;
     }
     this.sendMessageToWebSocket(msg_text);
@@ -295,5 +290,5 @@ if (this.step === 0) {
 
 
 
-  
+
 

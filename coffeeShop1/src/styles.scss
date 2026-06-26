@@ -37,3 +37,79 @@ $cofeeshop1-theme: mat.define-light-theme((
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* ---- Liquid Glass Button Overrides ---- */
+.book-a-table-btn,
+#hero .btn-menu,
+#hero .btn-book,
+.menu-page-v2 .cap-btn,
+.menu-page-v2 .add-bowl-v2,
+.menu-page-v2 .qty-control-v2 button {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+  backdrop-filter: blur(12px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  color: #fff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+  position: relative;
+  overflow: hidden;
+
+  /* Specular sweep animation on hover */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.15) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: skewX(-25deg);
+    transition: 0.75s;
+    z-index: 1;
+  }
+
+  &:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+    border-color: rgba(255, 255, 255, 0.22) !important;
+    border-top-color: rgba(255, 255, 255, 0.4) !important;
+    border-left-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 
+      0 6px 20px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+    transform: translateY(-1px);
+
+    &::before {
+      left: 150%;
+    }
+  }
+
+  &:active {
+    transform: translateY(1px);
+    box-shadow: 
+      0 2px 10px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  }
+}
+
+/* Add specialized gold glow highlights to primary call-to-actions */
+#hero .btn-menu,
+.menu-page-v2 .add-bowl-v2 {
+  border-color: rgba(205, 164, 94, 0.35) !important;
+  box-shadow: 0 4px 15px rgba(205, 164, 94, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+
+  &:hover {
+    border-color: rgba(205, 164, 94, 0.5) !important;
+    box-shadow: 0 6px 20px rgba(205, 164, 94, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+  }
+}

@@ -1,291 +1,212 @@
 <!-- ======= Menu Section ======= -->
-<section id="menu"  *ngIf="section"   #menuSection  class="menu section-bg" style="padding-top: 9em;">
-  <div class="container" data-aos="fade-up" >
+<section id="menu" *ngIf="section" #menuSection class="menu section-bg menu-page-v2">
+  <div class="bg-watermark-logo">
+    <img src="assets/img/invoice.png" alt="">
+  </div>
+  <div class="container" data-aos="fade-up">
 
-    <div  *ngIf="showMenu"  class="section-title" style="padding-top: 1em; padding-bottom: 20px;">
-      <h2 class="align">Menu features {{filteredMenuItems.length}} delicious dishes</h2>
-      <div  class="refresh Menu-row">
-        <div style="    margin-bottom: 0.5em;">
-          <p class="header-align">Check Our Menu 
-             <a *ngIf="isCap === 'true'" style="    display: block;">
-             <img src="assets/img/table.png" class="table"  alt=""> 
-          <a style="font-family: sans-serif; font-size: smaller; font-weight: 500;"> : {{tablePlace}} {{tableNumber}} </a>
-          <a style="font-family: sans-serif; font-size: smaller; font-weight: 500;">  {{tableCustomerName}} </a>
-        </a>
-          </p>
-          <a class = "itemgst"> * Images displayed below are meant for reference.</a>
-          <a class = "itemgst" style="text-align: center; color: lemonchiffon;"> 
-            * The breakfast menu is only offered from 9:30 AM to 12:30 PM.
-            </a>
+    <!-- Minimal Header -->
+    <div *ngIf="showMenu" class="menu-header-v2">
+      <h1 class="menu-heading">Menu</h1>
 
-        </div>
-        <div *ngIf="isCap === 'true'" class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
-          <button style=" background-color: #d49b3b; color: #11100e;" routerLink="/cap">cap</button>
-        
-        </div>
-        <div *ngIf="isCap === 'true'; else showPoints" class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
-          <button style="background-color: #d49b3b; color: #11100e;" (click)="pointsChecker()">Points Check</button>
-        </div>
-        <ng-template #showPoints>
-          <span style="    text-align: center;" *ngIf="is_login === 'true'" >
-          <p style="    font-size: 25px;">Loyalty Points: <span class="shining-text">{{loyalty_point}}</span></p>
-        </span>
-        </ng-template>
+      <!-- Table info (CAP mode only) -->
+      <div *ngIf="isCap === 'true'" class="table-info-bar">
+        <img src="assets/img/table.png" class="table-icon" alt="">
+        <span>{{tablePlace}} {{tableNumber}}</span>
+        <span *ngIf="tableCustomerName"> · {{tableCustomerName}}</span>
       </div>
-     
+
+      <p class="breakfast-note">* Breakfast served 9:30 AM – 12:30 PM only</p>
+
+      <!-- CAP Buttons -->
+      <div *ngIf="isCap === 'true'" class="cap-actions">
+        <button class="cap-btn" routerLink="/cap">CAP</button>
+        <button class="cap-btn" (click)="pointsChecker()">Points</button>
+      </div>
+
+      <!-- Loyalty Points (non-CAP) -->
+      <ng-container *ngIf="isCap !== 'true'">
+        <div *ngIf="is_login === 'true'" class="loyalty-display">
+          Loyalty Points: <span class="loyalty-value">{{loyalty_point}}</span>
+        </div>
+      </ng-container>
     </div>
 
-
-    <div class="search-container" style=" 
-    text-align: center;
-    margin-bottom: 20px;
-    margin-right: 1em;
-    margin-left: 1em;
-    justify-self: center;
-    position: relative;"
->
-      <input 
-        type="text" 
-        [(ngModel)]="searchTerm" 
-        class="search-input" 
-        placeholder="Search items" 
+    <!-- Search Bar -->
+    <div class="search-bar-v2">
+      <svg class="search-icon-v2" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        class="search-input-v2"
+        placeholder="Search dishes..."
         (ngModelChange)="onSearchChange()"
       />
-      <button 
-        class="clear-button" 
-        *ngIf="searchTerm" 
-        (click)="clearSearch()"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+      <button class="search-clear-v2" *ngIf="searchTerm" (click)="clearSearch()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
           <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
         </svg>
       </button>
     </div>
 
-<!-- 
-    <div class="row" data-aos="fade-up" data-aos-delay="100">
-      <div class="col-lg-12 d-flex justify-content-center">
-        <ul id="menu-flters">
-          <li data-filter="*" class="filter-active">All</li>
-          <li data-filter=".filter-starters">Starters</li>
-          <li data-filter=".filter-salads">Salads</li>
-          <li data-filter=".filter-specialty">Specialty</li>
-          <li data-filter=".filter-coffee">Coffee</li>
-        </ul>
-      </div>
-    </div> -->
+    <!-- Cuisine Filter Tabs -->
+    <div *ngIf="showCourse" class="cuisine-tabs-wrapper" [ngClass]="{'hidden': isSearchEnabled}">
+      <ul id="cuisine-filters-v2" class="cuisine-tabs-v2">
+        <li *ngFor="let menuCourse of menuCourseCuisineList.cuisines"
+            [ngClass]="{'active': activeCuisine === menuCourse.cuisine.type}"
+            (click)="selectCuisine(menuCourse.cuisine.type)">
+          {{menuCourse.cuisine.type}}
+        </li>
+      </ul>
+    </div>
 
-    <div   *ngIf="showCourse" class="row" data-aos="fade-up" data-aos-delay="100">
-      <div class="col-lg-12 d-flex justify-content-center" style="padding:0">
-        <ul  id="menu-flters" [ngClass]="{'hidden': isSearchEnabled}" >
-                    <li id="all-tems"  #allItems data-filter="*" class="filter-active"  (click)="filterBYcuisine('all')" >All</li>
-          <li *ngFor="let menuCourse of menuCourseCuisineList.cuisines"  [attr.data-filter]="menuCourse.cuisine.class" #menuListItem  
-           (click)="filterBYcuisine(menuCourse.cuisine.type)">
-            {{menuCourse.cuisine.type}}</li> 
+    <!-- Sub-Category Tabs (only show if multiple exist) -->
+    <div *ngIf="showCourse && filteredMenuCourseList.length > 1" class="subcategory-tabs-wrapper" [ngClass]="{'hidden': isSearchEnabled}">
+      <ul id="sub-filters-v2" class="subcategory-tabs-v2">
+        <li *ngFor="let menuCourse of filteredMenuCourseList"
+            [ngClass]="{'active': activeCategory === menuCourse.type}"
+            (click)="selectCategory(menuCourse.type)">
+          {{menuCourse.type}}
+          <span class="sub-emoji" *ngIf="menuCourse.emj">{{menuCourse.emj}}</span>
+        </li>
+      </ul>
+    </div>
 
-         
-          </ul>
-      </div>
-      </div>
-      <a style=" text-align: -webkit-center;"><hr style="width: 60%;     margin: 4px;"></a>
-
-    <div  id="showCourse-view" *ngIf="showCourse" class="row" data-aos="fade-up" data-aos-delay="100">
-      <div class="col-lg-12 d-flex justify-content-center" style="padding:0">
-        <ul id="menu-flters" >
-
-        <li *ngFor="let menuCourse of filteredMenuCourseList" id="{{ menuCourse.type }}"   [ngClass]="{'vew-course': menuCourse.view === true}" [attr.data-filter]="menuCourse.class" #menuListItem 
-        >{{menuCourse.type}}
-           <a style="position: relative; 
-           font-size: larger;
-          "  #menuContainer >
-          {{menuCourse.emj}}
-        </a>    </li>
-        </ul>
+    <!-- Veg Toggle + Divider Row -->
+    <div class="filter-divider-row">
+      <div class="divider-line"></div>
+      <div class="veg-toggle-v2" (click)="toggleVegOnly()">
+        <span class="veg-label-v2">Veg</span>
+        <div class="toggle-track-v2" [class.on]="activeVegFilter === 'veg'">
+          <span class="toggle-thumb-v2"></span>
+        </div>
       </div>
     </div>
 
-    <div   *ngIf="showMenu" class="row menu-container " data-aos="fade-up" data-aos-delay="200"  style="height: fit-content !important">
+    <!-- Loading Symbol -->
+    <div *ngIf="isLoading" class="menu-loader-container">
+      <div class="menu-loader-spinner"></div>
+      <p class="menu-loader-text">Curating Menu...</p>
+    </div>
 
-      <div   *ngFor="let menuItem of filteredMenuItems; index as i"  class="col-lg-6 menu-item menu-item-click"  [class]="menuItem.class" (click)="openModal(menuItem)">
-        <img [src]="menuItem.imagePath" class="menu-img" alt="">
-        <div class="menu-content">
-          <a style="max-width:12em">{{menuItem.name}} <img [src]="menuItem.typePath" style="width: 14px; margin: 0px 2px 0px 2px;"> </a>
-      
-          
-          <span *ngIf="menuItem.isReward; else noReward">&#8377; {{menuItem.Reward}}</span>
+    <!-- Menu Items Grid -->
+    <div *ngIf="showMenu && !isLoading" class="menu-grid-v2" data-aos="fade-up" data-aos-delay="100" #menuContainer>
+      <div *ngFor="let menuItem of filteredMenuItems; let i = index" class="menu-item-v2" [style.animation-delay]="(i * 50) + 'ms'" (click)="openModal(menuItem)">
+        <div class="item-left-side">
+          <span class="veg-badge-v2" [ngClass]="(menuItem.type || '').toLowerCase() === 'veg' || (menuItem.type || '').toLowerCase() === 'v' ? 'is-veg' : 'is-nonveg'">
+            <span class="badge-dot-v2"></span>
+          </span>
+          <h3 class="item-name-v2">
+            {{menuItem.name}}
+            <span class="must-try-text-badge" *ngIf="menuItem.mustTry">Must Try</span>
+          </h3>
+        </div>
+        <div class="item-divider-dots"></div>
+        <div class="item-price-v2">
+          <span *ngIf="menuItem.isReward; else noReward">&#8377;{{menuItem.Reward}}</span>
           <ng-template #noReward>
-              <span>&#8377; {{menuItem.cost}}</span>
+            <span>&#8377;{{menuItem.cost}}</span>
           </ng-template>
-          
         </div>
-        <div class="menu-ingredients">
-          {{menuItem.desc}}
-        </div>
-        <div class="menu-ingredients" style="font-size: 21px !important;">
-          <div class="feature"  *ngIf="menuItem.mustTry" >
-            <p class="shine-text">MUST TRY</p>
-          </div>
-        </div>
-   
+      </div>
 
-  
-       </div>
+      <!-- Fallback when no items matched -->
+      <div class="no-results-v2" *ngIf="filteredMenuItems.length === 0">
+        No dishes match your selected filters.
+      </div>
     </div>
-    <div  *ngIf="!showMenu"  class="invalid-route">
-        please, close the browser and scan QR code from the table to view menu
+
+    <div *ngIf="!showMenu && !isLoading" class="invalid-route">
+      Please close the browser and scan QR code from the table to view menu
     </div>
 
   </div>
 </section><!-- End Menu Section -->
 
 
+<!-- ======= Detail Modal ======= -->
+<div *ngIf="showModal" class="modal-overlay-v2" (click)="closeModal()">
+  <div class="modal-card-v2" (click)="$event.stopPropagation()">
 
-
-<div *ngIf="showModal" class="modal">
-  <div class="modal-content">
-
-    <!-- Modal for food menu -->
-
-
-    <div class="order-detail-container">
-      <div>
-        <img class="order-detail-img" [src]="selectedItem.imagePath" alt="vegan">
+    <!-- Header -->
+    <div class="modal-top-v2">
+      <div class="modal-badges-v2">
+        <span class="veg-badge-v2" [ngClass]="(selectedItem.type || '').toLowerCase() === 'veg' || (selectedItem.type || '').toLowerCase() === 'v' ? 'is-veg' : 'is-nonveg'">
+          <span class="badge-dot-v2"></span>
+        </span>
+        <span class="must-try-text-badge" *ngIf="selectedItem.mustTry">Must Try</span>
       </div>
-      <div id="card" class="center">
-        <div style="display: flex;">
-          <div class="feature">
-            <p>👍 MUST TRY</p>
-          </div>
-          <div class="cuisine">
-            🌿
-          </div>
-          <div class="cuisine2" (click)="closeModal()">
-            &times;
-          </div>
-        </div>
-        <div class="dish">
-          <h1 class="item-name">{{selectedItem.name}} </h1>
-       
-    <!-- ✅ FLAVOUR DROPDOWN -->
-<div class="menu-ingredients"
-     *ngIf="selectedItem?.list && (selectedItem.list | keyvalue).length"
-     style="margin: 2px 18px;
-            font-size: 1.4rem;
-            font-family: poppins, Arial, Helvetica, sans-serif;
-          
-            font-weight: 400;">
+      <button class="modal-close-v2" (click)="closeModal()">&times;</button>
+    </div>
 
-  <label style="font-weight: 600; font-size: 14px;">
-    {{selectedItem.ItemLabel}}
-  </label>
+    <!-- Item Details -->
+    <h2 class="modal-title-v2">{{selectedItem.name}}</h2>
 
-  <select class="form-control mt-2"
-          [(ngModel)]="selectedItem.selectedFlavour"
-          style="  background-color: #cda45e;"
-          (change)="onFlavourChange()">
+    <!-- Flavour Dropdown -->
+    <div class="modal-flavour-v2" *ngIf="selectedItem?.list && (selectedItem.list | keyvalue).length">
+      <label class="flavour-label-v2">{{selectedItem.ItemLabel}}</label>
+      <select class="flavour-select-v2" [(ngModel)]="selectedItem.selectedFlavour" (change)="onFlavourChange()">
+        <option value="" selected>Select Option</option>
+        <option *ngFor="let flavour of selectedItem.list | keyvalue: originalOrder" [ngValue]="flavour.key">
+          {{ flavour.key }} <span *ngIf="$any(flavour.value) > 0">(+₹{{ flavour.value }})</span>
+          <span *ngIf="$any(flavour.value) === 0">(Free)</span>
+        </option>
+      </select>
+    </div>
 
+    <!-- Sizes -->
+    <div class="modal-sizes-v2" *ngIf="selectedItem.sizes?.length">
+      <div *ngFor="let menuItem of selectedItem.sizes" class="size-row-v2" (click)="selectSize(menuItem)">
+        <span class="size-name-v2">{{menuItem.size}}</span>
+        <span class="size-cost-v2">&#8377;{{menuItem.cost}}</span>
+        <input type="radio" name="menuSize" [value]="menuItem" [(ngModel)]="selectedSize" (click)="$event.stopPropagation()">
+      </div>
+    </div>
 
- <!-- ✅ Default option -->
-    <option value="" selected>
-      Select 
-    </option>
+    <!-- Price + Quantity -->
+    <div class="modal-footer-v2">
+      <div class="modal-price-v2">
+        <span *ngIf="selectedItem.isReward; else noReward">&#8377;{{selectedItem.Reward}}</span>
+        <ng-template #noReward>
+          <span>&#8377;{{selectedItem.cost}}</span>
+        </ng-template>
+      </div>
+      <div class="qty-control-v2">
+        <button (click)="decrement()">−</button>
+        <input type="text" [(ngModel)]="quantity" readonly />
+        <button (click)="increment()">+</button>
+      </div>
+    </div>
 
+    <!-- Add to Bowl -->
+    <button *ngIf="isCap === 'true'" class="add-bowl-v2" (click)="sendDataToParent(quantity)">
+      Add to Bowl
+    </button>
 
-    <!-- ✅ Flavour options (No sorting) -->
-    <option *ngFor="let flavour of selectedItem.list | keyvalue: originalOrder"
-            [ngValue]="flavour.key">
-
-      {{ flavour.key }}
-
-      <span *ngIf="$any(flavour.value) > 0">
-        (+₹{{ flavour.value }})
-      </span>
-
-      <span *ngIf="$any(flavour.value) === 0">
-        (Free)
-      </span>
-
-    </option>
-
-  </select>
-
+  </div>
 </div>
-        <div class="description"   style="width: -webkit-fill-available;
-        height: 70px;">
-           <p style="    display: flex;
-           flex-direction: row;
-           text-align: center;
-           justify-content: space-between;">
-
-            <a   *ngFor="let menuItem of selectedItem.sizes; index as i"  
-            class="col-lg-6 menu-item menu-item-click"  style="display: flex;width: min-content;
-    flex-flow: column;" (click)="selectSize(menuItem)">
-            <a>
-              {{menuItem.size}}
-            </a>
-            <a>
-              {{menuItem.cost}}
-            </a>
-            <input type="radio" name="menuSize" [value]="menuItem" [(ngModel)]="selectedSize" (click)="$event.stopPropagation()">
-           </a>
-          </p> 
-
-        </div>
-        <div>
-        <div class="amount">
-          <h3><span *ngIf="selectedItem.isReward; else noReward">&#8377; {{selectedItem.Reward}}</span></h3>
-          <ng-template #noReward>
-            <h3><span>&#8377; {{selectedItem.cost}}</span></h3>
-          </ng-template>
 
 
-        </div>
-
-
-
-        
-        <div class="quantity-input" style="position: unset !important">
-          <button (click)="decrement()">-</button>
-          <input type="text" [(ngModel)]="quantity" />
-          <button (click)="increment()">+</button>
-        </div>
-      </div>
-        <div class="cta"  *ngIf="isCap === 'true'" >
-          <button type="button" (click)="sendDataToParent(quantity)">add to Bowl</button>
-        </div>
-      </div>
+<!-- Points Checker Modal -->
+<div *ngIf="showPointCheckerModal" class="modal-overlay-v2" (click)="closePointCheckerModal()">
+  <div class="modal-card-v2" (click)="$event.stopPropagation()">
+    <app-customer-available-checker></app-customer-available-checker>
+    <div style="text-align: center; padding-top: 12px;">
+      <button (click)="closePointCheckerModal()" class="cap-btn">Close</button>
     </div>
   </div>
 </div>
 
+<!-- Vendor JS Files -->
+<script src="assets/vendor/aos/aos.js"></script>
+<script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+<script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+<script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+<script src="assets/vendor/php-email-form/validate.js"></script>
 
-<div  *ngIf="showPointCheckerModal" class="modal">
-  <div class="modal-content">
-  
-<div class="cust-login">
-<app-customer-available-checker  ></app-customer-available-checker>
-<div style="   text-align: center; background: #1a1814;">
-  <span>
-<button (click) = "closePointCheckerModal()" style="width: 9em;
-align-self: center;  " class=" pop-up-btm">close</button>
-</span>
-</div>
-</div>
-
-
-
-  </div>
-</div>
-
-    <!-- Modal for food menu -->
-
-    <!-- Vendor JS Files -->
-    <script src="assets/vendor/aos/aos.js"></script>
-    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
-    <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
-    <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
-    <script src="assets/vendor/php-email-form/validate.js"></script>
-
-    <!-- Template Main JS File -->
-    <script src="assets/js/main.js"></script>
+<!-- Template Main JS File -->
+<script src="assets/js/main.js"></script>

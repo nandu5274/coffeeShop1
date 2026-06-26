@@ -16,6 +16,10 @@ import { firstValueFrom, Observable, Subject } from 'rxjs';
 })
 export class ItemsMenuComponent implements AfterViewInit, OnInit {
   filteredMenuItems: any;
+  activeCuisine: string = 'all';
+  activeCategory: string = 'all';
+  activeVegFilter: 'all' | 'veg' | 'non-veg' = 'all';
+  isLoading: boolean = false;
 
   constructor(private sharedService: SharedService, private renderer: Renderer2,
     private customerService: CustomerService, private el: ElementRef, private cdRef: ChangeDetectorRef, private http: HttpClient) { }
@@ -245,6 +249,7 @@ onFlavourChange() {
   }
 
   async populateMenuList() {
+    this.isLoading = true;
     if (this.useRemoteMenuData && this.menuEndpointUrl) {
       try {
         const result = await firstValueFrom(this.fetchRemoteMenuData());
@@ -254,13 +259,14 @@ onFlavourChange() {
         console.error('Remote menu fetch failed, falling back to local JSON.', error);
         this.menuListData = menuListJsonData;
         this.processMenuData(this.menuListData);
+      } finally {
+        this.isLoading = false;
       }
       return;
-    }else{
-      
     }
 
     this.processMenuData(this.menuListData);
+    this.isLoading = false;
   }
 
   private fetchRemoteMenuData(): Observable<any> {
@@ -367,7 +373,6 @@ onFlavourChange() {
 
     this.filteredMenuItems = [...this.menuItemsList];
     this.OriginaldMenuItems = [...this.menuCourseList];
-    this.filteredMenuCourseList = [...this.menuCourseList];
     if (!this.isCap) {
       if (this.menuCourseCuisineList.cuisines) {
         for (let i = this.menuCourseCuisineList.cuisines.length - 1; i >= 0; i--) {
@@ -379,8 +384,16 @@ onFlavourChange() {
       }
     }
 
-
-
+    // Initialize our new filtering variables (Default to first cuisine instead of 'all')
+    this.activeVegFilter = 'all';
+    if (this.menuCourseCuisineList.cuisines && this.menuCourseCuisineList.cuisines.length > 0) {
+      this.selectCuisine(this.menuCourseCuisineList.cuisines[0].cuisine.type);
+    } else {
+      this.activeCuisine = 'all';
+      this.activeCategory = 'all';
+      this.filteredMenuCourseList = [];
+      this.applyFilters();
+    }
   }
 
   sendDataToParent(quantity: any) {
@@ -394,199 +407,148 @@ onFlavourChange() {
 
   }
 
-  showVegItems() {
-    this.filteredMenuItems = this.menuItemsList;
-    // Filter and display only veg items
-    this.filteredMenuItems = this.menuItemsList.filter((item: any) => item.type === "V");
+  activeVegFiltered() {
+    return this.activeVegFilter;
   }
 
-  showNonVegItems() {
-    this.filteredMenuItems = this.menuItemsList;
-    // Filter and display only non-veg items
-    this.filteredMenuItems = this.menuItemsList.filter((item: any) => item.type == "NV");
+  toggleVegOnly() {
+    this.activeVegFilter = this.activeVegFilter === 'veg' ? 'all' : 'veg';
+    this.applyFilters();
   }
 
+  setVegFilter(filter: 'all' | 'veg' | 'non-veg') {
+    this.activeVegFilter = filter;
+    this.applyFilters();
+  }
 
-  showVeg: boolean = false;
-  showNonVeg: boolean = false;
+  applyFilters() {
+    let items = [...this.menuItemsList];
 
-  // Function to toggle visibility of vegetarian items
-  toggleVegItems() {
-    this.showVeg = !this.showVeg;
-    if (this.showVeg && this.showNonVeg) {
-      this.showNonVeg = false; // Make sure only one type of items is shown at a time
+    // 1. Filter by Cuisine and Category (only if search is empty or less than 3 chars)
+    if (!this.searchTerm.trim() || this.searchTerm.trim().length < 3) {
+      this.isSearchEnabled = false;
+      
+      if (this.activeCuisine !== 'all') {
+        // Filter by Cuisine
+        const cuisineItem = this.menuCourseCuisineList.cuisines.find(
+          (c: any) => c.cuisine.type === this.activeCuisine
+        );
+        if (cuisineItem) {
+          const allowedCourses = cuisineItem.cuisine.items;
+          
+          if (this.activeCategory !== 'all') {
+            // Filter by specific sub-category (course)
+            items = items.filter((item: any) => item.cuisine === this.activeCategory);
+          } else {
+            // Filter by all sub-categories under this cuisine
+            items = items.filter((item: any) => allowedCourses.includes(item.cuisine));
+          }
+        }
+      }
+    } else {
+      // Filter by search query (bypasses category filters)
+      this.isSearchEnabled = true;
+      const query = this.searchTerm.toLowerCase().trim();
+      items = items.filter((item: any) => 
+        item.name?.toLowerCase().includes(query) ||
+        (item.desc && item.desc.toLowerCase().includes(query))
+      );
     }
+
+    // 2. Filter by Veg / Non-Veg
+    if (this.activeVegFilter === 'veg') {
+      items = items.filter((item: any) => {
+        const type = (item.type || '').toLowerCase();
+        return type === 'v' || type === 'veg';
+      });
+    } else if (this.activeVegFilter === 'non-veg') {
+      items = items.filter((item: any) => {
+        const type = (item.type || '').toLowerCase();
+        return type === 'nv' || type === 'nonveg' || type === 'non-veg';
+      });
+    }
+
+    this.filteredMenuItems = items;
   }
 
-  // Function to toggle visibility of non-vegetarian items
-  toggleNonVegItems() {
-    this.showNonVeg = !this.showNonVeg;
-    if (this.showVeg && this.showNonVeg) {
-      this.showVeg = false; // Make sure only one type of items is shown at a time
+  selectCuisine(cuisine: string) {
+    this.activeCuisine = cuisine;
+    // this.scrollToElementById();
+
+    if (cuisine === 'all') {
+      this.activeCategory = 'all';
+      this.filteredMenuCourseList = [];
+    } else {
+      const cuisineItem = this.menuCourseCuisineList.cuisines.find(
+        (c: any) => c.cuisine.type === cuisine
+      );
+      if (cuisineItem) {
+        const allowedCourses = cuisineItem.cuisine.items;
+        // Filter menu courses to show only sub-categories belonging to this cuisine
+        this.filteredMenuCourseList = this.menuCourseList.filter((course: any) =>
+          allowedCourses.includes(course.type)
+        );
+        // Default to the first category under this cuisine
+        if (this.filteredMenuCourseList.length > 0) {
+          this.activeCategory = this.filteredMenuCourseList[0].type;
+        } else {
+          this.activeCategory = 'all';
+        }
+      } else {
+        this.filteredMenuCourseList = [];
+        this.activeCategory = 'all';
+      }
     }
+    this.applyFilters();
+  }
+
+  selectCategory(category: string) {
+    this.activeCategory = category;
+    this.applyFilters();
   }
 
   @ViewChild('menuContainer') menuContainer!: ElementRef;
 
-
-
   scrollToMenuContainer() {
     if (this.menuContainer) {
       this.menuContainer.nativeElement.scrollIntoView({ behavior: 'smooth' });
-      this.moveMenuContainerUp();
-    }
-  }
-  moveMenuContainerUp() {
-    if (this.menuContainer) {
-      const currentScrollTop = this.menuContainer.nativeElement.scrollTop;
-      this.menuContainer.nativeElement.scrollTop = currentScrollTop + 70;
     }
   }
 
-  filterBYcuisine(cuisine: any) {
-    if (cuisine == "all") {
-      this.filteredMenuCourseList.forEach((item: any) => {
-        item.view = true;
-      });
-    }
-    else {
-      this.scrollToElementById()
-      this.filteredMenuCourseList = [...this.OriginaldMenuItems];
-      let cuisineItems = this.menuCourseCuisineList.cuisines.find((cuisineItem: any) => cuisineItem.cuisine.type === cuisine);
-      const filterCourseListByName = this.filterMenuCourseByCuisine(this.filteredMenuCourseList, cuisineItems.cuisine.items);
-      this.filteredMenuCourseList = filterCourseListByName
-
-      setTimeout(() => {
-        this.simulateClick(cuisineItems.cuisine.items[0]);
-
-      }, 1);
-
-
-    }
-
-
-
-
-
-  }
-
-
-
-  filterMenuCourseByCuisine(items: any[], nameList: string[]) {
-    items.forEach(item => {
-      item.view = nameList.includes(item.type) ? false : true;
-
-    });
-    return items;
-
-  }
-
-
-  simulateClick(id: any) {
-    const element = document.getElementById(id);
-    if (element) {
-      element.click();
-
-    }
-  }
   scrollToElementById(): void {
-    const element = document.getElementById("menu-flters");
+    const element = document.getElementById("cuisine-filters-v2");
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-
   }
-  showPointCheckerModal: any = false
+
+  showPointCheckerModal: any = false;
   pointsChecker() {
-    this.showPointCheckerModal = true
+    this.showPointCheckerModal = true;
   }
 
   closePointCheckerModal() {
-    this.showPointCheckerModal = false
+    this.showPointCheckerModal = false;
   }
+
   searchTerm: string = '';
 
   onSearchChange(): void {
-    this.clickAllItems()
-
-    this.filterMenuCourseByName(this.filteredMenuItems, 'pizza');
-
+    this.applyFilters();
   }
+
   forceRerender() {
-    // Force change detection
     this.el.nativeElement.dispatchEvent(new Event('rerender'));
   }
+
   isSearchEnabled: boolean = false;
-  filterMenuCourseByName(items: any[], nameList: string) {
-    // Check if the search field is empty or has less than 3 characters
-    if (!this.searchTerm.trim() || this.searchTerm.trim().length < 3) {
-      this.isSearchEnabled = true;
-      if(!this.searchTerm.trim())
-      {
-        this.resetFilter()
-      }
-      return;
-    }
-  
-    this.isSearchEnabled = true;
-    this.filteredMenuItems = this.menuItemsList.slice(); 
-    // Filter menu items based on the search term
-    const matchedItems: any[] = [];
-    this.filteredMenuItems.forEach((item: any) => {
-      if (
-        item.name?.toLowerCase().includes(this.searchTerm?.toLowerCase()) &&
-        !matchedItems.some(matchedItem => matchedItem.name === item.name)
-      ) {
-        matchedItems.push(item);
-      }
-    });
-  
-    this.filteredMenuItems = matchedItems;
-  
-    // Dynamically set the height and overflow of the container
-    const container = this.el.nativeElement.querySelector('.menu-container');
-    if (container) {
-      // Calculate height based on the number of items
-      const itemHeight = 140; // Approximate height of a single item in pixels
-      const totalHeight = this.filteredMenuItems.length * itemHeight;
-  
-      // Set the calculated height or fallback to 100% if no items
-      this.renderer.setStyle(container, 'height', totalHeight > 0 ? `${totalHeight}px` : '100%');
-      // Add overflow: auto to handle scrollable content
-      this.renderer.setStyle(container, 'overflow-y', totalHeight > 0 ? 'auto' : 'hidden'); 
-    }
-  }
-  
-  // Helper function to reset filter state
-  resetFilter() {
-    this.isSearchEnabled = false;
-    
-   
-  
-    this.reinitializeComponent();
-  }
-  @ViewChild('allItems', { static: false }) allItems!: ElementRef;
 
-  reinitializeComponent() {
-    this.filteredMenuItems = this.menuItemsList.slice(); 
-
-    setTimeout(() => {
-      const loadEvent = new Event('load');
-      window.dispatchEvent(loadEvent);
-    }, 1);
-  }
-
-  clickAllItems(): void {
-    if (this.allItems) {
-      this.allItems.nativeElement.click();
-    }
-  }
-  reloadComponent(): void {
-    this.cdRef.detectChanges();
-
-  }
   clearSearch(): void {
     this.searchTerm = '';
-    this.onSearchChange(); // Trigger the search change logic, if needed
+    this.applyFilters();
+  }
+
+  reloadComponent(): void {
+    this.cdRef.detectChanges();
   }
 }
