@@ -10,6 +10,112 @@ $color-border: #37332a;
 $color-danger: #ea4335;
 $color-success: #34a853;
 
+
+/* --- Menu Page Aesthetic Overrides for Menu Update --- */
+button,
+.btn-logout,
+.btn-add-item,
+.btn-refresh,
+.btn-publish,
+.btn-login-submit,
+.btn-save-modal,
+.btn-cancel-modal,
+.btn-danger-modal {
+  font-family: "Poppins", sans-serif !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.5px !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  cursor: pointer !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  outline: none !important;
+  text-shadow: none !important;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: #fff !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  }
+}
+
+/* Success variants */
+.btn-publish,
+.btn-save-modal,
+.btn-login-submit {
+  background: rgba(52, 168, 83, 0.08) !important;
+  border: 1px solid rgba(52, 168, 83, 0.3) !important;
+  color: #28a745 !important;
+
+  &:hover:not(:disabled) {
+    background: rgba(52, 168, 83, 0.18) !important;
+    border-color: #28a745 !important;
+    color: #fff !important;
+    box-shadow: 0 0 12px rgba(52, 168, 83, 0.3) !important;
+  }
+}
+
+/* Danger variants */
+.btn-logout,
+.btn-cancel-modal,
+.btn-danger-modal {
+  background: rgba(234, 67, 53, 0.08) !important;
+  border: 1px solid rgba(234, 67, 53, 0.3) !important;
+  color: #ea4335 !important;
+
+  &:hover:not(:disabled) {
+    background: rgba(234, 67, 53, 0.18) !important;
+    border-color: #ea4335 !important;
+    color: #fff !important;
+    box-shadow: 0 0 12px rgba(234, 67, 53, 0.3) !important;
+  }
+}
+
+/* Gold/Primary variants */
+.btn-add-item,
+.btn-refresh {
+  background: rgba(205, 164, 94, 0.08) !important;
+  border: 1px solid rgba(205, 164, 94, 0.3) !important;
+  color: #cda45e !important;
+
+  &:hover:not(:disabled) {
+    background: rgba(205, 164, 94, 0.18) !important;
+    border-color: #cda45e !important;
+    color: #fff !important;
+    box-shadow: 0 0 12px rgba(205, 164, 94, 0.3) !important;
+  }
+}
+
+/* Form panel and wrapper overrides */
+.menu-dashboard-wrapper,
+.login-card,
+.edit-form-card,
+.add-form-card,
+.detail-card,
+.history-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
+  backdrop-filter: blur(14px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(140%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-top-color: rgba(255, 255, 255, 0.18) !important;
+  border-left-color: rgba(255, 255, 255, 0.12) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
 /* Section styling wrapper */
 #menu-update-sec {
   background-color: $color-bg-dark;

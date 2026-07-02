@@ -148,6 +148,130 @@ export class GraphqlService {
     });
   }
 
+  getApprovalWaitingOrders(): Observable<any> {
+    const query = gql`
+    query GetApprovalWaitingOrders {
+      kubera_order(order_by: {created_at: desc}, where: { order_status: { _eq: "approval_waiting" } }) {
+        id
+        order_ref_id
+        table_no
+        table_place
+        order_summary_amount
+        order_additional_service_amount
+        order_total_amount
+        order_status
+        employee
+        comments
+        customer_number
+        created_at
+        order_items {
+          id
+          item_name
+          item_quantity
+          item_cost
+          item_description
+          status
+          created_at
+          order_id
+        }
+      }
+    }
+    `;
+
+    return this.apollo.query({
+      query,
+      fetchPolicy: 'network-only',
+      context: {
+        headers: {
+          'x-hasura-access-key': GRAPHQL_KEY,
+        },
+      },
+    });
+  }
+
+  getApprovedOrders(): Observable<any> {
+    const query = gql`
+    query GetApprovedOrders {
+      kubera_order(order_by: {created_at: desc}, where: { order_status: { _eq: "Approved" } }) {
+        id
+        order_ref_id
+        table_no
+        table_place
+        order_summary_amount
+        order_additional_service_amount
+        order_total_amount
+        order_status
+        employee
+        comments
+        customer_number
+        created_at
+        order_items {
+          id
+          item_name
+          item_quantity
+          item_cost
+          item_description
+          status
+          created_at
+          order_id
+        }
+      }
+    }
+    `;
+
+    return this.apollo.query({
+      query,
+      fetchPolicy: 'network-only',
+      context: {
+        headers: {
+          'x-hasura-access-key': GRAPHQL_KEY,
+        },
+      },
+    });
+  }
+
+  getCheckoutOrders(): Observable<any> {
+    const query = gql`
+    query GetCheckoutOrders {
+      kubera_order(order_by: {created_at: desc}, where: { order_status: { _eq: "checkout" } }) {
+        id
+        order_ref_id
+        table_no
+        table_place
+        order_summary_amount
+        order_additional_service_amount
+        order_total_amount
+        order_status
+        employee
+        comments
+        customer_number
+        created_at
+        check_out_id
+        order_items {
+          id
+          item_name
+          item_quantity
+          item_cost
+          item_description
+          status
+          created_at
+          order_id
+        }
+      }
+    }
+    `;
+
+    return this.apollo.query({
+      query,
+      fetchPolicy: 'network-only',
+      context: {
+        headers: {
+          'x-hasura-access-key': GRAPHQL_KEY,
+        },
+      },
+    });
+  }
+
   getOrderItemsByOrderID(orderIds: any): Observable<any> {
     const query = gql`
     query GetOrderItems($orderIds: [Int!]!) {
@@ -254,8 +378,136 @@ export class GraphqlService {
     });
   }
 
+  updateOrderStatusWithCheckoutId(itemId: any, order_status: any, check_out_id: any): any {
+    const mutation = gql`
+      mutation update_kubera_order_checkout($itemId: Int!, $order_status: String!, $check_out_id: String!) {
+        update_kubera_order(
+          where: { id: { _eq: $itemId } }
+          _set: { order_status: $order_status, check_out_id: $check_out_id }
+        ) {
+          returning {
+            created_at
+            id
+            order_status
+            check_out_id
+          }
+        }
+      }
+    `;
 
+    return this.apollo.mutate({
+      mutation,
+      variables: {
+        itemId,
+        order_status,
+        check_out_id
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': GRAPHQL_KEY,
+        },
+      },
+    });
+  }
 
+  deleteOrderItemsByOrderIds(orderIds: number[]): any {
+    const mutation = gql`
+      mutation delete_kubera_order_item($orderIds: [Int!]!) {
+        delete_kubera_order_item(where: { order_id: { _in: $orderIds } }) {
+          affected_rows
+        }
+      }
+    `;
+    return this.apollo.mutate({
+      mutation,
+      variables: {
+        orderIds
+      },
+      context: { headers: { 'x-hasura-access-key': GRAPHQL_KEY } }
+    });
+  }
+
+  insertMultipleOrderItems(objects: any[]): any {
+    const mutation = gql`
+      mutation insert_kubera_order_item($objects: [kubera_order_item_insert_input!]!) {
+        insert_kubera_order_item(objects: $objects) {
+          affected_rows
+        }
+      }
+    `;
+    return this.apollo.mutate({
+      mutation,
+      variables: {
+        objects
+      },
+      context: { headers: { 'x-hasura-access-key': GRAPHQL_KEY } }
+    });
+  }
+
+  updateMultipleOrderItems(updates: any[]): any {
+    const mutation = gql`
+      mutation update_multiple_order_items($updates: [kubera_order_item_updates!]!) {
+        update_kubera_order_item_many(updates: $updates) {
+          affected_rows
+        }
+      }
+    `;
+    return this.apollo.mutate({
+      mutation,
+      variables: {
+        updates
+      },
+      context: { headers: { 'x-hasura-access-key': GRAPHQL_KEY } }
+    });
+  }
+
+  batchEditOrder(itemUpdates: any[], orderUpdates: any[]): any {
+    const mutation = gql`
+      mutation batch_edit_order($itemUpdates: [kubera_order_item_updates!]!, $orderUpdates: [kubera_order_updates!]!) {
+        update_kubera_order_item_many(updates: $itemUpdates) {
+          affected_rows
+        }
+        update_kubera_order_many(updates: $orderUpdates) {
+          affected_rows
+        }
+      }
+    `;
+    return this.apollo.mutate({
+      mutation,
+      variables: {
+        itemUpdates,
+        orderUpdates
+      },
+      context: { headers: { 'x-hasura-access-key': GRAPHQL_KEY } }
+    });
+  }
+
+  updateOrderTotals(orderId: number, order_summary_amount: number, order_additional_service_amount: number, order_total_amount: number): any {
+    const mutation = gql`
+      mutation update_kubera_order_totals($orderId: Int!, $summary: numeric!, $additional: numeric!, $total: numeric!) {
+        update_kubera_order(
+          where: { id: { _eq: $orderId } }
+          _set: { 
+            order_summary_amount: $summary, 
+            order_additional_service_amount: $additional, 
+            order_total_amount: $total 
+          }
+        ) {
+          affected_rows
+        }
+      }
+    `;
+    return this.apollo.mutate({
+      mutation,
+      variables: {
+        orderId,
+        summary: order_summary_amount,
+        additional: order_additional_service_amount,
+        total: order_total_amount
+      },
+      context: { headers: { 'x-hasura-access-key': GRAPHQL_KEY } }
+    });
+  }
 
   createEmployeeLogin(kubera_employee_login_insert_input:any): any {
     const mutation = gql`
@@ -400,16 +652,165 @@ query get_payment_mode_summary {
     }
   }
 }
-
-    
-    
     `;
 
     return this.apollo.mutate({
       mutation,
       variables: {
         kubera_payment_details_insert_input
-        
+      },
+      context: { headers: { 'x-hasura-access-key': GRAPHQL_KEY } }
+    });
+  }
+
+  getPaymentsByDate(dateStr: string): any {
+    const query = gql`
+      query GetPaymentsByDate($dateStr: String!) {
+        kubera_payment_details(where: { created_at: { _eq: $dateStr } }) {
+          id
+          actual_amount
+          paid_amount
+          order_id
+          payment_mode
+          created_time
+          bill_no
+          created_at
+        }
+      }
+    `;
+
+    return this.apollo.query({
+      query,
+      fetchPolicy: 'network-only',
+      variables: {
+        dateStr
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': GRAPHQL_KEY,
+        },
+      },
+    });
+  }
+
+  getPaidOrdersByIds(orderIds: number[]): any {
+    const query = gql`
+      query GetPaidOrdersByIds($orderIds: [Int!]!) {
+        kubera_order(order_by: {created_at: desc}, where: { id: { _in: $orderIds } }) {
+          id
+          order_ref_id
+          table_no
+          table_place
+          order_summary_amount
+          order_additional_service_amount
+          order_total_amount
+          order_status
+          employee
+          comments
+          customer_number
+          created_at
+          check_out_id
+          order_items {
+            id
+            item_name
+            item_quantity
+            item_cost
+            item_description
+            status
+            created_at
+            order_id
+          }
+        }
+      }
+    `;
+
+    return this.apollo.query({
+      query,
+      fetchPolicy: 'network-only',
+      variables: {
+        orderIds
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': GRAPHQL_KEY,
+        },
+      },
+    });
+  }
+
+  getPaidOrdersByIdsAndCheckoutIds(orderIds: number[], checkoutIds: string[]): any {
+    const query = gql`
+      query GetPaidOrdersByIdsAndCheckoutIds($orderIds: [Int!]!, $checkoutIds: [String!]!) {
+        kubera_order(
+          order_by: {created_at: desc},
+          where: {
+            _or: [
+              { id: { _in: $orderIds } },
+              { check_out_id: { _in: $checkoutIds } }
+            ]
+          }
+        ) {
+          id
+          order_ref_id
+          table_no
+          table_place
+          order_summary_amount
+          order_additional_service_amount
+          order_total_amount
+          order_status
+          employee
+          comments
+          customer_number
+          created_at
+          check_out_id
+          order_items {
+            id
+            item_name
+            item_quantity
+            item_cost
+            item_description
+            status
+            created_at
+            order_id
+          }
+        }
+      }
+    `;
+
+    return this.apollo.query({
+      query,
+      fetchPolicy: 'network-only',
+      variables: {
+        orderIds,
+        checkoutIds
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': GRAPHQL_KEY,
+        },
+      },
+    });
+  }
+
+  getActiveOrdersBasic(status: string, startDate: string): Observable<any> {
+    const query = gql`
+      query GetActiveOrdersBasic($status: String!, $startDate: timestamptz!) {
+        kubera_order(where: {
+          order_status: { _eq: $status },
+          created_at: { _gte: $startDate }
+        }) {
+          id
+          order_status
+        }
+      }
+    `;
+
+    return this.apollo.query({
+      query,
+      fetchPolicy: 'network-only',
+      variables: {
+        status,
+        startDate
       },
       context: {
         headers: {

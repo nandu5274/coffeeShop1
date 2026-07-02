@@ -113,3 +113,125 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     box-shadow: 0 6px 20px rgba(205, 164, 94, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
   }
 }
+
+/* Premium Glassmorphic Modal Popup Styling */
+.glass-popup-card {
+  background: rgba(12, 11, 9, 0.98);
+  border: 1px solid rgba(205, 164, 94, 0.4);
+  border-radius: 16px;
+  color: #ffffff !important;
+  padding: 2rem !important;
+  min-width: 320px;
+  max-width: 400px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  text-align: left;
+}
+
+.glass-popup-card h2 {
+  color: #cda45e !important;
+  font-family: "Playfair Display", serif !important;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 1.5rem;
+}
+
+.glass-popup-card label {
+  color: #a49b8a;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.glass-popup-card input,
+.glass-popup-card select {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(205, 164, 94, 0.3) !important;
+  border-radius: 8px !important;
+  color: #ffffff !important;
+  padding: 0.75rem 1rem !important;
+  width: 100% !important;
+  font-size: 1rem !important;
+  transition: all 0.3s ease !important;
+  margin-bottom: 1.25rem !important;
+  box-sizing: border-box !important;
+}
+
+.glass-popup-card input:focus,
+.glass-popup-card select:focus {
+  outline: none !important;
+  border-color: #cda45e !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 0 10px rgba(205, 164, 94, 0.2) !important;
+}
+
+.glass-popup-card .buttons-row {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.glass-popup-card .btn-glass-success {
+  background: linear-gradient(135deg, rgba(74, 186, 112, 0.2) 0%, rgba(74, 186, 112, 0.05) 100%) !important;
+  border: 1px solid rgba(74, 186, 112, 0.4) !important;
+  color: #4aba70 !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  flex: 1 !important;
+  text-align: center !important;
+}
+
+.glass-popup-card .btn-glass-success:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(74, 186, 112, 0.4) 0%, rgba(74, 186, 112, 0.15) 100%) !important;
+  border-color: rgba(74, 186, 112, 0.8) !important;
+  box-shadow: 0 0 15px rgba(74, 186, 112, 0.3) !important;
+}
+
+.glass-popup-card .btn-glass-success:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+}
+
+.glass-popup-card .btn-glass-danger {
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.2) 0%, rgba(220, 53, 69, 0.05) 100%) !important;
+  border: 1px solid rgba(220, 53, 69, 0.4) !important;
+  color: #ff4d5a !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  flex: 1 !important;
+  text-align: center !important;
+}
+
+.glass-popup-card .btn-glass-danger:hover {
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.4) 0%, rgba(220, 53, 69, 0.15) 100%) !important;
+  border-color: rgba(220, 53, 69, 0.8) !important;
+  box-shadow: 0 0 15px rgba(220, 53, 69, 0.3) !important;
+}
+
+/* Custom Centered Glassmorphic Modal Wrapper */
+.custom-glass-modal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  z-index: 999999 !important;
+}

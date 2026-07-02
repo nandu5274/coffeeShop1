@@ -10,7 +10,7 @@ import { SharedService } from '../service/shared-service';
 import { SingleFileOrderDto } from '../dtos/singleFileOrderDto';
 import { GraphqlService } from '../service/graphql.service';
 import { TimerService } from '../service/timer.service';
-import { BELL_MSG_TIME_OUT } from '../common/constanst';
+import { BELL_MSG_TIME_OUT, USE_DATABASE } from '../common/constanst';
 import { CustomerService } from '../service/customer.service';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -287,52 +287,98 @@ export class CounterCapComponent implements AfterViewInit {
 
   files: any[] = [];
   async getApprovalWaitingOrders() {
-    this.ApprovalOrderList = []
-    this.showSpinner = true;
-    const folderPath = '/orders/approval_waiting_orders/'; // Replace with the desired folder path
-    this.files = await this.dropboxService.getFilesInFolder(folderPath);
-    //this.files.shift()
-    for (const file of this.files) {
-      file.data = await this.dropboxService.getFileData(file.path_display);
-      const respo = this.sharedService.parseNestedCsvToObject(file.data.fileBlob)
-      let order: SingleFileOrderDto = new SingleFileOrderDto();
-      order.order = (await respo).headers1
-      order.orderItems = (await respo).headers2
-      this.ApprovalOrderList.push(order);
-      console.log("respo - ", (await respo).headers1)
+    if (USE_DATABASE) {
+      this.ApprovalOrderList = [];
+      this.showSpinner = true;
+      this.graphqlService.getApprovalWaitingOrders().subscribe(
+        (result: any) => {
+          const orders = result.data.kubera_order || [];
+          this.ApprovalOrderList = orders.map((dbOrder: any) => {
+            let order: SingleFileOrderDto = new SingleFileOrderDto();
+            order.order = {
+              id: dbOrder.id,
+              order_ref_id: dbOrder.order_ref_id,
+              table_no: dbOrder.table_no,
+              table_place: dbOrder.table_place,
+              order_summary_amount: dbOrder.order_summary_amount,
+              order_additional_service_amount: dbOrder.order_additional_service_amount,
+              order_total_amount: dbOrder.order_total_amount,
+              order_status: dbOrder.order_status,
+              employee: dbOrder.employee,
+              comments: dbOrder.comments,
+              customer_number: dbOrder.customer_number,
+              order_created_time: this.convertToIST(dbOrder.created_at)
+            };
+            order.orderItems = (dbOrder.order_items || []).map((item: any) => ({
+              id: item.id,
+              item_name: item.item_name,
+              item_quantity: item.item_quantity,
+              item_cost: item.item_cost,
+              item_description: item.item_description,
+              status: item.status,
+              order_id: item.order_id
+            }));
+            return order;
+          });
+          this.ApprovalOrderList.sort((a, b) => Number(b.order.id) - Number(a.order.id));
+          this.showSpinner = false;
+        },
+        (error) => {
+          console.error('Error fetching waiting orders:', error);
+          this.showSpinner = false;
+        }
+      );
+    } else {
+      this.ApprovalOrderList = []
+      this.showSpinner = true;
+      const folderPath = '/orders/approval_waiting_orders/'; // Replace with the desired folder path
+      this.files = await this.dropboxService.getFilesInFolder(folderPath);
+      //this.files.shift()
+      for (const file of this.files) {
+        file.data = await this.dropboxService.getFileData(file.path_display);
+        const respo = this.sharedService.parseNestedCsvToObject(file.data.fileBlob)
+        let order: SingleFileOrderDto = new SingleFileOrderDto();
+        order.order = (await respo).headers1
+        order.orderItems = (await respo).headers2
+        this.ApprovalOrderList.push(order);
+        console.log("respo - ", (await respo).headers1)
+      }
+      this.ApprovalOrderList.sort((a, b) => a.order.id - b.order.id);
+      this.ApprovalOrderList.reverse()
+      this.showSpinner = false;
     }
-    this.ApprovalOrderList.sort((a, b) => a.order.id - b.order.id);
-    this.ApprovalOrderList.reverse()
-    this.showSpinner = false;
   }
 
 
   updatedFiles: any[] = [];
   async getUpdatedApprovalWaitingOrders() {
-    //this.ApprovalOrderList = []
-    this.showSpinner = true;
-    const folderPath = '/orders/approval_waiting_orders/'; // Replace with the desired folder path
-    this.updatedFiles = await this.dropboxService.getFilesInFolder(folderPath);
-   // this.updatedFiles.shift()
-    // added only newly added files
-    const addedNewFiles = this.updatedFiles.filter(item1 => !this.files.some(item2 => item2["name"] === item1["name"]));
-    const removeOldFiles = this.files.filter(item1 => !this.updatedFiles.some(item2 => item2["name"] === item1["name"]));
+    if (USE_DATABASE) {
+      await this.getApprovalWaitingOrders();
+    } else {
+      //this.ApprovalOrderList = []
+      this.showSpinner = true;
+      const folderPath = '/orders/approval_waiting_orders/'; // Replace with the desired folder path
+      this.updatedFiles = await this.dropboxService.getFilesInFolder(folderPath);
+     // this.updatedFiles.shift()
+      // added only newly added files
+      const addedNewFiles = this.updatedFiles.filter(item1 => !this.files.some(item2 => item2["name"] === item1["name"]));
+      const removeOldFiles = this.files.filter(item1 => !this.updatedFiles.some(item2 => item2["name"] === item1["name"]));
 
-    for (const file of addedNewFiles) {
-      file.data = await this.dropboxService.getFileData(file.path_display);
-      const respo = this.sharedService.parseNestedCsvToObject(file.data.fileBlob)
-      let order: SingleFileOrderDto = new SingleFileOrderDto();
-      order.order = (await respo).headers1
-      order.orderItems = (await respo).headers2
-      this.ApprovalOrderList.push(order);
-      console.log("respo - ", (await respo).headers1)
+      for (const file of addedNewFiles) {
+        file.data = await this.dropboxService.getFileData(file.path_display);
+        const respo = this.sharedService.parseNestedCsvToObject(file.data.fileBlob)
+        let order: SingleFileOrderDto = new SingleFileOrderDto();
+        order.order = (await respo).headers1
+        order.orderItems = (await respo).headers2
+        this.ApprovalOrderList.push(order);
+        console.log("respo - ", (await respo).headers1)
+      }
+      addedNewFiles.forEach(value => this.files.push(value))
+      removeOldFiles.forEach(value => this.removeItem(value))
+      this.ApprovalOrderList.sort((a, b) => a.order.id - b.order.id);
+      this.ApprovalOrderList.reverse()
+      this.showSpinner = false;
     }
-    addedNewFiles.forEach(value => this.files.push(value))
-    removeOldFiles.forEach(value => this.removeItem(value))
-    this.ApprovalOrderList.sort((a, b) => a.order.id - b.order.id);
-    this.ApprovalOrderList.reverse()
-    this.showSpinner = false;
-
   }
 
   removeItem(item: any) {
@@ -389,20 +435,41 @@ export class CounterCapComponent implements AfterViewInit {
   async approvedOrder(id: any, order_ref_id: any) {
     this.showSpinner = true;
     const sourcePath = '/orders/approval_waiting_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv';
-    let kitchenDestinationPath = '/orders/kitchen_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv'
-    let approvedDestinationPath = '/orders/approved_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv'
+    let approvedDestinationPath = '/orders/approved_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv';
     let res: any = "";
 
-    // res = await this.dropboxService.copyFile(sourcePath, kitchenDestinationPath, "kitchen")
-    console.log('Move file response:', res);
-    res = await this.dropboxService.moveFile(sourcePath, approvedDestinationPath);
-    this.sendMessageToWebSocket('kitchen')
-    setTimeout(() => {
-      this.refreshOrder()
-    }, 1000); // 5 minutes in milliseconds
+    if (!USE_DATABASE) {
+      try {
+        res = await this.dropboxService.moveFile(sourcePath, approvedDestinationPath);
+        console.log('Move file response:', res);
+      } catch (e) {
+        console.error('Dropbox move file failed:', e);
+      }
+    }
 
-
-
+    if (USE_DATABASE) {
+      this.graphqlService.updateOrderStatus(Number(id), 'Approved').subscribe(
+        (dbRes: any) => {
+          console.log('DB updateOrderStatus response:', dbRes);
+          this.sendMessageToWebSocket('kitchen');
+          setTimeout(() => {
+            this.refreshOrder();
+          }, 1000);
+        },
+        (error: any) => {
+          console.error('Error updating status in DB:', error);
+          this.sendMessageToWebSocket('kitchen');
+          setTimeout(() => {
+            this.refreshOrder();
+          }, 1000);
+        }
+      );
+    } else {
+      this.sendMessageToWebSocket('kitchen');
+      setTimeout(() => {
+        this.refreshOrder();
+      }, 1000);
+    }
   }
 
   selectedTab: string = 'waiting_order';
@@ -453,11 +520,35 @@ export class CounterCapComponent implements AfterViewInit {
     this.showSpinner = true;
     const sourcePath = '/orders/approval_waiting_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv';
     let kitchenDestinationPath = '/orders/decline_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv';
-    this.dropboxService.moveFile(sourcePath, kitchenDestinationPath);
-    setTimeout(() => {
-      this.refreshOrder()
-    }, 1000); // 5 minutes in milliseconds
+    
+    if (!USE_DATABASE) {
+      try {
+        await this.dropboxService.moveFile(sourcePath, kitchenDestinationPath);
+      } catch (e) {
+        console.error('Dropbox move file failed:', e);
+      }
+    }
 
+    if (USE_DATABASE) {
+      this.graphqlService.updateOrderStatus(Number(id), 'declined').subscribe(
+        (dbRes: any) => {
+          console.log('DB updateOrderStatus to declined response:', dbRes);
+          setTimeout(() => {
+            this.refreshOrder();
+          }, 1000);
+        },
+        (error: any) => {
+          console.error('Error updating status to declined in DB:', error);
+          setTimeout(() => {
+            this.refreshOrder();
+          }, 1000);
+        }
+      );
+    } else {
+      setTimeout(() => {
+        this.refreshOrder();
+      }, 1000);
+    }
   }
 
 
@@ -514,34 +605,24 @@ export class CounterCapComponent implements AfterViewInit {
     this.getOrderItemStatus(this.ApprovedOrderList);
   }
   converteLIstTomap(ApprovedOrderList: any) {
-    //   const yourMap: Map<number, SingleFileOrderDto> = new Map(ApprovedOrderList.map((obj:SingleFileOrderDto ) => [obj.order.table_no, obj]));
-
-
     const yourMap: Map<string, SingleFileOrderDto[]> = ApprovedOrderList.reduce((map: any, obj: SingleFileOrderDto) => {
       let key = '';
-      if (obj.order.table_place != undefined) {
-        key = obj.order.table_place + obj.order.table_no;
+      if (obj.order.table_place) {
+        key = String(obj.order.table_place) + String(obj.order.table_no);
+      } else {
+        key = String(obj.order.table_no);
       }
 
-      else {
-        key = obj.order.table_no;
-      }
-
-
-      // If the key doesn't exist in the map, initialize it with an empty array
       if (!map.has(key)) {
         map.set(key, []);
       }
 
-      // Push the object to the array associated with the key
       map.get(key)?.push(obj);
 
       return map;
     }, new Map<string, SingleFileOrderDto[]>());
 
-
-    this.ApprovedOrderListMap = yourMap
-
+    this.ApprovedOrderListMap = yourMap;
     console.log(yourMap);
   }
   refreshOrderStatus() {

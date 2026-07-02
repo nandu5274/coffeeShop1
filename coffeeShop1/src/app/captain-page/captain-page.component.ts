@@ -10,7 +10,7 @@ import { SharedService } from '../service/shared-service';
 import { SingleFileOrderDto } from '../dtos/singleFileOrderDto';
 import { GraphqlService } from '../service/graphql.service';
 import { TimerService } from '../service/timer.service';
-import { BELL_MSG_TIME_OUT } from '../common/constanst';
+import { BELL_MSG_TIME_OUT, USE_DATABASE } from '../common/constanst';
 import { CustomerService } from '../service/customer.service';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -22,6 +22,7 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrls: ['./captain-page.component.scss']
 })
 export class CaptainPageComponent implements AfterViewInit {
+  USE_DATABASE = USE_DATABASE;
   messages: string[] = [];
   Status: any = ""
   loggedIn: any = false;
@@ -176,12 +177,20 @@ export class CaptainPageComponent implements AfterViewInit {
         this.playSound()
         if (this.showSpinner == false) {
           this.getUpdatedApprovalWaitingOrders();
-          this.getUpdatedApprovedOrders();
+          if (USE_DATABASE) {
+            this.getUpdatedApprovedOrdersDb();
+          } else {
+            this.getUpdatedApprovedOrders();
+          }
         } else {
           setTimeout(() => {
             if (this.showSpinner == false) {
               this.getUpdatedApprovalWaitingOrders();
-              this.getUpdatedApprovedOrders();
+              if (USE_DATABASE) {
+                this.getUpdatedApprovedOrdersDb();
+              } else {
+                this.getUpdatedApprovedOrders();
+              }
             }
           }, 30000);
         }
@@ -285,54 +294,195 @@ export class CaptainPageComponent implements AfterViewInit {
   }
 
 
+  isSyncingActiveOrders = false;
+  syncActiveOrdersDb(callback?: () => void) {
+    if (this.isSyncingActiveOrders) {
+      if (callback) callback();
+      return;
+    }
+    this.isSyncingActiveOrders = true;
+
+    // Get today's start date
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startDate = today.toISOString();
+
+    const currentTab = this.selectedTab;
+    const targetStatus = currentTab === 'waiting_order' ? 'approval_waiting' : 'Approved';
+
+    this.graphqlService.getActiveOrdersBasic(targetStatus, startDate).subscribe(
+      (result: any) => {
+        const activeOrders = result.data.kubera_order || [];
+        
+        // 1. Gather status map from DB
+        const dbStatusMap = new Map<number, string>();
+        activeOrders.forEach((o: any) => dbStatusMap.set(Number(o.id), o.order_status));
+
+        // 2. Identify missing/status-changed IDs we need to fetch
+        const idsToFetch: number[] = [];
+
+        activeOrders.forEach((o: any) => {
+          const id = Number(o.id);
+          const status = o.order_status;
+          
+          if (targetStatus === 'approval_waiting') {
+            const existing = this.ApprovalOrderList.find(item => Number(item.order.id) === id);
+            if (!existing || existing.order.order_status !== status) {
+              idsToFetch.push(id);
+            }
+          } else if (targetStatus === 'Approved') {
+            const existing = this.ApprovedOrderList.find(item => Number(item.order.id) === id);
+            if (!existing || existing.order.order_status !== status) {
+              idsToFetch.push(id);
+            }
+          }
+        });
+
+        // 3. Remove locally loaded orders that are no longer in DB or have changed status
+        if (targetStatus === 'approval_waiting') {
+          this.ApprovalOrderList = this.ApprovalOrderList.filter(item => {
+            const id = Number(item.order.id);
+            return dbStatusMap.get(id) === 'approval_waiting';
+          });
+        } else if (targetStatus === 'Approved') {
+          this.ApprovedOrderList = this.ApprovedOrderList.filter(item => {
+            const id = Number(item.order.id);
+            return dbStatusMap.get(id) === 'Approved';
+          });
+        }
+
+        // 4. Fetch details for missing/changed orders
+        if (idsToFetch.length > 0) {
+          this.graphqlService.getPaidOrdersByIds(idsToFetch).subscribe(
+            (detailsResult: any) => {
+              const detailedOrders = detailsResult.data.kubera_order || [];
+              detailedOrders.forEach((dbOrder: any) => {
+                let order: SingleFileOrderDto = new SingleFileOrderDto();
+                order.order = {
+                  id: dbOrder.id,
+                  order_ref_id: dbOrder.order_ref_id,
+                  table_no: dbOrder.table_no,
+                  table_place: dbOrder.table_place,
+                  order_summary_amount: dbOrder.order_summary_amount,
+                  order_additional_service_amount: dbOrder.order_additional_service_amount,
+                  order_total_amount: dbOrder.order_total_amount,
+                  order_status: dbOrder.order_status,
+                  employee: dbOrder.employee,
+                  comments: dbOrder.comments,
+                  customer_number: dbOrder.customer_number,
+                  order_created_time: this.convertToIST(dbOrder.created_at),
+                  isExpanded: false
+                };
+                order.orderItems = (dbOrder.order_items || []).map((item: any) => ({
+                  id: item.id,
+                  item_name: item.item_name,
+                  item_quantity: item.item_quantity,
+                  item_cost: item.item_cost,
+                  item_description: item.item_description,
+                  status: item.status,
+                  order_id: item.order_id
+                }));
+
+                if (dbOrder.order_status === 'approval_waiting') {
+                  this.ApprovalOrderList = this.ApprovalOrderList.filter(o => Number(o.order.id) !== dbOrder.id);
+                  this.ApprovalOrderList.push(order);
+                } else if (dbOrder.order_status === 'Approved') {
+                  this.ApprovedOrderList = this.ApprovedOrderList.filter(o => Number(o.order.id) !== dbOrder.id);
+                  this.ApprovedOrderList.push(order);
+                }
+              });
+
+              // Finalize sorting and conversions
+              this.finalizeActiveOrdersLists();
+              this.isSyncingActiveOrders = false;
+              if (callback) callback();
+            },
+            (err: any) => {
+              console.error('Error fetching delta active orders details:', err);
+              this.isSyncingActiveOrders = false;
+              if (callback) callback();
+            }
+          );
+        } else {
+          // No details to fetch, just clean up and render
+          this.finalizeActiveOrdersLists();
+          this.isSyncingActiveOrders = false;
+          if (callback) callback();
+        }
+      },
+      (err: any) => {
+        console.error('Error fetching basic orders for status ' + targetStatus, err);
+        this.isSyncingActiveOrders = false;
+        if (callback) callback();
+      }
+    );
+  }
+
+  finalizeActiveOrdersLists() {
+    this.ApprovalOrderList.sort((a, b) => Number(b.order.id) - Number(a.order.id));
+    this.ApprovedOrderList.sort((a, b) => Number(b.order.id) - Number(a.order.id));
+    this.converteLIstTomap(this.ApprovedOrderList);
+    this.getOrderItemStatus(this.ApprovedOrderList);
+  }
+
   files: any[] = [];
   async getApprovalWaitingOrders() {
-    this.ApprovalOrderList = []
-    this.showSpinner = true;
-    const folderPath = '/orders/approval_waiting_orders/'; // Replace with the desired folder path
-    this.files = await this.dropboxService.getFilesInFolder(folderPath);
-    //this.files.shift()
-    for (const file of this.files) {
-      file.data = await this.dropboxService.getFileData(file.path_display);
-      const respo = this.sharedService.parseNestedCsvToObject(file.data.fileBlob)
-      let order: SingleFileOrderDto = new SingleFileOrderDto();
-      order.order = (await respo).headers1
-      order.orderItems = (await respo).headers2
-      this.ApprovalOrderList.push(order);
-      console.log("respo - ", (await respo).headers1)
+    if (USE_DATABASE) {
+      this.showSpinner = true;
+      this.syncActiveOrdersDb(() => {
+        this.showSpinner = false;
+      });
+    } else {
+      this.ApprovalOrderList = []
+      this.showSpinner = true;
+      const folderPath = '/orders/approval_waiting_orders/'; // Replace with the desired folder path
+      this.files = await this.dropboxService.getFilesInFolder(folderPath);
+      //this.files.shift()
+      for (const file of this.files) {
+        file.data = await this.dropboxService.getFileData(file.path_display);
+        const respo = this.sharedService.parseNestedCsvToObject(file.data.fileBlob)
+        let order: SingleFileOrderDto = new SingleFileOrderDto();
+        order.order = (await respo).headers1
+        order.orderItems = (await respo).headers2
+        this.ApprovalOrderList.push(order);
+        console.log("respo - ", (await respo).headers1)
+      }
+      this.ApprovalOrderList.sort((a, b) => a.order.id - b.order.id);
+      this.ApprovalOrderList.reverse()
+      this.showSpinner = false;
     }
-    this.ApprovalOrderList.sort((a, b) => a.order.id - b.order.id);
-    this.ApprovalOrderList.reverse()
-    this.showSpinner = false;
   }
 
 
   updatedFiles: any[] = [];
   async getUpdatedApprovalWaitingOrders() {
-    //this.ApprovalOrderList = []
-    this.showSpinner = true;
-    const folderPath = '/orders/approval_waiting_orders/'; // Replace with the desired folder path
-    this.updatedFiles = await this.dropboxService.getFilesInFolder(folderPath);
-   // this.updatedFiles.shift()
-    // added only newly added files
-    const addedNewFiles = this.updatedFiles.filter(item1 => !this.files.some(item2 => item2["name"] === item1["name"]));
-    const removeOldFiles = this.files.filter(item1 => !this.updatedFiles.some(item2 => item2["name"] === item1["name"]));
+    if (USE_DATABASE) {
+      await this.getApprovalWaitingOrders();
+    } else {
+      //this.ApprovalOrderList = []
+      this.showSpinner = true;
+      const folderPath = '/orders/approval_waiting_orders/'; // Replace with the desired folder path
+      this.updatedFiles = await this.dropboxService.getFilesInFolder(folderPath);
+     // this.updatedFiles.shift()
+      // added only newly added files
+      const addedNewFiles = this.updatedFiles.filter(item1 => !this.files.some(item2 => item2["name"] === item1["name"]));
+      const removeOldFiles = this.files.filter(item1 => !this.updatedFiles.some(item2 => item2["name"] === item1["name"]));
 
-    for (const file of addedNewFiles) {
-      file.data = await this.dropboxService.getFileData(file.path_display);
-      const respo = this.sharedService.parseNestedCsvToObject(file.data.fileBlob)
-      let order: SingleFileOrderDto = new SingleFileOrderDto();
-      order.order = (await respo).headers1
-      order.orderItems = (await respo).headers2
-      this.ApprovalOrderList.push(order);
-      console.log("respo - ", (await respo).headers1)
+      for (const file of addedNewFiles) {
+        file.data = await this.dropboxService.getFileData(file.path_display);
+        const respo = this.sharedService.parseNestedCsvToObject(file.data.fileBlob)
+        let order: SingleFileOrderDto = new SingleFileOrderDto();
+        order.order = (await respo).headers1
+        order.orderItems = (await respo).headers2
+        this.ApprovalOrderList.push(order);
+        console.log("respo - ", (await respo).headers1)
+      }
+      addedNewFiles.forEach(value => this.files.push(value))
+      removeOldFiles.forEach(value => this.removeItem(value))
+      this.ApprovalOrderList.sort((a, b) => a.order.id - b.order.id);
+      this.ApprovalOrderList.reverse()
+      this.showSpinner = false;
     }
-    addedNewFiles.forEach(value => this.files.push(value))
-    removeOldFiles.forEach(value => this.removeItem(value))
-    this.ApprovalOrderList.sort((a, b) => a.order.id - b.order.id);
-    this.ApprovalOrderList.reverse()
-    this.showSpinner = false;
-
   }
 
   removeItem(item: any) {
@@ -386,26 +536,52 @@ export class CaptainPageComponent implements AfterViewInit {
   }
 
 
+  loadingOrderId: any = null;
+
   async approvedOrder(id: any, order_ref_id: any) {
-    this.showSpinner = true;
+    this.loadingOrderId = id;
     const sourcePath = '/orders/approval_waiting_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv';
-    let kitchenDestinationPath = '/orders/kitchen_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv'
-    let approvedDestinationPath = '/orders/approved_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv'
+    let approvedDestinationPath = '/orders/approved_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv';
     let res: any = "";
 
-    // res = await this.dropboxService.copyFile(sourcePath, kitchenDestinationPath, "kitchen")
-    console.log('Move file response:', res);
-    res = await this.dropboxService.moveFile(sourcePath, approvedDestinationPath);
-    this.sendMessageToWebSocket('kitchen')
-    setTimeout(() => {
-      this.refreshOrder()
-    }, 1000); // 5 minutes in milliseconds
+    if (!USE_DATABASE) {
+      try {
+        res = await this.dropboxService.moveFile(sourcePath, approvedDestinationPath);
+        console.log('Move file response:', res);
+      } catch (e) {
+        console.error('Dropbox move file failed:', e);
+      }
+    }
 
-
-
+    if (USE_DATABASE) {
+      this.graphqlService.updateOrderStatus(Number(id), 'Approved').subscribe(
+        (dbRes: any) => {
+          console.log('DB updateOrderStatus response:', dbRes);
+          this.sendMessageToWebSocket('kitchen');
+          setTimeout(() => {
+            this.loadingOrderId = null;
+            this.refreshOrder();
+          }, 1000);
+        },
+        (error: any) => {
+          console.error('Error updating status in DB:', error);
+          this.sendMessageToWebSocket('kitchen');
+          setTimeout(() => {
+            this.loadingOrderId = null;
+            this.refreshOrder();
+          }, 1000);
+        }
+      );
+    } else {
+      this.sendMessageToWebSocket('kitchen');
+      setTimeout(() => {
+        this.loadingOrderId = null;
+        this.refreshOrder();
+      }, 1000);
+    }
   }
 
-  selectedTab: string = 'waiting_order';
+  selectedTab: any = 'waiting_order';
 
   selectTab(tabName: string): void {
 
@@ -415,6 +591,8 @@ export class CaptainPageComponent implements AfterViewInit {
       this.getUpdatedApprovalWaitingOrders();
     } else if (tabName == 'Accepted_order') {
       this.getUpdatedApprovedOrders();
+    } else if (tabName == 'Accepted_order_db') {
+      this.getUpdatedApprovedOrdersDb();
     }
   }
 
@@ -453,11 +631,35 @@ export class CaptainPageComponent implements AfterViewInit {
     this.showSpinner = true;
     const sourcePath = '/orders/approval_waiting_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv';
     let kitchenDestinationPath = '/orders/decline_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv';
-    this.dropboxService.moveFile(sourcePath, kitchenDestinationPath);
-    setTimeout(() => {
-      this.refreshOrder()
-    }, 1000); // 5 minutes in milliseconds
+    
+    if (!USE_DATABASE) {
+      try {
+        await this.dropboxService.moveFile(sourcePath, kitchenDestinationPath);
+      } catch (e) {
+        console.error('Dropbox move file failed:', e);
+      }
+    }
 
+    if (USE_DATABASE) {
+      this.graphqlService.updateOrderStatus(Number(id), 'declined').subscribe(
+        (dbRes: any) => {
+          console.log('DB updateOrderStatus to declined response:', dbRes);
+          setTimeout(() => {
+            this.refreshOrder();
+          }, 1000);
+        },
+        (error: any) => {
+          console.error('Error updating status to declined in DB:', error);
+          setTimeout(() => {
+            this.refreshOrder();
+          }, 1000);
+        }
+      );
+    } else {
+      setTimeout(() => {
+        this.refreshOrder();
+      }, 1000);
+    }
   }
 
 
@@ -513,36 +715,119 @@ export class CaptainPageComponent implements AfterViewInit {
     this.approvedShowSpinner = false;
     this.getOrderItemStatus(this.ApprovedOrderList);
   }
+
+  async getApprovedOrdersDb() {
+    this.approvedShowSpinner = true;
+    this.syncActiveOrdersDb(() => {
+      this.approvedShowSpinner = false;
+    });
+  }
+
+  async getUpdatedApprovedOrdersDb() {
+    await this.getApprovedOrdersDb();
+  }
+  CombinedApprovedOrders: any[] = [];
+
   converteLIstTomap(ApprovedOrderList: any) {
-    //   const yourMap: Map<number, SingleFileOrderDto> = new Map(ApprovedOrderList.map((obj:SingleFileOrderDto ) => [obj.order.table_no, obj]));
-
-
     const yourMap: Map<string, SingleFileOrderDto[]> = ApprovedOrderList.reduce((map: any, obj: SingleFileOrderDto) => {
       let key = '';
-      if (obj.order.table_place != undefined) {
-        key = obj.order.table_place + obj.order.table_no;
+      if (obj.order.table_place) {
+        key = String(obj.order.table_place) + String(obj.order.table_no);
+      } else {
+        key = String(obj.order.table_no);
       }
 
-      else {
-        key = obj.order.table_no;
-      }
-
-
-      // If the key doesn't exist in the map, initialize it with an empty array
       if (!map.has(key)) {
         map.set(key, []);
       }
 
-      // Push the object to the array associated with the key
       map.get(key)?.push(obj);
 
       return map;
     }, new Map<string, SingleFileOrderDto[]>());
 
-
-    this.ApprovedOrderListMap = yourMap
-
+    this.ApprovedOrderListMap = yourMap;
     console.log(yourMap);
+
+    // Build the combined orders array
+    const combined: any[] = [];
+    yourMap.forEach((orders, tableKey) => {
+      const firstOrder = orders[0].order;
+      
+      // Combine order IDs
+      const rawOrderIds = orders.map(o => '#' + o.order.id).reverse();
+      const orderIds = rawOrderIds.join(', ');
+      
+      let displayedOrderIds = '';
+      let hasMoreOrderIds = false;
+      let remainingCount = 0;
+      if (rawOrderIds.length > 2) {
+        displayedOrderIds = rawOrderIds.slice(0, 2).join(', ');
+        hasMoreOrderIds = true;
+        remainingCount = rawOrderIds.length - 2;
+      } else {
+        displayedOrderIds = orderIds;
+      }
+
+      // Combine customer numbers (unique, non-empty)
+      const customerNumbers = Array.from(new Set(
+        orders.map(o => o.order.customer_number).filter(n => n && n.trim() !== '')
+      )).join(', ');
+
+      // Combine comments (non-empty)
+      const commentsList = orders.map(o => o.order.comments).filter(c => c && c.trim() !== '');
+      const combinedComments = commentsList.length > 0 ? commentsList.join('; ') : '';
+
+      // Combine employees
+      const employees = Array.from(new Set(
+        orders.map(o => o.order.employee).filter(e => e && e.trim() !== '')
+      )).join(', ');
+
+      // Combine items (sum quantities for same item name)
+      const itemMap = new Map<string, any>();
+      orders.forEach(o => {
+        o.orderItems.forEach((item: any) => {
+          const name = item.item_name;
+          if (itemMap.has(name)) {
+            const existing = itemMap.get(name);
+            existing.item_quantity += item.item_quantity;
+          } else {
+            itemMap.set(name, {
+              item_name: name,
+              item_cost: item.item_cost,
+              item_quantity: item.item_quantity
+            });
+          }
+        });
+      });
+      const combinedItems = Array.from(itemMap.values());
+
+      // Sum amounts
+      const subtotal = orders.reduce((sum, o) => sum + (o.order.order_summary_amount || 0), 0);
+      const service_charge = orders.reduce((sum, o) => sum + (o.order.order_additional_service_amount || 0), 0);
+      const total_amount = orders.reduce((sum, o) => sum + (o.order.order_total_amount || 0), 0);
+
+      combined.push({
+        tableKey: tableKey,
+        table_place: firstOrder.table_place || '',
+        table_no: firstOrder.table_no || '',
+        orderIds: orderIds,
+        displayedOrderIds: displayedOrderIds,
+        hasMoreOrderIds: hasMoreOrderIds,
+        remainingCount: remainingCount,
+        latest_time: firstOrder.order_created_time || '',
+        customer_number: customerNumbers,
+        comments: combinedComments,
+        employee: employees,
+        combinedItems: combinedItems,
+        subtotal: subtotal,
+        service_charge: service_charge,
+        total_amount: total_amount,
+        rawOrders: orders
+      });
+    });
+
+    this.CombinedApprovedOrders = combined;
   }
   refreshOrderStatus() {
     this.showSpinner = true
@@ -551,8 +836,11 @@ export class CaptainPageComponent implements AfterViewInit {
   }
 
   refreshApprovedOrder() {
-    this.getUpdatedApprovedOrders()
-
+    if (USE_DATABASE) {
+      this.getUpdatedApprovedOrdersDb();
+    } else {
+      this.getUpdatedApprovedOrders();
+    }
   }
   isSticky: boolean = false;
   @HostListener('window:scroll', ['$event'])
@@ -561,9 +849,31 @@ export class CaptainPageComponent implements AfterViewInit {
     this.isSticky = window.scrollY > 100;
   }
 
+  loadingCheckoutTable: string = '';
+
   async moveOrderToCheckOut() {
     let data = this.entry;
-    this.approvedShowSpinner = true;
+    if (data && data.length > 0) {
+      this.loadingCheckoutTable = data[0].order.table_no;
+    }
+    
+    if (this.USE_DATABASE) {
+      const checkoutId = 'CHK_' + new Date().getTime().toString() + '_' + Math.floor(Math.random() * 1000).toString();
+      data.forEach((field: any) => {
+        let id = field.order.id;
+        this.graphqlService.updateOrderStatusWithCheckoutId(Number(id), 'checkout', checkoutId).subscribe(
+          (dbRes: any) => {
+            console.log('DB updateOrderStatus checkout response:', dbRes);
+          },
+          (err: any) => console.error('DB updateOrderStatus checkout error:', err)
+        );
+      });
+      setTimeout(() => { this.loadingCheckoutTable = ''; this.refreshApprovedOrder(); }, 1000);
+      this.sendMessageToWebSocket('payment');
+      this.showCheckOutModal = false;
+      return;
+    }
+
     const currentDate = new Date();
     const formattedDate = this.datePipe.transform(currentDate, 'yyyyMMddHHmm');
     const value = this.objectsToCsv2(data);
@@ -593,16 +903,17 @@ export class CaptainPageComponent implements AfterViewInit {
       console.log('File uploaded:', response);
       let resw = await this.dropboxService.deleteFile(filepaths);
       console.log(resw);
-      setTimeout(() => { this.refreshApprovedOrder(); }, 3000);
+      setTimeout(() => { this.loadingCheckoutTable = ''; this.refreshApprovedOrder(); }, 3000);
       this.sendMessageToWebSocket('payment');
       this.showCheckOutModal=false
       //delete the approved orders
+
 
     }).catch((error) => {
       this.dropboxService.updateFile(orderTableFilePath, orderTableCsvData).then((response: any) => {
         console.log('File updated:', response);
         this.dropboxService.deleteFile(filepaths);
-        setTimeout(() => { this.refreshApprovedOrder(); }, 3000);
+        setTimeout(() => { this.loadingCheckoutTable = ''; this.refreshApprovedOrder(); }, 3000);
         this.sendMessageToWebSocket('payment');
       }).catch((error) => {
 
@@ -645,6 +956,12 @@ export class CaptainPageComponent implements AfterViewInit {
     this.sharedService.navigateToMenu('menu');
   }
 
+  showMenuPopup: boolean = false;
+  menuPopupTableInfo: string = '';
+  orderProcessingStatus: string = '';
+  response: any;
+  isMenuPopupHidden: boolean = false;
+
   openExistingMenuPage(data:any) {
     sessionStorage.removeItem('table')
     sessionStorage.removeItem('tableSet')
@@ -654,11 +971,42 @@ export class CaptainPageComponent implements AfterViewInit {
     sessionStorage.setItem('table', data[0].order.table_no);
     sessionStorage.setItem('tablePlace', data[0].order.table_place ?? '');
     const latestCustomerNumber = data.find((obj: any) => obj.order.customer_number !== "")?.order.customer_number || "";
-    sessionStorage.setItem('customer_number',latestCustomerNumber);
+    sessionStorage.setItem('customer_number', latestCustomerNumber);
     sessionStorage.setItem('tableSet', '1');
     sessionStorage.setItem('isCap', 'true');
-    this.sharedService.setShowMenuFlag(1)
-    this.sharedService.navigateToMenu('menu');
+    this.sharedService.setShowMenuFlag(1);
+
+    this.menuPopupTableInfo = (data[0].order.table_place ?? '') + ' ' + data[0].order.table_no;
+    this.isMenuPopupHidden = false;
+    this.showMenuPopup = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeMenuPopup() {
+    this.showMenuPopup = false;
+    this.isMenuPopupHidden = false;
+    this.menuPopupOrderStatus = '';
+    document.body.style.overflow = 'auto';
+  }
+
+  menuPopupOrderStatus: string = '';
+
+  onMenuPopupOrderStatus(status: string) {
+    this.menuPopupOrderStatus = status;
+    this.orderProcessingStatus = status;
+    if (status === 'processing') {
+      this.isMenuPopupHidden = true;
+    }
+    if (status === 'success') {
+      // Send websocket message for approval
+      this.sendMessageToWebSocket('approval');
+      this.closeMenuPopup();
+    }
+  }
+
+  onMenuPopupOrderResponse(response: any) {
+    console.log('Menu popup order response:', response);
+    this.response = response;
   }
 
 
@@ -682,31 +1030,24 @@ export class CaptainPageComponent implements AfterViewInit {
 
   getOrderItemStatus(apporvedList: any) {
     if (apporvedList.length > 0) {
-      this.showSpinner = true;
-      let orderIds = apporvedList.map((item: any) => item.order.id);
-      this.graphqlService.getOrderItemsByOrderID(orderIds).subscribe(
-        (result) => {
-          this.orderItemsStatusList = [];
-          this.orderItemsStatusLisRes = result.data.kubera_order
-
-          this.orderItemsStatusLisRes.forEach((item: any) => {
-            let value: any = {};
-            Object.assign(value, item);
-            value.created_at = this.convertToIST(item.created_at)
-            this.orderItemsStatusList.push(value);
-
-          });
-          console.log(result.data); // This will contain the data you queried
-          this.showSpinner = false;
-        },
-        (error) => {
-          console.error('Error fetching data:', error);
-          this.showSpinner = false;
-        }
-
-
-
-      );
+      this.orderItemsStatusList = apporvedList.map((item: any) => {
+        return {
+          id: item.order.id,
+          table_no: item.order.table_no,
+          table_place: item.order.table_place,
+          created_at: item.order.order_created_time,
+          order_status: item.order.order_status,
+          employee: item.order.employee,
+          comments: item.order.comments,
+          order_items: item.orderItems.map((oi: any) => ({
+            id: oi.id,
+            item_name: oi.item_name,
+            item_quantity: oi.item_quantity,
+            status: oi.status,
+            order_id: oi.order_id
+          }))
+        };
+      });
     } else {
       this.orderItemsStatusList = [];
     }

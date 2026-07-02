@@ -60,12 +60,16 @@
 
 
 
-<div  *ngIf="showSpinner"  class="spinner-overlay">
-  <div class="spinner"></div>
+<!-- Non-blocking loading indicator -->
+<div *ngIf="showSpinner || showPaidSpinner" class="top-loading-bar">
+  <div class="loading-bar-track">
+    <div class="loading-bar-fill"></div>
+  </div>
 </div>
 
-<div  *ngIf="showPaidSpinner"  class="spinner-overlay">
-  <div class="spinner"></div>
+<div *ngIf="showSpinner || showPaidSpinner" class="loading-toast">
+  <div class="loading-toast-spinner"></div>
+  <span class="loading-toast-text">Syncing...</span>
 </div>
 
 <div class="status-container">
@@ -111,9 +115,8 @@
           <h2>Payment</h2>
           <div  style="display: flex; flex-direction: row;" class="refresh">
             <p>Check out orders</p>
-            <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
-            <button style=" background-color: #d49b3b; color: #11100e;" (click) = "refreshOrder()">Refresh</button>
-               <!--  <button style=" background-color: #d49b3b; color: #11100e;" (click) = "openModal('d')">show c</button> -->
+            <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px; display: flex; align-items: center; height: fit-content;">
+              <button class="btn-premium-gold" (click)="refreshOrder()">🔄 Refresh</button>
             </div>
           
           </div>
@@ -125,38 +128,56 @@
           <div class="col-lg-12 d-flex justify-content-center">
             <div class="card-container">
     
-              <div class="card" *ngFor="let waitingApprovalOrder of checkOutOrderList">
-                <div class="content">
-                 <div class="table">
-                  <a  style=" font-family: sans-serif !important; font-size: x-large; ">Table : {{waitingApprovalOrder.order[0].table_no}}</a>
-                  <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e; cursor: pointer;" (click) = "openEditOrderPasswordPopup(waitingApprovalOrder)"> EDIT</a>
-                 </div>
-                 
-      
-                  <div style="text-align: center;    justify-content: space-between;
-                  display: flex;
-                  text-align: center;">
-                    <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e; ">Items</a>
-                    <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e; ">Quantity</a>
-                   </div>
-                   <hr>
-                  <ul  class="item-list">
-                    <li *ngFor="let waitingApprovalOrderItem of waitingApprovalOrder.orderItems">
-                      <div style="display: flex;
-                      place-content: space-between;">
-                        <a> {{waitingApprovalOrderItem.item_name}} </a>
-                   
-                        <a> {{waitingApprovalOrderItem.item_quantity }} </a>
-                      </div>
-                      
+              <div class="checkout-card" *ngFor="let waitingApprovalOrder of checkOutOrderList">
+                <!-- Header: Table & Edit -->
+                <div class="card-header-row">
+                  <span class="table-badge">
+                    📍 Table {{waitingApprovalOrder.order[0].table_no}}
+                  </span>
+                  <a class="edit-link" (click)="openEditOrderPasswordPopup(waitingApprovalOrder)">
+                    Edit
+                  </a>
+                </div>
+
+                <!-- Info Row: IDs & Waiter -->
+                <div class="card-info-row">
+                  <span style="color: #aaa;">IDs: {{getCardIdsString(waitingApprovalOrder.order)}}</span>
+                  <span *ngIf="waitingApprovalOrder.order[0].employee" style="color: rgba(255, 255, 255, 0.65);">
+                    👤 {{waitingApprovalOrder.order[0].employee}}
+                  </span>
+                </div>
+
+                <!-- Body: Items list -->
+                <div class="checkout-card-body">
+                  <div class="section-header">
+                    <span>Items</span>
+                    <span>Qty</span>
+                  </div>
+                  <ul class="checkout-item-list">
+                    <li *ngFor="let item of waitingApprovalOrder.orderItems">
+                      <span class="item-name">{{item.item_name}}</span>
+                      <span class="item-qty">{{item.item_quantity}}</span>
                     </li>
                   </ul>
-                  <hr>
-                  <div class="buttons">
-                    <button style="background-color: #198754!important" (click) = "showInvoice(waitingApprovalOrder)" >Invoice</button>
-                    <button style="background-color: #261987!important" (click) = "paymentDone(waitingApprovalOrder)" >Paid</button>
-                    <button style="background-color: #dc3545!important" (click) = "paymentDoneOwner(waitingApprovalOrder)" >Owner</button>
-                  </div>
+                </div>
+
+                <!-- Footer: Total amount display -->
+                <div class="checkout-card-footer">
+                  <span class="total-label">Total Amount:</span>
+                  <span class="total-val">₹{{waitingApprovalOrder.order[0].order_total_amount}}</span>
+                </div>
+
+                <!-- Action buttons row -->
+                <div class="card-action-buttons">
+                  <button class="btn-invoice" (click)="showInvoice(waitingApprovalOrder)">
+                    Invoice
+                  </button>
+                  <button class="btn-paid" (click)="paymentDone(waitingApprovalOrder)">
+                    Paid
+                  </button>
+                  <button class="btn-owner" (click)="paymentDoneOwner(waitingApprovalOrder)">
+                    Owner
+                  </button>
                 </div>
               </div>  
               <!-- Add more cards here -->
@@ -179,45 +200,81 @@
           <h2>Payment</h2>
           <div  style="display: flex; flex-direction: row;" class="refresh">
             <p>Paid orders</p>
-            <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
-              <button style=" background-color: #d49b3b; color: #11100e;        height: fit-content;" (click) = "refreshPaidOrder()">Refresh</button>
-          
-<button *ngIf="showReportButton"  
-  style="background-color: #d49b3b; color: #11100e; height: fit-content;"
-  (click)="openReportPopup()"
->
-  Report
-</button>
-            <div style=" display: flex;
-            flex-direction: column;">
-          
-          <a style="    font-size: large;
-          font-weight: bold;">
-            saleDate = {{saleDate}}
-           </a>
-           <a style="    font-size: large;
-           font-weight: bold;">
-             total orders = {{paidOrderList.length}}
-            </a>
-            <a>
-              cash = {{TotalCashAmount   | number:'1.2-2'}}
-             </a>
-             <a>
-              online = {{TotalOnlineAMpunt | number:'1.2-2'}}
-             </a>
-
-              <a>
-              paid_amount = {{TotalPaidAmount  | number:'1.2-2'}}
+            <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; flex-direction: row; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <button class="btn-premium-gold" (click)="refreshPaidOrder()">🔄 Refresh</button>
+                <button *ngIf="showReportButton" class="btn-premium-gold" (click)="openReportPopup()">📊 Report</button>
+                <button class="btn-premium-gold" (click)="openItemsSummaryPopup()">📋 Items Summary</button>
+                <div *ngIf="useDatabase" class="date-filter-container">
+                  <label for="date-filter">Select Date:</label>
+                  <input type="date" id="date-filter" [(ngModel)]="selectedDateFilter" (change)="onDateChange($event)" class="date-picker-input">
+                </div>
+              </div>
               
-             </a>
-             <a>
-              actual_amount = {{TotalActualAmount  | number:'1.2-2'}}
-             </a>
-             <a>
-              difference = {{TotalActualAmount - TotalPaidAmount  | number:'1.2-2'}}
-             </a>
+              <div class="metrics-grid">
+                <!-- Card: Sale Date -->
+                <div class="metric-card date-card">
+                  <div class="metric-icon">📅</div>
+                  <div class="metric-details">
+                    <span class="metric-label">Sale Date</span>
+                    <span class="metric-value">{{saleDate}}</span>
+                  </div>
+                </div>
 
-            </div>
+                <!-- Card: Total Orders -->
+                <div class="metric-card orders-card">
+                  <div class="metric-icon">🧾</div>
+                  <div class="metric-details">
+                    <span class="metric-label">Total Orders</span>
+                    <span class="metric-value">{{paidOrderList.length}}</span>
+                  </div>
+                </div>
+
+                <!-- Card: Cash Amount -->
+                <div class="metric-card cash-card">
+                  <div class="metric-icon">💵</div>
+                  <div class="metric-details">
+                    <span class="metric-label">Cash Sale</span>
+                    <span class="metric-value">₹{{TotalCashAmount | number:'1.2-2'}}</span>
+                  </div>
+                </div>
+
+                <!-- Card: Online Amount -->
+                <div class="metric-card online-card">
+                  <div class="metric-icon">💳</div>
+                  <div class="metric-details">
+                    <span class="metric-label">Online Sale</span>
+                    <span class="metric-value">₹{{TotalOnlineAMpunt | number:'1.2-2'}}</span>
+                  </div>
+                </div>
+
+                <!-- Card: Paid Amount -->
+                <div class="metric-card paid-card-summary">
+                  <div class="metric-icon">💰</div>
+                  <div class="metric-details">
+                    <span class="metric-label">Paid Amount</span>
+                    <span class="metric-value">₹{{TotalPaidAmount | number:'1.2-2'}}</span>
+                  </div>
+                </div>
+
+                <!-- Card: Actual Amount -->
+                <div class="metric-card actual-card">
+                  <div class="metric-icon">📈</div>
+                  <div class="metric-details">
+                    <span class="metric-label">Actual Amount</span>
+                    <span class="metric-value">₹{{TotalActualAmount | number:'1.2-2'}}</span>
+                  </div>
+                </div>
+
+                <!-- Card: Difference -->
+                <div class="metric-card diff-card" [class.discrepancy]="(TotalActualAmount - TotalPaidAmount) !== 0">
+                  <div class="metric-icon">⚖️</div>
+                  <div class="metric-details">
+                    <span class="metric-label">Difference</span>
+                    <span class="metric-value">₹{{TotalActualAmount - TotalPaidAmount | number:'1.2-2'}}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           
           
@@ -228,63 +285,90 @@
     
         <div  data-aos="fade-up" data-aos-delay="100">
           <div class="col-lg-12 d-flex justify-content-center">
-            <div class="card-container">
-    
-              <div class="card" *ngFor="let waitingApprovalOrder of paidOrderList">
-                <div class="content">
-                 <div class="table">
-                  <a  style=" font-family: sans-serif !important; font-size: x-large; ">Table : {{waitingApprovalOrder.order[0].table_no}}</a>
-                  <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e;"> {{waitingApprovalOrder.order[0].id}}</a>
-                 </div>
-                 
-      
-                  <div style="text-align: center;    justify-content: space-between;
-                  display: flex;
-                  text-align: center;">
-                    <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e; ">Items</a>
-                    <a  style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e; ">Quantity</a>
-                   </div>
-                   <hr>
-                  <ul  class="item-list">
-                    <li *ngFor="let waitingApprovalOrderItem of waitingApprovalOrder.orderItems">
-                      <div style="display: flex;
-                      place-content: space-between;">
-                        <a> {{waitingApprovalOrderItem.item_name}} </a>
-                   
-                        <a> {{waitingApprovalOrderItem.item_quantity }} </a>
-                      </div>
-                      
-                    </li>
-                  </ul>
-                  <hr>
-                <div>
-                 
-
-                
-                    <div class="paid-amount">
-                      <div style="    display: flex; justify-content: space-between;">
-                        <a  style=" font-family: sans-serif !important; font-size: medium "> Amount  </a>
-                        <a  style=" font-family: sans-serif !important; font-size: medium; color: #cda45e;"> {{waitingApprovalOrder.paidDetails[0].actual_amount}}  </a>
-                      </div>
-                      <div style="    display: flex; justify-content: space-between;">
-                      <a  style=" font-family: sans-serif !important; font-size: medium "> Paid  </a>
-                      <a  style=" font-family: sans-serif !important; font-size: medium; color: #cda45e;"> {{waitingApprovalOrder.paidDetails[0].paid_amount}}  </a>
-                    </div>
-                      <div style="    display: flex; justify-content: space-between;">
-                        <a  style=" font-family: sans-serif !important; font-size:medium; "> Mode </a>
-                        <a  style=" font-family: sans-serif !important; font-size: medium; color: #cda45e;">{{waitingApprovalOrder.paidDetails[0].mode}}
-                        </a>
-                       </div> 
-                       <div style="    display: flex; justify-content: space-between;">
-                        <a  style=" font-family: sans-serif !important; font-size: medium; "> Time </a>
-                        <a  style=" font-family: sans-serif !important; font-size: medium; color: #cda45e;">{{waitingApprovalOrder.paidDetails[0].period}}
-                        </a>
-                       </div> 
-                     </div> 
-
-                 
-         
+            <div class="card-container paid-container">
+              <div class="paid-card compact-card" *ngFor="let waitingApprovalOrder of paidOrderList">
+                <!-- Card Header -->
+                <div class="card-header-row">
+                  <span class="table-badge">
+                    📍 Table {{waitingApprovalOrder.order[0].table_no}}
+                  </span>
+                  <div class="paid-badge-compact">
+                    ✓ PAID
+                  </div>
                 </div>
+
+                <!-- Info Row: IDs & Amount -->
+                <div class="card-info-row" style="display: flex; justify-content: space-between; align-items: center; margin: 8px 0;">
+                  <div class="order-ids-compact" style="margin-bottom: 0;">
+                    IDs: {{getCardIdsString(waitingApprovalOrder.order)}}
+                  </div>
+                  <span class="meta-amount" style="color: #cda45e; font-weight: bold; font-size: 1.25rem;">
+                    ₹{{waitingApprovalOrder.paidDetails[0].paid_amount}}
+                  </span>
+                </div>
+
+                <!-- Order Metadata -->
+                <div class="card-meta-row" style="margin-bottom: 0;">
+                  <span class="meta-time" style="font-size: 0.78rem;">🕒 {{waitingApprovalOrder.paidDetails[0].period}}</span>
+                  <span class="meta-mode" [ngClass]="waitingApprovalOrder.paidDetails[0].mode">
+                    {{waitingApprovalOrder.paidDetails[0].mode === 'cash' ? '💵 Cash' : '💳 Online'}}
+                  </span>
+                </div>
+
+                <!-- Tooltip Details on Hover -->
+                <div class="card-tooltip">
+                  <!-- All Order IDs in Tooltip -->
+                  <div class="tooltip-ids-row" style="margin-bottom: 8px; font-size: 0.82rem; border-bottom: 1px dashed rgba(255, 255, 255, 0.15); padding-bottom: 8px; display: flex; justify-content: space-between;">
+                    <span style="color: #aaa;">All Order IDs:</span>
+                    <span style="color: #cda45e; font-weight: 500; font-family: monospace; font-size: 0.88rem;">{{getOrderIdsString(waitingApprovalOrder.order)}}</span>
+                  </div>
+
+                  <!-- Customer Phone -->
+                  <div class="customer-row" *ngIf="waitingApprovalOrder.order[0].customer_number">
+                    <span class="phone-icon">📞</span>
+                    <span class="phone-number">{{waitingApprovalOrder.order[0].customer_number}}</span>
+                  </div>
+
+                  <!-- Order Comments/Notes -->
+                  <div class="comments-box" *ngIf="waitingApprovalOrder.order[0].comments">
+                    <span class="comments-label">Note:</span>
+                    <span class="comments-text">"{{waitingApprovalOrder.order[0].comments}}"</span>
+                  </div>
+
+                  <!-- Items List Header -->
+                  <div class="items-header">Items Details</div>
+
+                  <!-- Items List Table -->
+                  <div class="items-table-container">
+                    <table class="items-mini-table">
+                      <thead>
+                        <tr>
+                          <th style="border: none !important; background: transparent !important; padding: 0 !important; text-align: left;">Item</th>
+                          <th class="text-center" style="border: none !important; background: transparent !important; padding: 0 4px !important;">Qty</th>
+                          <th class="text-right" style="border: none !important; background: transparent !important; padding: 0 4px !important;">Price</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of waitingApprovalOrder.orderItems">
+                          <td class="item-name" style="border: none !important; background: transparent !important; padding: 6px 0 !important;">{{item.item_name}}</td>
+                          <td class="item-qty text-center" style="border: none !important; background: transparent !important; padding: 6px 4px !important;">{{item.item_quantity}}</td>
+                          <td class="item-cost text-right" style="border: none !important; background: transparent !important; padding: 6px 4px !important;">₹{{item.item_cost}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Footer Breakdown -->
+                  <div class="card-footer-amounts">
+                    <div class="amount-row">
+                      <span class="amount-label">Subtotal:</span>
+                      <span class="amount-val">₹{{waitingApprovalOrder.paidDetails[0].actual_amount}}</span>
+                    </div>
+                    <div class="amount-row grand-total">
+                      <span class="amount-label">Amount Paid:</span>
+                      <span class="amount-val">₹{{waitingApprovalOrder.paidDetails[0].paid_amount}}</span>
+                    </div>
+                  </div>
                 </div>
               </div>  
               <!-- Add more cards here -->
@@ -318,53 +402,96 @@
       <button class="bnts"(click)="closePopup()" >Close</button>
     </div>
   </div>
+
+  <!-- Items Sold Summary Popup -->
+  <div class="popup-overlay" *ngIf="showItemsSummaryPopup" (click)="closeItemsSummaryPopup()">
+    <div class="popup-content summary-popup" (click)="$event.stopPropagation()">
+      <div class="summary-header">
+        <h3>📋 Items Sold Summary</h3>
+        <button class="close-btn-round" (click)="closeItemsSummaryPopup()">✕</button>
+      </div>
+      
+      <div class="summary-search-container">
+        <input type="text" [(ngModel)]="searchItemQuery" (ngModelChange)="filterSummaryItems()" placeholder="Search items..." class="summary-search-input">
+      </div>
+
+      <div class="summary-list-container">
+        <div class="summary-item-row header-row">
+          <span>Item Name</span>
+          <span>Qty</span>
+        </div>
+        <div class="summary-list-scroll">
+          <div class="summary-item-row" *ngFor="let item of filteredAggregatedItemsList">
+            <span class="item-name">{{item.name}}</span>
+            <span class="item-qty">{{item.quantity}}</span>
+          </div>
+          <div class="no-results" *ngIf="filteredAggregatedItemsList.length === 0">
+            No items found
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="main-content">
-  <div class="popup-overlay" *ngIf="isPaymentTypePopupOpen" (click)="closePopup()">
-    <div class="popup-content" style="    background: #d49b3b;
-    color: black;">
-     <div>  <h2>Payment</h2> </div>
-     <div style="padding: inherit;">
-      <div style="    margin: 1em;">
-        Amount : <input type = "number"  [(ngModel)]="amount" (ngModelChange)="isAmountUndefined()">
+  <div class="popup-overlay" *ngIf="isPaymentTypePopupOpen" (click)="closePopup()" style="display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.8);">
+    <div class="popup-content" style="background: #1a1814; color: #fff; border: 2px solid #cda45e; border-radius: 12px; padding: 30px; width: 400px; max-width: 90%; box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);" (click)="$event.stopPropagation()">
+      
+      <div style="text-align: center; margin-bottom: 25px;">
+        <h2 style="color: #cda45e; font-family: 'Playfair Display', serif; font-size: 28px; margin: 0;">Complete Payment</h2>
+        <div style="width: 50px; height: 2px; background: #cda45e; margin: 10px auto;"></div>
       </div>
-      <div >
-        <p style="margin: auto;"> Payment Type : {{paymentMode}}</p>
-        <div style="align-items: center;
-        justify-content: center;
-        width: 104%;
-        display: flex;
-        flex-direction: row;">
-          <label>Cash</label>
-          <label class="switch">
-          <input type="checkbox" [(ngModel)]="isNewProfile" (change) = "paymentMde(isNewProfile)">
-          <span class="slider round"></span>
-          </label>
-          <label>Online</label>
-  </div>
+
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- Amount Input -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <label style="color: #aaaaaa; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Amount Received</label>
+          <input type="number" [(ngModel)]="amount" (ngModelChange)="isAmountUndefined()" 
+                 style="background: rgba(255, 255, 255, 0.08); border: 1px solid #cda45e; color: white; padding: 12px 15px; border-radius: 8px; font-size: 18px; outline: none; width: 100%; box-sizing: border-box; transition: all 0.3s ease;">
+        </div>
+
+        <!-- Payment Mode Toggle -->
+        <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; background: rgba(255, 255, 255, 0.03); padding: 15px; border-radius: 8px;">
+          <p style="margin: 0; color: #aaaaaa; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Mode: <span style="color: #cda45e; font-weight: bold;">{{paymentMode}}</span></p>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+            <label style="font-size: 16px; color: {{!isNewProfile ? '#cda45e' : '#fff'}}">Cash</label>
+            <label class="switch" style="margin: 0;">
+              <input type="checkbox" [(ngModel)]="isNewProfile" (change)="paymentMde(isNewProfile)">
+              <span class="slider round"></span>
+            </label>
+            <label style="font-size: 16px; color: {{isNewProfile ? '#cda45e' : '#fff'}}">Online</label>
+          </div>
+        </div>
+
+        <!-- Loyalty Details -->
+        <div *ngIf="trigger_loyalty_Call" style="background: rgba(205, 164, 94, 0.1); border-left: 3px solid #cda45e; padding: 15px; border-radius: 4px; font-size: 14px;">
+          <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; color: #ddd;">
+            <strong style="color: #cda45e;">Customer:</strong> <span>{{customerName}}</span>
+            <strong style="color: #cda45e;">Phone:</strong> <span>{{selected_customer_number}}</span>
+            <strong style="color: #cda45e;">Status:</strong> <span>{{membership_Status}}</span>
+            <strong style="color: #cda45e;">Current Pts:</strong> <span>{{existing_loyalty_points}}</span>
+          </div>
+          <hr style="border-color: rgba(205, 164, 94, 0.2); margin: 12px 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong style="color: #fff;">New Loyalty Points:</strong>
+            <span style="background: #cda45e; color: #000; padding: 3px 8px; border-radius: 12px; font-weight: bold;">+{{new_loyalty_points}}</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 15px; margin-top: 10px;">
+          <button (click)="closePaymentTypePopup()" 
+                  style="flex: 1; background: transparent; border: 1px solid #aaaaaa; color: #aaaaaa; padding: 12px; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.3s ease;">
+            Cancel
+          </button>
+          <button [disabled]="isAmountUndefined()" (click)="makePaymentCompleted()" 
+                  style="flex: 1; background: #cda45e; border: none; color: #000; padding: 12px; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; opacity: {{isAmountUndefined() ? '0.5' : '1'}};">
+            Complete
+          </button>
+        </div>
+
       </div>
-<div  *ngIf="trigger_loyalty_Call">
-      <hr>
-      <div style="    margin: 1em;">
-        Customer: {{customerName}}
-        <br>
-        number : {{selected_customer_number}}
-        <br>
-        Loyalty points: {{existing_loyalty_points}}
-        <br>
-        membership Status: {{membership_Status}}
-      </div>
-      <hr>
-      <div style="    margin: 1em;">
-        New Loyalty Points : {{new_loyalty_points}}
-      </div>
-    </div>
-      <div class="buttons">
-        <button  [disabled]="isAmountUndefined()" style="background-color: #198754" (click) = "makePaymentCompleted()">Done</button>
-        <button style="background-color: #198754" (click) = "closePaymentTypePopup()">Close</button>
-      </div>
-     </div>
     </div>
   </div>
 </div>

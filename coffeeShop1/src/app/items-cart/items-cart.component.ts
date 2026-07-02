@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, OnDestroy } from '@angular/core';
 import { SharedService } from '../service/shared-service';
 import { CartItemDto } from '../dtos/CartItemDto';
 import { Router } from '@angular/router';
@@ -9,13 +9,14 @@ import * as Papa from 'papaparse';
 import { DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { CustomerService } from '../service/customer.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-items-cart',
   templateUrl: './items-cart.component.html',
   styleUrls: ['./items-cart.component.scss']
 })
-export class ItemsCartComponent implements OnInit {
+export class ItemsCartComponent implements OnInit, OnDestroy {
   sharedData: CartItemDto | undefined;
   orderAmount: number = 0
   additionAmount: number = 0
@@ -29,6 +30,8 @@ export class ItemsCartComponent implements OnInit {
   @Output() orderProcessingStatus: EventEmitter<any> = new EventEmitter();
   @Output() orderingResponse: EventEmitter<any> = new EventEmitter();
   quantityUpdated: boolean = false;
+  private cartDataSubscription!: Subscription;
+  private orderResponseSubscription?: Subscription;
   constructor(private sharedService: SharedService, private router: Router, private graphqlService: GraphqlService,
     private dropboxService: DropboxService, private datePipe: DatePipe, private http: HttpClient, private customerService: CustomerService,) { }
 
@@ -42,7 +45,7 @@ export class ItemsCartComponent implements OnInit {
     }
 
 
-    this.sharedService.getItemToCartDataObservable().subscribe((data) => {
+    this.cartDataSubscription = this.sharedService.getItemToCartDataObservable().subscribe((data) => {
       this.UserMobileNumber =  sessionStorage.getItem('customer_number' )??''; 
 
       sessionCartDataList = sessionStorage.getItem('cartDataList');
@@ -51,6 +54,13 @@ export class ItemsCartComponent implements OnInit {
         this.cartDataList = JSON.parse( atob(sessionStorage.getItem('cartDataList')!));
       }
 
+      if (data && (data as any).isProcessedInCart) {
+        this.orderSummery(this.cartDataList);
+        return;
+      }
+      if (data) {
+        (data as any).isProcessedInCart = true;
+      }
 
       this.quantityUpdated = false
       this.sharedData = data;
@@ -205,11 +215,13 @@ export class ItemsCartComponent implements OnInit {
    console.log("orderTableData", JSON.stringify(orderTableData))
    this.orderProcessingStatus.emit('processing')
   this.graphqlService.saveDataAndLink(orderTableData);
-  this.sharedService.getOrderProcessingResponseObservable().subscribe((data) => {
+  if (this.orderResponseSubscription) {
+    this.orderResponseSubscription.unsubscribe();
+  }
+  this.orderResponseSubscription = this.sharedService.getOrderProcessingResponseObservable().subscribe((data) => {
     this.responseDto = data;
     this.sentOrderStatus(csvOrderTableData, csvOrderItemsTableData);
-   
-  })
+  });
   
   //this.generateAndUploadCSV(csvOrderTableData, csvOrderItemsTableData)
   }
@@ -385,6 +397,15 @@ export class ItemsCartComponent implements OnInit {
       this.commentText = this.commentText 
         ? `${this.commentText}, ${selectedMessage}` 
         : selectedMessage;
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.cartDataSubscription) {
+      this.cartDataSubscription.unsubscribe();
+    }
+    if (this.orderResponseSubscription) {
+      this.orderResponseSubscription.unsubscribe();
     }
   }
 

@@ -419,43 +419,29 @@
 
 
 
-<div  *ngIf="showMenuOrderModal" class="modal" style=" z-index: 999999;">
-  <div class="modal-content">
-    <div class="main-content" style="width: fit-content; align-self: center; margin: 1em;">
-      <div class="popup-overlay" >
-        <div class="popup-content" style=" background: #d49b3b; padding: 0.5em;border-radius: 10px;
-        color: black;">
-         <div>  <h2 style="font-family: sans-serif !important; text-align: center;">Select Table</h2> </div>
-         <div style="padding: inherit;">
-          <div style="    margin: 1em;">
-            Table : <input type = "number"  [(ngModel)]="tableNumber" (ngModelChange)="isTableNUmberUndefined()">
-          </div>
-          <div style="    margin: 1em;">
-            <a>
-              place : 
-            </a>
-          
-            <div>
-              <select [(ngModel)]="tablePlace" class="my-select">
-                <option *ngFor="let option of options" [value]="option">{{ option }}</option>
-              </select>
-            </div>
-            <div style="    margin: 1em;">
-              Name : <input type = "Text"  [(ngModel)]="tableCustomerName" (ngModelChange)="isTableCustomerNameUndefined()">
-            </div>
-
-          </div>
-     
-          <div class="buttons">
-            <button  [disabled]="isTableNUmberUndefined()" style="background-color: #198754" (click) = "openMenuPage()">Order</button>
-            <button style="background-color: #198754" (click) = "closeOrderMenuModal()">Close</button>
-          </div>
-         </div>
-        </div>
+<div *ngIf="showMenuOrderModal" class="custom-glass-modal">
+  <div class="glass-popup-card">
+    <h2 style="text-align: center;">Select Table</h2>
+    <div>
+      <div style="margin-bottom: 1rem;">
+        <label>Table Number</label>
+        <input type="number" [(ngModel)]="tableNumber" (ngModelChange)="isTableNUmberUndefined()" placeholder="Enter Table Number">
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label>Place / Area</label>
+        <select [(ngModel)]="tablePlace">
+          <option *ngFor="let option of options" [value]="option">{{ option }}</option>
+        </select>
+      </div>
+      <div style="margin-bottom: 1.5rem;">
+        <label>Customer Name</label>
+        <input type="text" [(ngModel)]="tableCustomerName" (ngModelChange)="isTableCustomerNameUndefined()" placeholder="Enter Customer Name">
       </div>
     </div>
-
-
+    <div class="buttons-row">
+      <button class="btn-glass-success" [disabled]="isTableNUmberUndefined()" (click)="openMenuPage()">Order</button>
+      <button class="btn-glass-danger" (click)="closeOrderMenuModal()">Close</button>
+    </div>
   </div>
 </div>
 

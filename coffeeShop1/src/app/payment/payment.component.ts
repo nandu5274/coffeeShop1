@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener } from '@angular/core';
+import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core';
 import { WebSocketService } from '../service/WebSocket.service';
 import { DatePipe } from '@angular/common';
 import { DropboxService } from '../service/dropbox.service';
@@ -7,7 +7,7 @@ import { SingleFileOrderDto } from '../dtos/singleFileOrderDto';
 import Papa from 'papaparse';
 import { PaidFileOrderDto } from '../dtos/paidFileOrderDto';
 import { DataService } from '../service/data.service';
-import { BELL_MSG_TIME_OUT, KUBERA_PAYMENT_EDIT_LOGIN_PASSWORD } from '../common/constanst';
+import { BELL_MSG_TIME_OUT, KUBERA_PAYMENT_EDIT_LOGIN_PASSWORD, USE_DATABASE } from '../common/constanst';
 import { HasuraApiService } from '../service/hasura.api.service';
 import { GraphqlService } from '../service/graphql.service';
 import { CustomerService } from '../service/customer.service';
@@ -19,7 +19,7 @@ import { MailService } from '../service/mail.service';
   templateUrl: './payment.component.html',
   styleUrls: ['./payment.component.scss']
 })
-export class PaymentComponent implements AfterViewInit {
+export class PaymentComponent implements AfterViewInit, OnDestroy {
   selectedTab: string = 'waiting_order';
   loggedIn: boolean = false;
   private sound: Howl;
@@ -35,6 +35,14 @@ export class PaymentComponent implements AfterViewInit {
   showBellmsgAlert = false;
   isConnected = false;
   selectedDiscount: number = 0; // Default discount is 0
+  selectedDateFilter: string = '';
+  lastFetchedDate: string = '';
+  useDatabase: boolean = USE_DATABASE;
+  showItemsSummaryPopup: boolean = false;
+  aggregatedItemsList: any[] = [];
+  filteredAggregatedItemsList: any[] = [];
+  searchItemQuery: string = '';
+  isSyncingPaid: boolean = false;
 
   bell_msg = "";
   constructor(private webSocketService: WebSocketService, private datePipe: DatePipe, private dropboxService: DropboxService,
@@ -70,12 +78,23 @@ export class PaymentComponent implements AfterViewInit {
 
     });
 
+    this.selectedDateFilter = this.getTodayDateString();
     this.getCheckOutOrders();
     //this.getPaidOrders();
 
     console.log("caption")
 
     this.revokeEditAccess()
+  }
+  ngOnDestroy() {
+    this.stopRealTimeSummaryPolling();
+  }
+  getTodayDateString(): string {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
   }
   removeSubstring(str: string, substring: string): string {
     return str.replace(substring, '');
@@ -169,9 +188,152 @@ export class PaymentComponent implements AfterViewInit {
 
   files: any[] = [];
   checkOutOrderList: SingleFileOrderDto[] = [];
+  isSyncingCheckout = false;
   async getCheckOutOrders() {
-    this.checkOutOrderList = []
     this.showSpinner = true;
+
+    if (USE_DATABASE) {
+      if (this.isSyncingCheckout) return;
+      this.isSyncingCheckout = true;
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const startDate = today.toISOString();
+
+      this.graphqlService.getActiveOrdersBasic('checkout', startDate).subscribe(
+        (result: any) => {
+          const activeOrders = result.data.kubera_order || [];
+          
+          // Get all IDs with "checkout" status
+          const checkoutIds = activeOrders.map((o: any) => Number(o.id));
+
+          // Get local IDs
+          const locallyLoadedIds = new Set<number>();
+          this.checkOutOrderList.forEach(item => {
+            const ids = item.order[0].id.toString().split(',').map((idStr: string) => parseInt(idStr.trim())).filter((id: number) => !isNaN(id));
+            ids.forEach((id: number) => locallyLoadedIds.add(id));
+          });
+
+          // Check if checkoutIds is identical to locallyLoadedIds
+          let isIdentical = checkoutIds.length === locallyLoadedIds.size;
+          if (isIdentical) {
+            for (let id of checkoutIds) {
+              if (!locallyLoadedIds.has(id)) {
+                isIdentical = false;
+                break;
+              }
+            }
+          }
+
+          if (isIdentical) {
+            // Nothing changed! Just stop spinner and return
+            this.showSpinner = false;
+            this.isSyncingCheckout = false;
+            return;
+          }
+
+          if (checkoutIds.length === 0) {
+            this.checkOutOrderList = [];
+            this.showSpinner = false;
+            this.isSyncingCheckout = false;
+            return;
+          }
+
+          // Query details only for active checkout IDs
+          this.graphqlService.getPaidOrdersByIds(checkoutIds).subscribe(
+            (detailsResult: any) => {
+              const rawOrders = detailsResult.data.kubera_order || [];
+              
+              // Group by check_out_id
+              const groupedOrdersMap = new Map<string, any>();
+              rawOrders.forEach((dbOrder: any) => {
+                const groupId = dbOrder.check_out_id || dbOrder.id.toString();
+                if (!groupedOrdersMap.has(groupId)) {
+                  groupedOrdersMap.set(groupId, {
+                    orders: [],
+                    items: [],
+                    check_out_id: groupId
+                  });
+                }
+                groupedOrdersMap.get(groupId).orders.push(dbOrder);
+                groupedOrdersMap.get(groupId).items.push(...(dbOrder.order_items || []));
+              });
+
+              this.checkOutOrderList = Array.from(groupedOrdersMap.values()).map((group: any) => {
+                let order: SingleFileOrderDto = new SingleFileOrderDto();
+                let primaryOrder = group.orders[0];
+                let combinedIds = group.orders.map((o: any) => o.id).join(', ');
+
+                let billNo = '';
+                if (group.check_out_id && group.check_out_id.startsWith('CHK_')) {
+                  let timestampStr = group.check_out_id.replace('CHK_', '').split('_')[0];
+                  let timestamp = parseInt(timestampStr);
+                  if (!isNaN(timestamp)) {
+                    let billDate = new Date(timestamp);
+                    billNo = this.datePipe.transform(billDate, 'yyyyMMddHHmm') || '';
+                  }
+                }
+                if (!billNo) {
+                  let createdDate = new Date(primaryOrder.created_at);
+                  billNo = this.datePipe.transform(createdDate, 'yyyyMMddHHmm') || '';
+                }
+
+                order.order = [{
+                  id: combinedIds as any,
+                  order_ref_id: primaryOrder.order_ref_id,
+                  table_no: primaryOrder.table_no,
+                  table_place: primaryOrder.table_place,
+                  order_summary_amount: primaryOrder.order_summary_amount,
+                  order_additional_service_amount: primaryOrder.order_additional_service_amount,
+                  order_total_amount: primaryOrder.order_total_amount,
+                  order_status: primaryOrder.order_status,
+                  employee: primaryOrder.employee,
+                  comments: primaryOrder.comments,
+                  customer_number: primaryOrder.customer_number,
+                  order_created_time: this.sharedService.convertDateTimeToDateString(primaryOrder.created_at),
+                  created_at: primaryOrder.created_at,
+                  check_out_id: group.check_out_id,
+                  billNo: billNo
+                }];
+
+                order.orderItems = group.items.map((dbItem: any) => ({
+                  id: dbItem.id,
+                  item_name: dbItem.item_name,
+                  item_quantity: dbItem.item_quantity,
+                  item_cost: dbItem.item_cost,
+                  status: dbItem.status,
+                  item_description: dbItem.item_description
+                }));
+                
+                order.orderItems = this.combineOrderItemsQuantities(order.orderItems);
+                return order;
+              });
+
+              this.checkOutOrderList.sort((a, b) => {
+                const dateA = a.order && a.order[0] && a.order[0].created_at ? new Date(a.order[0].created_at).getTime() : 0;
+                const dateB = b.order && b.order[0] && b.order[0].created_at ? new Date(b.order[0].created_at).getTime() : 0;
+                return dateB - dateA;
+              });
+
+              this.showSpinner = false;
+              this.isSyncingCheckout = false;
+            },
+            (err: any) => {
+              console.error("Error fetching checkout details", err);
+              this.showSpinner = false;
+              this.isSyncingCheckout = false;
+            }
+          );
+        },
+        (error: any) => {
+          console.error("Error fetching checkout orders", error);
+          this.showSpinner = false;
+          this.isSyncingCheckout = false;
+        }
+      );
+      return;
+    }
+
     const folderPath = '/orders/checkout_orders/'; // Replace with the desired folder path
     this.files = await this.dropboxService.getFilesInFolder(folderPath);
     // this.files.shift() 
@@ -201,37 +363,326 @@ export class PaymentComponent implements AfterViewInit {
   paidOrderList: PaidFileOrderDto[] = [];
   saleDate: any
   async getPaidOrders() {
-    this.paidOrderList = []
+    if (this.isSyncingPaid) return;
+    this.isSyncingPaid = true;
     this.showPaidSpinner = true;
-    const folderPath = '/orders/paid_orders/'; // Replace with the desired folder path
-    this.paidFiles = await this.dropboxService.getFilesInFolder(folderPath);
-    //  this.paidFiles.shift() 
-    for (const file of this.paidFiles) {
-      file.data = await this.dropboxService.getFileData(file.path_display);
-      const respo = this.sharedService.parseNestedCsvToObjectDynamic3THeader(file.data.fileBlob)
-      let order: PaidFileOrderDto = new PaidFileOrderDto();
-      order.filePath = file.name
-      order.order = (await respo).headers1
-      order.orderItems = (await respo).headers2
-      order.paidDetails = (await respo).headers3
-      this.paidOrderList.push(order);
-      console.log("respo - ", (await respo).headers1)
-      this.TotalPaidAmount = this.TotalPaidAmount + parseFloat(order.paidDetails[0].paid_amount);
-      this.TotalActualAmount = this.TotalActualAmount + parseFloat(order.paidDetails[0].actual_amount);
 
-      if (order.paidDetails[0].mode == "cash") {
-        this.TotalCashAmount = this.TotalCashAmount + parseFloat(order.paidDetails[0].paid_amount);
+    if (this.lastFetchedDate !== this.selectedDateFilter) {
+      this.paidOrderList = [];
+      this.TotalPaidAmount = 0;
+      this.TotalActualAmount = 0;
+      this.TotalCashAmount = 0;
+      this.TotalOnlineAMpunt = 0;
+      this.lastFetchedDate = this.selectedDateFilter;
+    }
+
+    if (USE_DATABASE) {
+      if (!this.paidOrderList) {
+        this.paidOrderList = [];
+      }
+
+      const existingOrderIds = new Set<number>();
+      this.paidOrderList.forEach((dto: any) => {
+        if (dto.order && dto.order[0] && dto.order[0].id) {
+          const idsStr = dto.order[0].id.toString();
+          idsStr.split(',').forEach((idStr: string) => {
+            const id = parseInt(idStr.trim(), 10);
+            if (!isNaN(id)) {
+              existingOrderIds.add(id);
+            }
+          });
+        }
+      });
+
+      if (existingOrderIds.size === 0) {
+        this.TotalPaidAmount = 0;
+        this.TotalActualAmount = 0;
+        this.TotalCashAmount = 0;
+        this.TotalOnlineAMpunt = 0;
+      }
+
+      let formattedDate = '';
+      let displayDate = '';
+      if (this.selectedDateFilter) {
+        const parts = this.selectedDateFilter.split('-'); // YYYY-MM-DD
+        formattedDate = `${parts[1]}-${parts[2]}-${parts[0]}`;
+        displayDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
       } else {
-        this.TotalOnlineAMpunt = this.TotalOnlineAMpunt + parseFloat(order.paidDetails[0].paid_amount);
+        formattedDate = this.sharedService.updateCurrentDateInIST(); // MM-DD-YYYY in IST
+        const parts = formattedDate.split('-');
+        displayDate = `${parts[1]}-${parts[0]}-${parts[2]}`; // DD-MM-YYYY
+      }
+
+      this.graphqlService.getPaymentsByDate(formattedDate).subscribe((paymentRes: any) => {
+        const payments = paymentRes.data.kubera_payment_details;
+        if (!payments || payments.length === 0) {
+          this.showPaidSpinner = false;
+          this.saleDate = displayDate;
+          this.isSyncingPaid = false;
+          return;
+        }
+
+        // Only fetch payments that we don't have yet
+        const newPayments = payments.filter((p: any) => {
+          if (!p.order_id) return false;
+          const ids = p.order_id.toString().split(',').map((idStr: string) => parseInt(idStr.trim(), 10)).filter((id: number) => !isNaN(id));
+          return ids.some((id: number) => !existingOrderIds.has(id));
+        });
+
+        if (newPayments.length === 0) {
+          this.showPaidSpinner = false;
+          this.isSyncingPaid = false;
+          return;
+        }
+
+        const orderIds: number[] = [];
+        newPayments.forEach((p: any) => {
+          if (p.order_id) {
+            const ids = p.order_id.toString().split(',').map((idStr: string) => parseInt(idStr.trim(), 10)).filter((id: number) => !isNaN(id));
+            orderIds.push(...ids);
+          }
+        });
+        const uniqueOrderIds = [...new Set(orderIds)];
+
+        // Fetch primary orders to resolve their check_out_ids
+        this.graphqlService.getPaidOrdersByIds(uniqueOrderIds as number[]).subscribe((orderRes: any) => {
+          const primaryOrders = orderRes.data.kubera_order || [];
+          const checkoutIds = primaryOrders.map((o: any) => o.check_out_id).filter((id: string) => !!id);
+          const uniqueCheckoutIds = [...new Set(checkoutIds)];
+
+          const handleOrders = (rawOrders: any[]) => {
+            const newPaidOrders = newPayments.map((p: any) => {
+              const payIds = p.order_id ? p.order_id.toString().split(',').map((idStr: string) => parseInt(idStr.trim(), 10)).filter((id: number) => !isNaN(id)) : [];
+              
+              // Find all orders in rawOrders that belong to this payment
+              const paymentOrders = rawOrders.filter((o: any) => payIds.includes(o.id));
+              if (paymentOrders.length === 0) return null;
+              
+              let orderDto = new PaidFileOrderDto();
+              let primaryOrder = paymentOrders[0];
+              let combinedIds = paymentOrders.map((o: any) => o.id).join(', ');
+
+              orderDto.filePath = `Order_${primaryOrder.order_ref_id}`;
+              orderDto.order = [{
+                id: combinedIds as any,
+                order_ref_id: primaryOrder.order_ref_id,
+                table_no: primaryOrder.table_no,
+                table_place: primaryOrder.table_place,
+                order_summary_amount: primaryOrder.order_summary_amount,
+                order_additional_service_amount: primaryOrder.order_additional_service_amount,
+                order_total_amount: primaryOrder.order_total_amount,
+                order_status: primaryOrder.order_status,
+                employee: primaryOrder.employee,
+                comments: primaryOrder.comments,
+                customer_number: primaryOrder.customer_number,
+                order_created_time: this.sharedService.convertDateTimeToDateString(primaryOrder.created_at),
+                created_at: primaryOrder.created_at,
+                check_out_id: primaryOrder.check_out_id
+              }];
+
+              // Gather all order items from these orders
+              const allItems: any[] = [];
+              paymentOrders.forEach((o: any) => {
+                if (o.order_items) {
+                  allItems.push(...o.order_items);
+                }
+              });
+
+              orderDto.orderItems = allItems.map((dbItem: any) => ({
+                id: dbItem.id,
+                item_name: dbItem.item_name,
+                item_quantity: dbItem.item_quantity,
+                item_cost: dbItem.item_cost,
+                status: dbItem.status,
+                item_description: dbItem.item_description
+              }));
+              orderDto.orderItems = this.combineOrderItemsQuantities(orderDto.orderItems);
+
+              orderDto.paidDetails = [{
+                actual_amount: p.actual_amount,
+                paid_amount: p.paid_amount,
+                mode: p.payment_mode,
+                period: p.created_time
+              }];
+
+              return orderDto;
+            }).filter((dto: any) => dto !== null) as PaidFileOrderDto[];
+
+            // Compute overall totals from the complete payments list for the day
+            this.TotalPaidAmount = 0;
+            this.TotalActualAmount = 0;
+            this.TotalCashAmount = 0;
+            this.TotalOnlineAMpunt = 0;
+            payments.forEach((pay: any) => {
+              this.TotalPaidAmount += parseFloat(pay.paid_amount || '0');
+              this.TotalActualAmount += parseFloat(pay.actual_amount || '0');
+              if (pay.payment_mode === "cash") {
+                this.TotalCashAmount += parseFloat(pay.paid_amount || '0');
+              } else {
+                this.TotalOnlineAMpunt += parseFloat(pay.paid_amount || '0');
+              }
+            });
+
+            this.paidOrderList.push(...newPaidOrders);
+            this.paidOrderList.sort((a, b) => {
+              const dateA = a.order && a.order[0] && a.order[0].created_at ? new Date(a.order[0].created_at).getTime() : 0;
+              const dateB = b.order && b.order[0] && b.order[0].created_at ? new Date(b.order[0].created_at).getTime() : 0;
+              return dateB - dateA;
+            });
+            this.showPaidSpinner = false;
+            if (USE_DATABASE) {
+              this.saleDate = displayDate;
+            } else if (this.paidOrderList.length > 0) {
+              this.saleDate = this.sharedService.convertDateTimeToDateString(this.paidOrderList[0].paidDetails[0].period);
+            }
+            if (this.showItemsSummaryPopup) {
+              this.calculateAggregatedItems();
+            }
+            this.isSyncingPaid = false;
+          };
+
+          if (uniqueCheckoutIds.length > 0) {
+            // Now fetch both primary and secondary orders (grouped by check_out_id)
+            this.graphqlService.getPaidOrdersByIdsAndCheckoutIds(uniqueOrderIds as number[], uniqueCheckoutIds as string[]).subscribe((groupedRes: any) => {
+              const rawOrders = groupedRes.data.kubera_order || [];
+              handleOrders(rawOrders);
+            }, (err: any) => {
+              console.error("Error fetching grouped paid orders:", err);
+              this.showPaidSpinner = false;
+              this.isSyncingPaid = false;
+            });
+          } else {
+            handleOrders(primaryOrders);
+          }
+
+        }, (err: any) => {
+          console.error("Error fetching paid orders by ID:", err);
+          this.showPaidSpinner = false;
+          this.isSyncingPaid = false;
+        });
+
+      }, (err: any) => {
+        console.error("Error fetching payments by date:", err);
+        this.showPaidSpinner = false;
+        this.isSyncingPaid = false;
+      });
+
+    } else {
+      try {
+        this.paidOrderList = [];
+        this.TotalPaidAmount = 0;
+        this.TotalActualAmount = 0;
+        this.TotalCashAmount = 0;
+        this.TotalOnlineAMpunt = 0;
+
+        const folderPath = '/orders/paid_orders/';
+        this.paidFiles = await this.dropboxService.getFilesInFolder(folderPath);
+        for (const file of this.paidFiles) {
+          file.data = await this.dropboxService.getFileData(file.path_display);
+          const respo = this.sharedService.parseNestedCsvToObjectDynamic3THeader(file.data.fileBlob)
+          let order: PaidFileOrderDto = new PaidFileOrderDto();
+          order.filePath = file.name
+          order.order = (await respo).headers1
+          order.orderItems = (await respo).headers2
+          order.paidDetails = (await respo).headers3
+          
+          this.paidOrderList.push(order);
+          console.log("respo - ", (await respo).headers1)
+          this.TotalPaidAmount = this.TotalPaidAmount + parseFloat(order.paidDetails[0].paid_amount);
+          this.TotalActualAmount = this.TotalActualAmount + parseFloat(order.paidDetails[0].actual_amount);
+
+          if (order.paidDetails[0].mode == "cash") {
+            this.TotalCashAmount = this.TotalCashAmount + parseFloat(order.paidDetails[0].paid_amount);
+          } else {
+            this.TotalOnlineAMpunt = this.TotalOnlineAMpunt + parseFloat(order.paidDetails[0].paid_amount);
+          }
+        }
+        this.paidOrderList.sort((a, b) => a.order.id - b.order.id);
+        this.paidOrderList.reverse()
+        this.showPaidSpinner = false;
+        if (this.paidOrderList.length > 0) {
+          this.saleDate = this.sharedService.convertDateTimeToDateString(this.paidOrderList[0].paidDetails[0].period);
+        }
+        if (this.showItemsSummaryPopup) {
+          this.calculateAggregatedItems();
+        }
+      } catch (err) {
+        console.error("Error fetching paid orders in Dropbox:", err);
+        this.showPaidSpinner = false;
+      } finally {
+        this.isSyncingPaid = false;
       }
     }
-    this.paidOrderList.sort((a, b) => a.order.id - b.order.id);
-    this.paidOrderList.reverse()
-    this.showPaidSpinner = false;
-    if (this.paidOrderList.length > 0) {
-      this.saleDate = this.sharedService.convertDateTimeToDateString(this.paidOrderList[0].paidDetails[0].period);
-    }
+  }
 
+  onDateChange(event: any) {
+    this.getPaidOrders();
+  }
+
+  pollingIntervalId: any;
+
+  calculateAggregatedItems() {
+    const itemMap = new Map<string, number>();
+    
+    this.paidOrderList.forEach(dto => {
+      if (dto.orderItems) {
+        dto.orderItems.forEach((item: any) => {
+          const name = item.item_name;
+          const qty = parseInt(item.item_quantity, 10);
+          if (name && !isNaN(qty)) {
+            itemMap.set(name, (itemMap.get(name) || 0) + qty);
+          }
+        });
+      }
+    });
+
+    this.aggregatedItemsList = Array.from(itemMap.entries()).map(([name, quantity]) => ({
+      name,
+      quantity
+    }));
+
+    this.aggregatedItemsList.sort((a, b) => b.quantity - a.quantity);
+    this.filterSummaryItems();
+  }
+
+  openItemsSummaryPopup() {
+    this.calculateAggregatedItems();
+    this.showItemsSummaryPopup = true;
+    this.startRealTimeSummaryPolling();
+  }
+
+  closeItemsSummaryPopup() {
+    this.showItemsSummaryPopup = false;
+    this.stopRealTimeSummaryPolling();
+  }
+
+  filterSummaryItems() {
+    if (!this.searchItemQuery) {
+      this.filteredAggregatedItemsList = [...this.aggregatedItemsList];
+    } else {
+      const query = this.searchItemQuery.toLowerCase();
+      this.filteredAggregatedItemsList = this.aggregatedItemsList.filter(item =>
+        item.name.toLowerCase().includes(query)
+      );
+    }
+  }
+
+  startRealTimeSummaryPolling() {
+    this.stopRealTimeSummaryPolling();
+    this.pollingIntervalId = setInterval(() => {
+      if (this.showItemsSummaryPopup) {
+        this.refreshPaidOrder();
+      } else {
+        this.stopRealTimeSummaryPolling();
+      }
+    }, 5000);
+  }
+
+  stopRealTimeSummaryPolling() {
+    if (this.pollingIntervalId) {
+      clearInterval(this.pollingIntervalId);
+      this.pollingIntervalId = null;
+    }
   }
 
    showInvoice(invoiceData: any) {
@@ -261,52 +712,70 @@ export class PaymentComponent implements AfterViewInit {
 
   updatedPaidFiles: any[] = [];
   async getUpdatedPaidOrders() {
-    //this.ApprovalOrderList = []
-    this.showPaidSpinner = true;
-    const folderPath = '/orders/paid_orders/'; // Replace with the desired folder path
-    this.updatedPaidFiles = await this.dropboxService.getFilesInFolder(folderPath);
-    // this.updatedPaidFiles.shift() 
-    // added only newly added files
-    const addedNewFiles = this.updatedPaidFiles.filter(item1 => !this.paidFiles.some(item2 => item2["name"] === item1["name"]));
-    const removeOldFiles = this.paidFiles.filter(item1 => !this.updatedPaidFiles.some(item2 => item2["name"] === item1["name"]));
-    for (const file of addedNewFiles) {
-      file.data = await this.dropboxService.getFileData(file.path_display);
-      const respo = this.sharedService.parseNestedCsvToObjectDynamic3THeader(file.data.fileBlob)
-      let order: PaidFileOrderDto = new PaidFileOrderDto();
-      order.filePath = file.name
-      order.order = (await respo).headers1
-      order.orderItems = (await respo).headers2
-      order.paidDetails = (await respo).headers3
-      this.paidOrderList.push(order);
-      console.log("respo - ", (await respo).headers1)
-      this.TotalPaidAmount = this.TotalPaidAmount + parseFloat(order.paidDetails[0].paid_amount);
-      this.TotalActualAmount = this.TotalActualAmount + parseFloat(order.paidDetails[0].actual_amount);
-      if (order.paidDetails[0].mode == "cash") {
-        this.TotalCashAmount = this.TotalCashAmount + parseFloat(order.paidDetails[0].paid_amount);
-      } else {
-        this.TotalOnlineAMpunt = this.TotalOnlineAMpunt + parseFloat(order.paidDetails[0].paid_amount);
+    if (USE_DATABASE) {
+      this.getPaidOrders();
+      return;
+    }
+
+    if (this.isSyncingPaid) {
+      return;
+    }
+    this.isSyncingPaid = true;
+    
+    try {
+      this.showPaidSpinner = true;
+      const folderPath = '/orders/paid_orders/'; // Replace with the desired folder path
+      this.updatedPaidFiles = await this.dropboxService.getFilesInFolder(folderPath);
+      // this.updatedPaidFiles.shift() 
+      // added only newly added files
+      const addedNewFiles = this.updatedPaidFiles.filter(item1 => !this.paidFiles.some(item2 => item2["name"] === item1["name"]));
+      const removeOldFiles = this.paidFiles.filter(item1 => !this.updatedPaidFiles.some(item2 => item2["name"] === item1["name"]));
+      for (const file of addedNewFiles) {
+        file.data = await this.dropboxService.getFileData(file.path_display);
+        const respo = this.sharedService.parseNestedCsvToObjectDynamic3THeader(file.data.fileBlob)
+        let order: PaidFileOrderDto = new PaidFileOrderDto();
+        order.filePath = file.name
+        order.order = (await respo).headers1
+        order.orderItems = (await respo).headers2
+        order.paidDetails = (await respo).headers3
+        
+        this.paidOrderList.push(order);
+        console.log("respo - ", (await respo).headers1)
+        this.TotalPaidAmount = this.TotalPaidAmount + parseFloat(order.paidDetails[0].paid_amount);
+        this.TotalActualAmount = this.TotalActualAmount + parseFloat(order.paidDetails[0].actual_amount);
+        if (order.paidDetails[0].mode == "cash") {
+          this.TotalCashAmount = this.TotalCashAmount + parseFloat(order.paidDetails[0].paid_amount);
+        } else {
+          this.TotalOnlineAMpunt = this.TotalOnlineAMpunt + parseFloat(order.paidDetails[0].paid_amount);
+        }
       }
+      addedNewFiles.forEach(value => this.paidFiles.push(value))
+      removeOldFiles.forEach(value => this.removePaidItem(value))
+      this.paidOrderList.sort((a, b) => a.order.id - b.order.id);
+      this.paidOrderList.reverse()
+      this.paidOrderList.forEach(order => {
+        let conItems = this.combineOrderItemsQuantities(order.orderItems)
+        order.orderItems = conItems
+      })
+      if (this.paidOrderList.length > 0) {
+        this.saleDate = this.sharedService.convertDateTimeToDateString(this.paidOrderList[0].paidDetails[0].period);
+      }
+      if (this.showItemsSummaryPopup) {
+        this.calculateAggregatedItems();
+      }
+      this.showPaidSpinner = false;
+    } catch (err) {
+      console.error("Error in getUpdatedPaidOrders:", err);
+      this.showPaidSpinner = false;
+    } finally {
+      this.isSyncingPaid = false;
     }
-    addedNewFiles.forEach(value => this.paidFiles.push(value))
-    removeOldFiles.forEach(value => this.removePaidItem(value))
-    this.paidOrderList.sort((a, b) => a.order.id - b.order.id);
-    this.paidOrderList.reverse()
-    this.paidOrderList.forEach(order => {
-      let conItems = this.combineOrderItemsQuantities(order.orderItems)
-      order.orderItems = conItems
-    })
-    if (this.paidOrderList.length > 0) {
-      this.saleDate = this.sharedService.convertDateTimeToDateString(this.paidOrderList[0].paidDetails[0].period);
-    }
-
-    this.showPaidSpinner = false;
-
   }
 
   removePaidItem(item: any) {
-    const index = this.files.indexOf(item);
+    const index = this.paidFiles.indexOf(item);
     if (index !== -1) {
-      this.files.splice(index, 1);
+      this.paidFiles.splice(index, 1);
     }
     this.removeFromPaidOrderList(item)
   }
@@ -324,6 +793,9 @@ export class PaymentComponent implements AfterViewInit {
     if (index !== -1) {
       this.paidOrderList.splice(index, 1);
     }
+    if (this.showItemsSummaryPopup) {
+      this.calculateAggregatedItems();
+    }
   }
 
   formatStringWithTwoDecimalPlaces(value: any): string {
@@ -334,6 +806,11 @@ export class PaymentComponent implements AfterViewInit {
 
   updatedFiles: any[] = [];
   async getUpdatedCheckOutOrders() {
+    if (USE_DATABASE) {
+      this.getCheckOutOrders();
+      return;
+    }
+    
     //this.ApprovalOrderList = []
     this.showSpinner = true;
     const folderPath = '/orders/checkout_orders/'; // Replace with the desired folder path
@@ -389,22 +866,34 @@ export class PaymentComponent implements AfterViewInit {
   }
 
   refreshApprovedOrder() {
-    this.getUpdatedCheckOutOrders()
+    if (USE_DATABASE) {
+      this.getCheckOutOrders();
+    } else {
+      this.getUpdatedCheckOutOrders();
+    }
   }
 
   refreshOrder() {
-    this.getUpdatedCheckOutOrders()
+    if (USE_DATABASE) {
+      this.getCheckOutOrders();
+    } else {
+      this.getUpdatedCheckOutOrders();
+    }
   }
 
   refreshPaidOrder() {
-    this.getUpdatedPaidOrders()
+    if (USE_DATABASE) {
+      this.getPaidOrders();
+    } else {
+      this.getUpdatedPaidOrders();
+    }
   }
 
     paidOrderReport() {
     this.generateAdvancedConsolidatedPdfReport(this.paidOrderList, this.reportAmounts);
   }
   selectTab(tabName: string): void {
-
+    window.scrollTo(0, 0);
     this.selectedTab = tabName;
 
     if (tabName == 'waiting_order') {
@@ -421,6 +910,55 @@ export class PaymentComponent implements AfterViewInit {
     this.isSticky = window.scrollY > 100;
   }
 
+  getOrderIdsString(orderList: any): string {
+    if (!orderList) return '';
+    let ids: any[] = [];
+    if (Array.isArray(orderList)) {
+      ids = orderList.map(o => o ? (o.id !== undefined ? o.id : o) : '').filter(val => val !== '');
+    } else if (typeof orderList === 'object') {
+      if (orderList.id !== undefined) {
+        ids = orderList.id.toString().split(',').map((idStr: string) => idStr.trim());
+      }
+    } else {
+      ids = orderList.toString().split(',').map((idStr: string) => idStr.trim());
+    }
+
+    const flatIds: string[] = [];
+    ids.forEach(id => {
+      id.toString().split(',').forEach((part: string) => {
+        if (part.trim()) flatIds.push(part.trim());
+      });
+    });
+    return flatIds.join(', ');
+  }
+
+  getCardIdsString(orderList: any): string {
+    if (!orderList) return '';
+    let ids: any[] = [];
+    if (Array.isArray(orderList)) {
+      ids = orderList.map(o => o ? (o.id !== undefined ? o.id : o) : '').filter(val => val !== '');
+    } else if (typeof orderList === 'object') {
+      if (orderList.id !== undefined) {
+        ids = orderList.id.toString().split(',').map((idStr: string) => idStr.trim());
+      }
+    } else {
+      ids = orderList.toString().split(',').map((idStr: string) => idStr.trim());
+    }
+
+    const flatIds: string[] = [];
+    ids.forEach(id => {
+      id.toString().split(',').forEach((part: string) => {
+        if (part.trim()) flatIds.push(part.trim());
+      });
+    });
+
+    if (flatIds.length <= 2) {
+      return flatIds.join(', ');
+    } else {
+      return `${flatIds.slice(0, 2).join(', ')}... (+${flatIds.length - 2} more)`;
+    }
+  }
+
 
 
   combineOrderItemsQuantities(orderItem: any) {
@@ -434,9 +972,15 @@ export class PaymentComponent implements AfterViewInit {
       if (!isNaN(quantity)) {
         if (itemMap[itemName]) {
           itemMap[itemName].item_quantity += quantity;
+          if (!itemMap[itemName].all_ids) {
+            itemMap[itemName].all_ids = [itemMap[itemName].id];
+          }
+          if (item.id) {
+            itemMap[itemName].all_ids.push(item.id);
+          }
         } else {
           // If the item is not in the map, create a new entry
-          itemMap[itemName] = { ...item, item_quantity: quantity };
+          itemMap[itemName] = { ...item, item_quantity: quantity, all_ids: item.id ? [item.id] : [] };
         }
       }
     });
@@ -598,16 +1142,18 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
     request.subject = "details for the orders - " + order_ids + " for  the table " + data.order[0].table_no + " on " + paymentType.period;
     request.attachment = attachment;
     this.dataService.postData(request).subscribe();
-    let kubera_payment_details_insert_input: any = {};
-    //added code for updating payment details in database
-    kubera_payment_details_insert_input.order_id = order_ids
-    kubera_payment_details_insert_input.payment_mode = paymentType.mode
-    kubera_payment_details_insert_input.paid_amount = parseFloat(paymentType.paid_amount)
-    kubera_payment_details_insert_input.actual_amount = parseFloat(paymentType.actual_amount)
-    kubera_payment_details_insert_input.created_at = this.sharedService.updateCurrentDateInIST()
-    kubera_payment_details_insert_input.created_time =  paymentType.period 
-    kubera_payment_details_insert_input.bill_no =  data.order[0].billNo
-    this.graphqlService.insertPaymentDetails(kubera_payment_details_insert_input).subscribe();
+    if (!USE_DATABASE) {
+      let kubera_payment_details_insert_input: any = {};
+      //added code for updating payment details in database
+      kubera_payment_details_insert_input.order_id = order_ids;
+      kubera_payment_details_insert_input.payment_mode = paymentType.mode;
+      kubera_payment_details_insert_input.paid_amount = parseFloat(paymentType.paid_amount);
+      kubera_payment_details_insert_input.actual_amount = parseFloat(paymentType.actual_amount);
+      kubera_payment_details_insert_input.created_at = this.sharedService.updateCurrentDateInIST();
+      kubera_payment_details_insert_input.created_time =  paymentType.period;
+      kubera_payment_details_insert_input.bill_no =  data.order[0].billNo;
+      this.graphqlService.insertPaymentDetails(kubera_payment_details_insert_input).subscribe();
+    }
     //need add the points to the profile and sen mail to the customer
     if(this.trigger_loyalty_Call)
     {
@@ -724,6 +1270,50 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
     if(data.customer_detail != null){
       this.addDiscountToActualAmount(data, paymentType )
     }
+
+    if (USE_DATABASE) {
+      let idsStr = data.order[0].id.toString();
+      let orderIds = idsStr.split(',').map((idStr: string) => parseInt(idStr.trim())).filter((id: number) => !isNaN(id));
+      let primaryOrderId = orderIds[0];
+
+      const formattedDate = this.sharedService.updateCurrentDateInIST();
+
+      let paymentPayload = {
+        actual_amount: parseFloat(paymentType.actual_amount),
+        paid_amount: parseFloat(paymentType.paid_amount),
+        order_id: primaryOrderId.toString(),
+        payment_mode: paymentType.mode,
+        bill_no: data.order[0].order_ref_id.toString(),
+        created_time: paymentType.period,
+        created_at: formattedDate
+      };
+
+      this.graphqlService.insertPaymentDetails(paymentPayload).subscribe(() => {
+        let completed = 0;
+        let hasError = false;
+        orderIds.forEach((id: number) => {
+          this.graphqlService.updateOrderStatus(id, "paid").subscribe(() => {
+            completed++;
+            if (completed === orderIds.length) {
+              this.sendMailPaymentOrder(data);
+              setTimeout(() => { this.closePaymentTypePopup(); this.refreshOrder(); }, 3000);
+            }
+          }, (err: any) => { 
+            console.error('Error updating status:', err); 
+            if (!hasError) {
+              hasError = true;
+              this.showSpinner = false;
+            }
+          });
+        });
+      }, (err: any) => {
+        console.error("Error inserting payment:", err);
+        this.showSpinner = false;
+      });
+
+      return;
+    }
+
     delete data.order[0].table_place;
     delete data.order[0].customer_number;
     const csvOrderTableDataCsv = this.objectsToCsv2(data.order);
@@ -771,6 +1361,50 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
     paymentType.actual_amount = this.formatStringWithTwoDecimalPlaces(this.getActualAmount(data.orderItems));
     paymentType.mode = "online"
     paymentType.period = this.sharedService.updateCurrentDateTimeInIST();
+
+    if (USE_DATABASE) {
+      let idsStr = data.order[0].id.toString();
+      let orderIds = idsStr.split(',').map((idStr: string) => parseInt(idStr.trim())).filter((id: number) => !isNaN(id));
+      let primaryOrderId = orderIds[0];
+
+      const formattedDate = this.sharedService.updateCurrentDateInIST();
+
+      let paymentPayload = {
+        actual_amount: parseFloat(paymentType.actual_amount),
+        paid_amount: 0.0,
+        order_id: primaryOrderId.toString(),
+        payment_mode: "owner",
+        bill_no: data.order[0].order_ref_id.toString(),
+        created_time: paymentType.period,
+        created_at: formattedDate
+      };
+
+      this.graphqlService.insertPaymentDetails(paymentPayload).subscribe(() => {
+        let completed = 0;
+        let hasError = false;
+        orderIds.forEach((id: number) => {
+          this.graphqlService.updateOrderStatus(id, "paid").subscribe(() => {
+            completed++;
+            if (completed === orderIds.length) {
+              this.sendMailAdminPaymentOrder(data);
+              setTimeout(() => { this.closeOwnerPasswordPopup(); this.refreshOrder(); }, 3000);
+            }
+          }, (err: any) => {
+            console.error('Error updating status:', err);
+            if (!hasError) {
+              hasError = true;
+              this.showSpinner = false;
+            }
+          });
+        });
+      }, (err: any) => {
+        console.error("Error inserting payment:", err);
+        this.showSpinner = false;
+      });
+
+      return;
+    }
+
     delete data.order[0].table_place;
     const csvOrderTableDataCsv = this.objectsToCsv2(data.order);
     const orderItemTableDataListCsv = this.objectsToCsv2(data.orderItems);
@@ -845,15 +1479,13 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
   editableOrder: any
   originalEditOrder:any;
   openEditOrderPasswordPopup(order: any) {
+    this.editOrder = order;
     if (!this.apiEditStatus) {
       this.username = "";
       this.isPasswordPopupOpen = true
-      this.editOrder = order;
     } else {
       this.openEditOrderPopup()
     }
-
-
   }
 
   closePasswordPopup() {
@@ -912,11 +1544,15 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
   isEditOrderPopUpOpen: any = false
   editMode: boolean[] = [];
   openEditOrderPopup() {
-
-    this.downloadCheckOutFileByFileName(this.editOrder.filePath);
-
-
-
+    if (USE_DATABASE) {
+      this.editableOrder = JSON.parse(JSON.stringify(this.editOrder));
+      this.originalEditOrder = JSON.parse(JSON.stringify(this.editOrder));
+      this.editMode = new Array(this.editableOrder.orderItems.length).fill(false);
+      this.isPasswordPopupOpen = false;
+      this.isEditOrderPopUpOpen = true;
+    } else {
+      this.downloadCheckOutFileByFileName(this.editOrder.filePath);
+    }
   }
 
   closePEditOrderPopUp() {
@@ -962,6 +1598,87 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
   }
   async updateEditOrder() {
     this.showSpinner = true;
+
+    if (USE_DATABASE) {
+      // 1. Get all the order IDs in the group
+      let idsStr = this.editableOrder.order[0].id.toString();
+      let orderIds = idsStr.split(',').map((idStr: string) => parseInt(idStr.trim())).filter((id: number) => !isNaN(id));
+      let primaryOrderId = orderIds[0];
+
+      // 2. Iterate through editable items and distribute quantities to existing records
+      let updatePayloads: any[] = [];
+      let newSummary = 0;
+
+      this.editableOrder.orderItems.forEach((item: any, i: number) => {
+        let targetQty = parseFloat(item.item_quantity);
+        if (isNaN(targetQty) || targetQty < 0) targetQty = 0;
+        newSummary += (parseFloat(item.item_cost) * targetQty);
+
+        let originalItem = this.editOrder.orderItems[i];
+        let originalQty = originalItem ? parseFloat(originalItem.item_quantity) : -1;
+
+        if (item.all_ids && item.all_ids.length > 0) {
+          // Distribute: First ID gets targetQty, rest get 0.
+          item.all_ids.forEach((id: number, index: number) => {
+            let assignedQty = (index === 0) ? targetQty : 0;
+            updatePayloads.push({
+              where: { id: { _eq: id } },
+              _set: { 
+                item_quantity: Math.floor(assignedQty), 
+                item_cost: item.item_cost.toString() 
+              }
+            });
+          });
+        }
+      });
+
+      let newAdditional = parseFloat(this.editableOrder.order[0].order_additional_service_amount || '0');
+      let newTotal = newSummary + newAdditional;
+
+      // Close popup immediately upon saving
+      this.isEditOrderPopUpOpen = false;
+
+      // 3. Prepare order totals updates
+      let orderUpdates: any[] = [];
+      orderUpdates.push({
+        where: { id: { _eq: primaryOrderId } },
+        _set: { 
+          order_summary_amount: newSummary, 
+          order_additional_service_amount: newAdditional, 
+          order_total_amount: newTotal 
+        }
+      });
+
+      let secondaryIds = orderIds.filter((id: number) => id !== primaryOrderId);
+      secondaryIds.forEach((id: number) => {
+        orderUpdates.push({
+          where: { id: { _eq: id } },
+          _set: {
+            order_summary_amount: 0,
+            order_additional_service_amount: 0,
+            order_total_amount: 0
+          }
+        });
+      });
+
+      const finalize = () => {
+        this.showSpinner = false;
+        this.getCheckOutOrders(); // Refresh the DB list completely to guarantee UI sync
+        this.revokeEditAccess(); // Revoke edit access once save is complete
+        this.sendMailForEditOrder();
+      };
+
+      // 4. Execute single batched GraphQL call
+      this.graphqlService.batchEditOrder(updatePayloads, orderUpdates).subscribe(() => {
+        finalize();
+      }, (err: any) => { 
+        console.error('Error batch updating order:', err); 
+        finalize(); // Always refresh to sync UI with whatever the DB state is
+      });
+
+      return;
+    }
+
     const csvOrderTableDataCsv = this.objectsToCsv2(this.editableOrder.order);
     const orderItemTableDataListCsv = this.objectsToCsv2(this.editableOrder.orderItems);
     const orderTableCsvData = csvOrderTableDataCsv + "\n" + orderItemTableDataListCsv

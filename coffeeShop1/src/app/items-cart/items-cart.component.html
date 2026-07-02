@@ -6,20 +6,19 @@
 <div  *ngIf="cartDataList.length > 0" class="summary_card"  style="overflow: auto;">
   <div *ngFor="let cartData of cartDataList">
     <div class="card_item" >
-      <div class="product_img">
-        <img [src]="cartData.imagePath"  class="menu-img" alt="">
-      </div>
-      <div class="product_info">
+      <div class="product_info" style="width: 100%;">
         <h1>{{cartData.name}}</h1>
-        <p>{{cartData.description}}</p>
+        <p style="margin-right: 30px;">{{cartData.description}}</p>
         <div class="close-btn" (click) = "removeItem(cartData)">
          x
         </div>
         <div class="product_rate_info info-width" >
           <h1><span>&#8377; {{cartData.totalCartCost | number:'1.2-2'}}</span></h1>
-          <span class="pqt-minus"(click) = "decrement(cartData)">-</span>
-          <span class="pqt"> {{cartData.quantity}}</span>
-          <span class="pqt-plus" (click) = "increment(cartData)">+</span>
+          <div>
+            <span class="pqt-minus"(click) = "decrement(cartData)">-</span>
+            <span class="pqt"> {{cartData.quantity}}</span>
+            <span class="pqt-plus" (click) = "increment(cartData)">+</span>
+          </div>
         </div>
       </div>
     </div>
@@ -56,25 +55,19 @@
   <button class="left-btn"(click) = "openUserMobileModal()">user</button>
   <button class="prepare-btn" (click) = "sentOrder()"> Order </button>
 </div>
-<div>
-  <div *ngIf="UserMobileNumber != ''" class="comment-display" style="width: 40%;
-margin-right: 3px;
-display: inline-block;
-background: #ffc83d; display: inline-block;">
-  <p><span style="font-weight: 900;">Number:</span> {{ UserMobileNumber }}</p>
-  
-</div>
-<div *ngIf="commentText != ''" class="comment-display" style="    width: 58%; margin-left: 3px;display: inline-block;">
-  <p><span style="font-weight: 900;">Note:</span> {{ commentText }}</p>
-  
-</div>
-
+<div style="margin-top: 15px; width: 100%; display: block; clear: both;">
+  <div *ngIf="UserMobileNumber != ''" class="number-display" style="width: 100%; margin-bottom: 8px; display: block;">
+    <p><span style="font-weight: 700; color: #cda45e;">Number:</span> {{ UserMobileNumber }}</p>
+  </div>
+  <div *ngIf="commentText != ''" class="note-display" style="width: 100%; display: block;">
+    <p><span style="font-weight: 700; color: #35a2eb;">Note:</span> {{ commentText }}</p>
+  </div>
 </div>
 
 
 <!-- Modal Popup -->
 <div *ngIf="isCommentModalOpen" class="comment-modal">
-  <div class="comment-modal-content">
+  <div class="glass-popup-card" style="width: 400px;">
     <h2>Add Comments</h2>
 
     <!-- Dropdown for predefined messages -->
@@ -84,21 +77,19 @@ background: #ffc83d; display: inline-block;">
       <option *ngFor="let comment of predefinedComments" [value]="comment">{{ comment }}</option>
     </select>
 
-
     <!-- Textarea for custom comments -->
-    <textarea [(ngModel)]="commentText" maxlength="20" placeholder="Enter your comments here..."></textarea>
+    <textarea [(ngModel)]="commentText" maxlength="20" placeholder="Enter your comments here..." style="width: 100%; height: 80px; padding: 10px; margin-top: 15px; margin-bottom: 15px; font-size: 14px; color: #fff; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(205, 164, 94, 0.3); border-radius: 8px; resize: none; outline: none;"></textarea>
     
-    <div class="comment-modal-buttons">
-      <button (click)="saveComment()">Save</button>
-      <button (click)="closeCommentModal()">Close</button>
+    <div class="buttons-row">
+      <button class="btn-glass-success" (click)="saveComment()">Save</button>
+      <button class="btn-glass-danger" (click)="closeCommentModal()">Close</button>
     </div>
   </div>
 </div>
 
 
 <div *ngIf="isUserMobileModalOpen" class="comment-modal">
-
-  <div class="mobile-modal-content">
+  <div class="glass-popup-card" style="width: 400px;">
     <div *ngIf="showUserNotFoundError" class="error-banner">
       User not found.
     </div>
@@ -107,15 +98,12 @@ background: #ffc83d; display: inline-block;">
     </div>
     <h2>User Mobile Number</h2>
    
-    <!-- Dropdown for predefined messages -->
-  <div>
-    <!-- Textarea for custom comments -->
-    <input type="text" [(ngModel)]="UserMobileNumber" style="width:fit-content" maxlength="20" [disabled]="showUserFoundBanner" />
+    <div>
+      <input type="text" [(ngModel)]="UserMobileNumber" placeholder="Enter Mobile Number" [disabled]="showUserFoundBanner" />
     </div>
-    <div class="comment-modal-buttons">
-      <button   (click)="saveMobileNumberModal()">Save</button>
-      
-      <button (click)="closeMobileNumberModal()">Close</button>
+    <div class="buttons-row">
+      <button class="btn-glass-success" (click)="saveMobileNumberModal()">Save</button>
+      <button class="btn-glass-danger" (click)="closeMobileNumberModal()">Close</button>
     </div>
   </div>
 </div>

@@ -26,6 +26,9 @@ export class SharedService {
     private orderProcessingResponseSubject = new Subject<ResponseDto>();
   
     setItemToCartData(data: CartItemDto) {
+      if (data) {
+        delete (data as any).isProcessedInCart;
+      }
       this.sendItemToCart = data;
       this.sendItemToCartSubject.next(data);
     }
@@ -445,38 +448,35 @@ formatDateTime(dateString: string): string {
 
 
 formatDate(dateString: string): string {
-  const options = {
-    year: 'numeric' as const,
-    month: '2-digit' as const,
-    day: '2-digit' as const,
- 
-  };
-
-  let formattedDate = new Date(dateString.toString()).toLocaleString('en-US', options);
-  formattedDate = formattedDate.replace(',', '-').replace(/\//g, '-');
-  const withoutSpaces = formattedDate.replace(/[ ,\/]/g, '-');
-  return withoutSpaces;
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return dateString;
+  
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  const parts = formatter.formatToParts(date);
+  const month = parts.find(p => p.type === 'month')?.value || '';
+  const day = parts.find(p => p.type === 'day')?.value || '';
+  const year = parts.find(p => p.type === 'year')?.value || '';
+  return `${month}-${day}-${year}`;
 }
 
 updateCurrentDateInIST() {
-  let istTime:any
   const localTime = new Date();
-
-  // Check if the current time is in IST
- let isCurrentTimeInIST = this.isTimeInIST(localTime);
-
-  // Convert to IST if not in IST
-  if (!isCurrentTimeInIST) {
-    istTime= this.convertToIST(localTime);
-  }
-  else
-  {
-    istTime = localTime.toLocaleString();
-  }
-
-  let formattedTime = this.formatDate(istTime);
-
-  return formattedTime;
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  const parts = formatter.formatToParts(localTime);
+  const month = parts.find(p => p.type === 'month')?.value || '';
+  const day = parts.find(p => p.type === 'day')?.value || '';
+  const year = parts.find(p => p.type === 'year')?.value || '';
+  return `${month}-${day}-${year}`;
 }
 
 
@@ -502,21 +502,33 @@ updateCurrentDateInIST12() {
 }
 
 
- convertDateTimeToDateString(datetimeString:any) {
-  var parts1 = datetimeString.split("--");
-    
-    // Extract date and time components
-    var datePart = parts1[0];
-    
+ convertDateTimeToDateString(datetimeString: any) {
+  if (!datetimeString) return '';
+  const str = datetimeString.toString();
 
+  // 1. Check if it is an ISO / standard timestamp (e.g. contains 'T' or starts with a YYYY- year prefix)
+  if (str.includes('T') || (str.includes('-') && str.indexOf('-') === 4)) {
+    try {
+      const date = new Date(str);
+      if (!isNaN(date.getTime())) {
+        const dd = String(date.getDate()).padStart(2, '0');
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const yyyy = date.getFullYear();
+        return `${dd}-${mm}-${yyyy}`;
+      }
+    } catch (e) {
+      console.error("Error parsing date in convertDateTimeToDateString", e);
+    }
+  }
 
-    const parts = datePart.split('-');
-
-    // Rearrange the components to match the desired format
-    const formattedDateString = parts[1] + '-' + parts[0] + '-' + parts[2];
-
-    return formattedDateString;
-   
+  // 2. Fallback to existing format logic (e.g. "07-02-2026-11-13-29-PM" or "07-02-2026--11-13-29-PM")
+  var parts1 = str.split("--");
+  var datePart = parts1[0];
+  const parts = datePart.split('-');
+  if (parts.length >= 3) {
+    return parts[1] + '-' + parts[0] + '-' + parts[2];
+  }
+  return str;
 }
 formatDateAsString(date: Date): string {
   const day = date.getDate().toString().padStart(2, '0');
