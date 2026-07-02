@@ -50,7 +50,7 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
 
 
   menuListData: any = menuListJsonData;
-  menuCourseCuisineList: any = menuCourseCuisineListJsonData;
+  menuCourseCuisineList: any = JSON.parse(JSON.stringify(menuCourseCuisineListJsonData));
   menuCourseList: any = [];
   menuItemsList: any = [];
   filteredMenuCourseList: any = [];
@@ -382,6 +382,14 @@ onFlavourChange() {
           }
         }
       }
+    }
+
+    // Filter out cuisines that have no available items
+    if (this.menuCourseCuisineList.cuisines) {
+      this.menuCourseCuisineList.cuisines = this.menuCourseCuisineList.cuisines.filter((c: any) => {
+        const allowedCourses = c.cuisine.items || [];
+        return this.menuItemsList.some((item: any) => allowedCourses.includes(item.cuisine));
+      });
     }
 
     // Initialize our new filtering variables (Default to first cuisine instead of 'all')
