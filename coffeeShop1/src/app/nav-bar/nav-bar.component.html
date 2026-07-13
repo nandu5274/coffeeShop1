@@ -67,7 +67,7 @@
      
       <div class="d-flex "  *ngIf="showMenu" > 
   
-          <a (click)="toggleModal()">
+          <a (click)="toggleModal(); $event.stopPropagation()">
             <img src="assets/img/cart.png" class="cart"  alt="" *ngIf="cartCount > 0">
               <span class="iconClass"  *ngIf="cartCount > 0">{{cartCount}}</span>
           </a>
@@ -98,19 +98,57 @@
           <a (click)="onSignOut()">Sign Out</a>
         </div>
       </div>
-    </div>
+      </div>
+
+      <!-- Settings Floating Dropdown -->
+      <div class="settings-dropdown floating-settings">
+        <button class="settings-btn" (click)="toggleSettingsDropdown($event)" aria-label="Settings">
+          <i class="bi bi-gear-fill"></i>
+        </button>
+        <div *ngIf="isSettingsOpen" class="settings-menu glass-panel">
+          <div class="settings-header">
+            <h6>Settings</h6>
+          </div>
+          <hr class="dropdown-divider">
+          
+          <!-- Font Size Slider -->
+          <div class="settings-item">
+            <div class="settings-label-container" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; width: 100%;">
+              <label for="fontSizeRange" class="settings-label" style="margin: 0; display: flex; align-items: center; justify-content: space-between; flex: 1;">
+                <span>Font Size</span>
+                <span class="value-badge">{{ fontSizePercent }}%</span>
+              </label>
+              <button class="reset-link-btn" (click)="resetFontSize($event)" style="background: none; border: none; color: #cda45e; font-size: 0.75rem; cursor: pointer; padding: 0 0 0 8px; text-decoration: underline; outline: none; font-weight: 600;">Reset</button>
+            </div>
+            <div class="slider-container">
+              <i class="bi bi-type" style="font-size: 0.85rem;" title="Decrease text size"></i>
+              <input 
+                type="range" 
+                id="fontSizeRange" 
+                min="80" 
+                max="140" 
+                step="5" 
+                [value]="fontSizePercent" 
+                (input)="onFontSizeChange($event)"
+                class="form-range custom-slider"
+              />
+              <i class="bi bi-type" style="font-size: 1.3rem;" title="Increase text size"></i>
+            </div>
+          </div>
+        </div>
+      </div>
      <a href="#book-a-table" class="book-a-table-btn scrollto d-none d-lg-flex"> Book a table</a>
      
     </div>
 
 
 
-    <div [class.show]="showModal" class="backdrop" (click)="toggleModal()"></div>
+    <div [class.show]="showModal" class="backdrop" (click)="toggleModal(); $event.stopPropagation()"></div>
     
     <div [class.show]="showModal" class="right-modal">
       <div class="cart-header">
         <a class = "cart-header-title">Cart</a>
-        <a (click)="toggleModal()" class="prepare-btn cart-close-btn" > X </a>
+        <a (click)="toggleModal(); $event.stopPropagation()" class="prepare-btn cart-close-btn" > X </a>
       </div>
     
         <app-items-cart (cartDataListCount)="updateCartCount($event)" (closeCartModal)="toggleModal()" (orderProcessingStatus) = "captureOrderProcessingStatus($event)" (orderingResponse) = "captureOrderProcessingResponse($event)"> </app-items-cart>

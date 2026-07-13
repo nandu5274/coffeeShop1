@@ -60,16 +60,9 @@
 
 
 
-<!-- Non-blocking loading indicator -->
-<div *ngIf="showSpinner || showPaidSpinner" class="top-loading-bar">
-  <div class="loading-bar-track">
-    <div class="loading-bar-fill"></div>
-  </div>
-</div>
-
-<div *ngIf="showSpinner || showPaidSpinner" class="loading-toast">
-  <div class="loading-toast-spinner"></div>
-  <span class="loading-toast-text">Syncing...</span>
+<!-- Full-page loading overlay -->
+<div *ngIf="showSpinner || showPaidSpinner" class="spinner-overlay">
+  <div class="spinner"></div>
 </div>
 
 <div class="status-container">

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { WebSocketService } from '../service/WebSocket.service';
 import { Observable } from 'rxjs/internal/Observable';
 import { timer } from 'rxjs';
@@ -46,7 +46,7 @@ export class CounterCapComponent implements AfterViewInit {
   bell_msg = "";
   constructor(private webSocketService: WebSocketService, private datePipe: DatePipe, private timerService: TimerService,
     private dropboxService: DropboxService, private graphqlService: GraphqlService,private customerService: CustomerService, 
-    private sharedService: SharedService, private router: Router,  private route: ActivatedRoute, ) {
+    private sharedService: SharedService, private router: Router,  private route: ActivatedRoute, private cdr: ChangeDetectorRef) {
     this.initializePushNotifications();
     this.sound = new Howl({
       src: ['assets/audio/order_waiting.mp3'],
@@ -872,8 +872,11 @@ export class CounterCapComponent implements AfterViewInit {
   }
 
   toggleModal(): void {
+    console.log('toggleModal() triggered in counter-cap. Previous state of showOrderModal:', this.showOrderModal);
     this.showOrderModal = !this.showOrderModal;
+    console.log('toggleModal() triggered in counter-cap. New state of showOrderModal:', this.showOrderModal);
     this.toggleBodyScroll(this.showOrderModal);
+    this.cdr.detectChanges();
   }
 
   convertTo12HourFormat(time: string): string {
@@ -916,6 +919,8 @@ export class CounterCapComponent implements AfterViewInit {
 
       if (object.order_status == 'approval_waiting') {
         this.updateOrderStatuskot(object.id, "Done")
+      } else if (object.order_status == 'Approved' || object.order_status == 'print') {
+        this.updateOrderStatuskot(object.id, "print")
       }
 
     }

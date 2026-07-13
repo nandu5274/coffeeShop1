@@ -146,7 +146,7 @@
               <button style=" background-color: #d49b3b; color: #11100e;" (click) = "refreshApprovedOrder()">Refresh</button>
               <!-- <button style=" background-color: #d49b3b; color: #11100e;" (click) = "openModal('d')">show c</button> -->
               <button style=" background-color: #d49b3b; color: #11100e;" (click) = "GenerateMemberShip()">Member Ship</button>
-              <button style=" background-color: #d49b3b; color: #11100e;"    (click)="toggleModal()">orders</button>
+              <button style=" background-color: #d49b3b; color: #11100e;"    (click)="toggleModal(); $event.stopPropagation()">orders</button>
 
             </div>
           
@@ -446,18 +446,17 @@
 </div>
 
 
-<div [class.show]="showOrderModal" class="backdrop" (click)="toggleModal()"></div>
+<div [class.show]="showOrderModal" class="backdrop" (click)="toggleModal(); $event.stopPropagation()"></div>
 <div [class.show]="showOrderModal" class="right-modal">
   <div class="cart-header" style="    cursor: pointer;
   display: flex;
   justify-content: space-between;">
-    <a class = "cart-header-title" style="font-size: xx-large;">Order Details
-    <a>
-      <button style="     font-size: large; background-color: #d49b3b; color: #11100e;" (click) = "refreshOrderStatus()">Refresh</button>
-    </a>
-    </a>
+    <div class="cart-header-title" style="font-size: xx-large; color: #ffffff; display: flex; align-items: center; gap: 10px;">
+      Order Details
+      <button style="font-size: large; background-color: #d49b3b; color: #11100e;" (click)="refreshOrderStatus()">Refresh</button>
+    </div>
 
-    <a (click)="toggleModal()" class="prepare-btn cart-close-btn" > X </a>
+    <a (click)="toggleModal(); $event.stopPropagation()" class="prepare-btn cart-close-btn" > X </a>
   </div>
 <div>
 <div  *ngFor="let order of orderItemsStatusList"> 
@@ -572,14 +571,11 @@
 
 
 
-<div class="main-content" *ngIf="iskotPopupOpen" style="position: relative;z-index: 9999;">
+<div class="popup-overlay" *ngIf="iskotPopupOpen" (click)="closePopup()">
+  <div class="popup-content" (click)="$event.stopPropagation()">
+    <app-pos-kot [printData]="printValue"   (messageEvent)="updateOrderStatus($event, printValue)"></app-pos-kot>
 
-  <div class="popup-overlay" (click)="closePopup()">
-    <div class="popup-content">
-      <app-pos-kot [printData]="printValue"   (messageEvent)="updateOrderStatus($event, printValue)"></app-pos-kot>
-
-      <button class="bnts"(click)="closePopup()" >Close</button>
-    </div>
+    <button class="bnts"(click)="closePopup()" >Close</button>
   </div>
 </div>
 

@@ -792,11 +792,12 @@ query get_payment_mode_summary {
     });
   }
 
-  getActiveOrdersBasic(status: string, startDate: string): Observable<any> {
+  getActiveOrdersBasic(status: string | string[], startDate: string): Observable<any> {
+    const statuses = Array.isArray(status) ? status : [status];
     const query = gql`
-      query GetActiveOrdersBasic($status: String!, $startDate: timestamptz!) {
+      query GetActiveOrdersBasic($statuses: [String!]!, $startDate: timestamptz!) {
         kubera_order(where: {
-          order_status: { _eq: $status },
+          order_status: { _in: $statuses },
           created_at: { _gte: $startDate }
         }) {
           id
@@ -809,7 +810,7 @@ query get_payment_mode_summary {
       query,
       fetchPolicy: 'network-only',
       variables: {
-        status,
+        statuses,
         startDate
       },
       context: {

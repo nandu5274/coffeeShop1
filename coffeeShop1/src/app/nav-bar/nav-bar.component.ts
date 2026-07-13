@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ResponseDto } from '../dtos/responseDto';
 import { SharedService } from '../service/shared-service';
@@ -18,7 +18,7 @@ export class NavBarComponent implements OnInit  {
     node.type = 'text/javascript';
     document.getElementsByTagName('head')[0].appendChild(node);
 }
-constructor(private router: Router,  private route: ActivatedRoute, private sharedService:SharedService, private webSocketService: WebSocketService, ) {}
+constructor(private router: Router,  private route: ActivatedRoute, private sharedService:SharedService, private webSocketService: WebSocketService, private cdr: ChangeDetectorRef) {}
 
 
 isMenuActive: boolean = false; // Set it to true to make it initially active
@@ -32,7 +32,29 @@ showSpinner:Boolean = false
 showMenu:boolean = false
 showCustomerLoginModal:boolean=false;
 diable_login_btn:boolean=false;
+
+isSettingsOpen: boolean = false;
+fontSizePercent: number = 100;
+themeMode: string = 'dark';
+
 ngOnInit(){
+  const savedFontSize = localStorage.getItem('app-font-size-percent');
+  if (savedFontSize) {
+    this.fontSizePercent = parseInt(savedFontSize, 10);
+    this.applyFontSize(this.fontSizePercent);
+  } else {
+    this.fontSizePercent = 100;
+  }
+
+  const savedTheme = localStorage.getItem('app-theme-mode');
+  if (savedTheme) {
+    this.themeMode = savedTheme;
+    this.applyThemeMode(this.themeMode);
+  } else {
+    this.themeMode = 'dark';
+    this.applyThemeMode(this.themeMode);
+  }
+
   const sessionCartDataList = sessionStorage.getItem('cartDataList');
 
   if (sessionCartDataList) {
@@ -154,6 +176,7 @@ showModal: boolean = false;
 toggleModal(): void {
   this.showModal = !this.showModal;
   this.toggleBodyScroll(this.showModal);
+  this.cdr.detectChanges();
 }
 
 @HostListener('window:keyup.esc')
@@ -258,5 +281,53 @@ navigateToProfile(){
 let customer_details = JSON.parse(sessionStorage.getItem("customer_Details")!);
 this.router.navigate(['/profile'], { queryParams: { data: btoa(customer_details.customer_detail.mobile_number) } });
 
+}
+
+toggleSettingsDropdown(event: Event) {
+  event.stopPropagation();
+  this.isSettingsOpen = !this.isSettingsOpen;
+}
+
+resetFontSize(event: Event) {
+  event.stopPropagation();
+  this.fontSizePercent = 100;
+  localStorage.setItem('app-font-size-percent', '100');
+  this.applyFontSize(100);
+}
+
+onFontSizeChange(event: any) {
+  this.fontSizePercent = parseInt(event.target.value, 10);
+  localStorage.setItem('app-font-size-percent', String(this.fontSizePercent));
+  this.applyFontSize(this.fontSizePercent);
+}
+
+applyFontSize(percent: number) {
+  const zoomVal = percent / 100;
+  (document.body.style as any).zoom = String(zoomVal);
+}
+
+setThemeMode(theme: string) {
+  this.themeMode = theme;
+  localStorage.setItem('app-theme-mode', theme);
+  this.applyThemeMode(theme);
+}
+
+applyThemeMode(theme: string) {
+  const body = document.body;
+  if (theme === 'light') {
+    body.classList.add('light-mode');
+    body.classList.remove('dark-mode');
+  } else {
+    body.classList.add('dark-mode');
+    body.classList.remove('light-mode');
+  }
+}
+
+@HostListener('document:click', ['$event'])
+onDocumentClick(event: MouseEvent) {
+  const target = event.target as HTMLElement;
+  if (this.isSettingsOpen && !target.closest('.settings-dropdown')) {
+    this.isSettingsOpen = false;
+  }
 }
 }

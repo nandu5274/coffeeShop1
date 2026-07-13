@@ -72,15 +72,15 @@
 
                 <div class="card" *ngFor="let waitingApprovalOrder of ApprovalOrderList" style="position: relative;">
                   <!-- Per-card loading overlay -->
-                  <div *ngIf="loadingOrderId === waitingApprovalOrder.order.id" class="card-loading-overlay">
+                  <div *ngIf="waitingApprovalOrder?.order && loadingOrderId === waitingApprovalOrder.order.id" class="card-loading-overlay">
                     <div class="card-spinner"></div>
                   </div>
                   <div class="content">
                     <div class="table">
                       <a style=" font-family: sans-serif !important; font-size: x-large; ">T:
-                        {{waitingApprovalOrder.order.table_place}}{{waitingApprovalOrder.order.table_no}}</a>
+                        {{waitingApprovalOrder?.order?.table_place}}{{waitingApprovalOrder?.order?.table_no}}</a>
                       <a style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e;">
-                        {{waitingApprovalOrder.order.id}}</a>
+                        {{waitingApprovalOrder?.order?.id}}</a>
 
                     </div>
 
@@ -92,7 +92,7 @@
 
                     <div style="text-align: center;">
                       <a
-                        style=" font-family: sans-serif !important; font-size: medium; color: #ffc107; ">{{waitingApprovalOrder.order.order_created_time}}</a>
+                        style=" font-family: sans-serif !important; font-size: medium; color: #ffc107; ">{{waitingApprovalOrder?.order?.order_created_time}}</a>
                     </div>
 
                     <hr>
@@ -111,11 +111,11 @@
 
                     <div class="buttons">
                       <button class="btn-glass-success"
-                        [disabled]="loadingOrderId === waitingApprovalOrder.order.id"
-                        (click)="approvedOrder(waitingApprovalOrder.order.id, waitingApprovalOrder.order.order_ref_id)">Approve</button>
+                        [disabled]="waitingApprovalOrder?.order && loadingOrderId === waitingApprovalOrder.order.id"
+                        (click)="approvedOrder(waitingApprovalOrder?.order?.id, waitingApprovalOrder?.order?.order_ref_id)">Approve</button>
                       <button class="btn-glass-danger"
-                        [disabled]="loadingOrderId === waitingApprovalOrder.order.id"
-                        (click)="declineOrder(waitingApprovalOrder.order.id, waitingApprovalOrder.order.order_ref_id)">Cancel</button>
+                        [disabled]="waitingApprovalOrder?.order && loadingOrderId === waitingApprovalOrder.order.id"
+                        (click)="declineOrder(waitingApprovalOrder?.order?.id, waitingApprovalOrder?.order?.order_ref_id)">Cancel</button>
                     </div>
                   </div>
                 </div>
@@ -147,7 +147,7 @@
                 <button class="btn-glass-gold" (click)="refreshApprovedOrder()">Refresh</button>
                 <!-- <button class="btn-glass-gold" (click) = "openModal('d')">show c</button> -->
                 <button class="btn-glass-gold" (click)="GenerateMemberShip()">Member Ship</button>
-                <button class="btn-glass-gold" (click)="toggleModal()">orders</button>
+                <button class="btn-glass-gold" (click)="toggleModal(); $event.stopPropagation()">orders</button>
               </div>
 
             </div>
@@ -159,7 +159,7 @@
             <div class="card-container">
               <div class="accepted-order-card" *ngFor="let tableOrder of CombinedApprovedOrders" style="position: relative;">
                 <!-- Per-card loading overlay -->
-                <div *ngIf="loadingCheckoutTable === tableOrder.table_no" class="card-loading-overlay">
+                <div *ngIf="loadingCheckoutTable && loadingCheckoutTable === tableOrder.tableKey" class="card-loading-overlay">
                   <div class="card-spinner"></div>
                 </div>
                 <!-- Card Header -->
@@ -284,7 +284,7 @@
                 <button class="btn-glass-gold" (click)="refreshApprovedOrder()">Refresh</button>
                 <!-- <button class="btn-glass-gold" (click) = "openModal('d')">show c</button> -->
                 <button class="btn-glass-gold" (click)="GenerateMemberShip()">Member Ship</button>
-                <button class="btn-glass-gold" (click)="toggleModal()">orders</button>
+                <button class="btn-glass-gold" (click)="toggleModal(); $event.stopPropagation()">orders</button>
               </div>
 
             </div>
@@ -296,7 +296,7 @@
             <div class="card-container">
               <div class="accepted-order-card" *ngFor="let tableOrder of CombinedApprovedOrders" style="position: relative;">
                 <!-- Per-card loading overlay -->
-                <div *ngIf="loadingCheckoutTable === tableOrder.table_no" class="card-loading-overlay">
+                <div *ngIf="loadingCheckoutTable && loadingCheckoutTable === tableOrder.tableKey" class="card-loading-overlay">
                   <div class="card-spinner"></div>
                 </div>
                 <!-- Card Header -->
@@ -509,18 +509,17 @@
 </div>
 
 
-<div [class.show]="showOrderModal" class="backdrop" (click)="toggleModal()"></div>
+<div [class.show]="showOrderModal" class="backdrop" (click)="toggleModal(); $event.stopPropagation()"></div>
 <div [class.show]="showOrderModal" class="right-modal">
   <div class="cart-header" style="    cursor: pointer;
   display: flex;
   justify-content: space-between;">
-    <a class="cart-header-title" style="font-size: xx-large;">Order Details
-      <a>
-        <button class="btn-glass-gold" style="font-size: large;" (click)="refreshOrderStatus()">Refresh</button>
-      </a>
-    </a>
+    <div class="cart-header-title" style="font-size: xx-large; color: #ffffff; display: flex; align-items: center; gap: 10px;">
+      Order Details
+      <button class="btn-glass-gold" style="font-size: large;" (click)="refreshOrderStatus()">Refresh</button>
+    </div>
 
-    <a (click)="toggleModal()" class="prepare-btn cart-close-btn"> X </a>
+    <a (click)="toggleModal(); $event.stopPropagation()" class="prepare-btn cart-close-btn"> X </a>
   </div>
   <div>
     <div *ngFor="let order of orderItemsStatusList">
@@ -619,14 +618,11 @@
 
 
 
-<div class="main-content" style="position: relative;z-index: 9999;">
+<div class="popup-overlay" *ngIf="iskotPopupOpen" (click)="closePopup()">
+  <div class="popup-content" (click)="$event.stopPropagation()">
+    <app-pos-kot [printData]="printValue" (messageEvent)="updateOrderStatus($event, printValue)"></app-pos-kot>
 
-  <div class="popup-overlay" *ngIf="iskotPopupOpen" (click)="closePopup()">
-    <div class="popup-content">
-      <app-pos-kot [printData]="printValue" (messageEvent)="updateOrderStatus($event, printValue)"></app-pos-kot>
-
-      <button class="btn-glass-danger" (click)="closePopup()">Close</button>
-    </div>
+    <button class="btn-glass-danger" (click)="closePopup()">Close</button>
   </div>
 </div>
 

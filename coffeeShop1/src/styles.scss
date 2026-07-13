@@ -235,3 +235,942 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   align-items: center !important;
   z-index: 999999 !important;
 }
+
+/* ==========================================================================
+   Premium Light Mode Theme Overrides
+   ========================================================================== */
+
+body.light-mode {
+  background: #eceef1 !important; // beautiful cool slate-gray background
+  color: #2b2b2b !important;
+
+  // Global fonts & backgrounds
+  #topbar {
+    background: rgba(255, 255, 255, 0.4) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #444444 !important;
+    
+    .contact-info i span, .languages ul li, .languages ul li a {
+      color: #444444 !important;
+    }
+  }
+
+  /* Header styling on pages WITHOUT a hero section (inner pages) */
+  #header {
+    background: rgba(255, 255, 255, 0.65) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.03) !important;
+    top: 0 !important;
+    backdrop-filter: blur(20px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(140%) !important;
+    
+    .logo a, .navbar a, .navbar a:focus {
+      color: #1a1814 !important;
+    }
+    
+    .navbar a:hover, .navbar .active, .navbar .active:focus, .navbar li:hover > a {
+      color: #cda45e !important;
+    }
+
+    .mobile-nav-toggle {
+      color: #1a1814 !important;
+    }
+  }
+
+  /* Header styling on pages WITH a hero section (home page) */
+  &:has(#hero) #header {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0) !important;
+    box-shadow: none !important;
+    top: 40px !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    
+    .logo a, .navbar a, .navbar a:focus {
+      color: #ffffff !important;
+    }
+
+    .navbar a:hover, .navbar .active, .navbar .active:focus, .navbar li:hover > a {
+      color: #cda45e !important;
+    }
+
+    .mobile-nav-toggle {
+      color: #ffffff !important;
+    }
+  }
+
+  /* Header styling on scrolled pages WITH a hero section */
+  &:has(#hero) #header.header-scrolled {
+    background: rgba(255, 255, 255, 0.65) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.03) !important;
+    top: 0 !important;
+    backdrop-filter: blur(20px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(140%) !important;
+    
+    .logo a, .navbar a, .navbar a:focus {
+      color: #1a1814 !important;
+    }
+
+    .mobile-nav-toggle {
+      color: #1a1814 !important;
+    }
+  }
+
+  // Home Page Sections (specifically exclude hero from background overrides)
+  section:not(#hero) {
+    background: #eceef1 !important;
+    color: #212529 !important;
+  }
+
+  .section-bg {
+    background: #f3f4f6 !important;
+  }
+
+  .section-title h2 {
+    color: #cda45e !important;
+  }
+
+  .section-title p {
+    color: #1a1814 !important;
+  }
+
+  // Preserve Hero Section completely in dark theme mode for premium visual look
+  #hero {
+    background: url("assets/img/hero-bg.jpg") top center !important;
+    background-size: cover !important;
+    color: #ffffff !important;
+
+    &::before {
+      background: rgba(0, 0, 0, 0.5) !important;
+      display: block !important;
+    }
+
+    h1, h2, p, span, div, a:not(.book-a-table-btn) {
+      color: #ffffff !important;
+    }
+    h1 span {
+      color: #cda45e !important;
+    }
+  }
+
+  // Disable overlays for About and Events in light mode so they show cleanly
+  .about::before,
+  .events::before {
+    background: transparent !important;
+    display: none !important;
+  }
+
+  // Alternating backgrounds/glass levels for homepage sections to keep visual structure
+  #about {
+    background: rgba(255, 255, 255, 0.45) !important;
+  }
+  #why-us {
+    background: #eceef1 !important;
+  }
+  #menu {
+    background: rgba(255, 255, 255, 0.45) !important;
+  }
+  #specials {
+    background: #eceef1 !important;
+  }
+  #events {
+    background: rgba(255, 255, 255, 0.45) !important;
+  }
+  #book-a-table {
+    background: #eceef1 !important;
+  }
+  #gallery {
+    background: rgba(255, 255, 255, 0.45) !important;
+  }
+  #chefs {
+    background: #eceef1 !important;
+  }
+  #contact {
+    background: rgba(255, 255, 255, 0.45) !important;
+  }
+
+  // Frosted Glass Card Design for all boxes and containers
+  #why-us .box,
+  .chefs .member,
+  .contact .info-box,
+  .modal-card-v2,
+  .cust-login,
+  .card,
+  .dashboard-card,
+  .info-box,
+  .tbl-container,
+  .table-responsive {
+    background: rgba(255, 255, 255, 0.65) !important;
+    backdrop-filter: blur(12px) saturate(130%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(130%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.6) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.5) !important;
+    color: #2b2b2b !important;
+  }
+
+  #why-us .box {
+    h4 {
+      color: #1a1814 !important;
+    }
+    p {
+      color: #555555 !important;
+    }
+    span {
+      color: #cda45e !important;
+    }
+  }
+
+  // About Section content overrides
+  #about, .about {
+    .content h3 {
+      color: #1a1814 !important;
+    }
+    .content p {
+      color: #444444 !important;
+    }
+  }
+
+  // Specials Section overrides
+  #specials, .specials {
+    .nav-tabs .nav-link {
+      color: #333333 !important;
+      background: transparent !important;
+      border: none !important;
+
+      &.active {
+        color: #cda45e !important;
+        background: rgba(255, 255, 255, 0.8) !important;
+        border-color: #cda45e !important;
+      }
+    }
+    .tab-pane h3 {
+      color: #1a1814 !important;
+    }
+    .tab-pane p {
+      color: #555555 !important;
+    }
+  }
+
+  // Events Section overrides
+  #events, .events {
+    .event-item h3 {
+      color: #1a1814 !important;
+    }
+    .event-item p {
+      color: #555555 !important;
+    }
+    .event-item .price {
+      color: #cda45e !important;
+      border-bottom: 2px solid #cda45e !important;
+    }
+  }
+
+  // Chefs overrides
+  #chefs, .chefs {
+    .member {
+      .member-info h4 {
+        color: #1a1814 !important;
+      }
+      .member-info span {
+        color: #666666 !important;
+      }
+    }
+  }
+
+  // Forms and Controls - Frosted Light Fields
+  .php-email-form {
+    input, textarea, select {
+      background: rgba(255, 255, 255, 0.5) !important;
+      color: #212529 !important;
+      border: 1px solid rgba(205, 164, 94, 0.25) !important;
+      backdrop-filter: blur(4px) !important;
+
+      &::placeholder {
+        color: #888888 !important;
+      }
+
+      &:focus {
+        border-color: #cda45e !important;
+        background: rgba(255, 255, 255, 0.85) !important;
+        color: #212529 !important;
+        box-shadow: 0 0 10px rgba(205, 164, 94, 0.15) !important;
+      }
+    }
+  }
+
+  // Contact details box overrides
+  .contact {
+    .info-box {
+      h3 {
+        color: #777777 !important;
+      }
+      p {
+        color: #212529 !important;
+      }
+    }
+  }
+
+  // Modals & Sidebars (Right Drawer Cart) - Premium Glass Drawer
+  .right-modal {
+    background: #ffffff !important;
+    color: #2b2b2b !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-left: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.06) !important;
+
+    .cart-header-title {
+      color: #1a1814 !important;
+    }
+    .cart-close-btn {
+      color: #333333 !important;
+    }
+  }
+
+  .modal-content {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(20px) !important;
+    color: #2b2b2b !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .customer-dropdown-menu {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(15px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06) !important;
+
+    a {
+      color: #2b2b2b !important;
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.03) !important;
+        color: #cda45e !important;
+      }
+    }
+    .dropdown-divider {
+      border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+    }
+  }
+
+  .user-initial {
+    background-color: #cda45e !important;
+    color: #ffffff !important;
+  }
+
+  // Call Waiter Button
+  .call-waiter-box {
+    background: rgba(255, 255, 255, 0.9) !important;
+    color: #212529 !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.06) !important;
+  }
+
+  .spinner-overlay {
+    background: rgba(236, 238, 241, 0.75) !important;
+    backdrop-filter: blur(12px) !important;
+  }
+
+  .spinner {
+    border-color: rgba(0, 0, 0, 0.08) !important;
+    border-top-color: #cda45e !important;
+  }
+
+  // Menu Component Page specific overrides - Glass rows
+  .menu-page-v2 {
+    background: #eceef1 !important;
+
+    .menu-heading {
+      color: #1a1814 !important;
+    }
+
+    .breakfast-note {
+      color: #666666 !important;
+    }
+
+    .cuisine-tabs-v2,
+    .subcategory-tabs-v2,
+    .menu-grid-v2 {
+      background: rgba(255, 255, 255, 0.45) !important;
+      border: 1px solid rgba(255, 255, 255, 0.4) !important;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04) !important;
+      backdrop-filter: blur(12px) saturate(130%) !important;
+      -webkit-backdrop-filter: blur(12px) saturate(130%) !important;
+    }
+
+    .cuisine-tabs-wrapper,
+    .subcategory-tabs-wrapper {
+      &::before {
+        background: linear-gradient(90deg, #eceef1 0%, rgba(236, 238, 241, 0) 100%) !important;
+        border-left: 1px solid rgba(0, 0, 0, 0.04) !important;
+      }
+      &::after {
+        background: linear-gradient(90deg, rgba(236, 238, 241, 0) 0%, #eceef1 100%) !important;
+        border-right: 1px solid rgba(0, 0, 0, 0.04) !important;
+      }
+    }
+
+    .cuisine-tabs-v2 li,
+    .subcategory-tabs-v2 li {
+      background: transparent !important;
+      border: 1px solid transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      box-shadow: none !important;
+      color: #666666 !important;
+      padding: 6px 14px !important;
+      border-radius: 20px !important;
+
+      &:hover {
+        color: #1a1814 !important;
+      }
+
+      &.active {
+        background: rgba(205, 164, 94, 0.15) !important;
+        border: 1px solid rgba(205, 164, 94, 0.3) !important;
+        color: #cda45e !important;
+        font-weight: 600 !important;
+      }
+    }
+
+    .search-bar-v2 {
+      background-color: rgba(255, 255, 255, 0.5) !important;
+      border: 1px solid rgba(255, 255, 255, 0.4) !important;
+      backdrop-filter: blur(8px) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+      color: #212529 !important;
+    }
+
+    .search-input-v2 {
+      color: #212529 !important;
+      background-color: transparent !important;
+    }
+
+    .search-icon-v2, .search-clear-v2 {
+      color: #6c757d !important;
+    }
+
+    .divider-line {
+      background-color: rgba(0, 0, 0, 0.06) !important;
+    }
+
+    .veg-toggle-v2 {
+      background-color: rgba(255, 255, 255, 0.5) !important;
+      border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    }
+
+    .veg-label-v2 {
+      color: #333333 !important;
+    }
+
+    .toggle-track-v2 {
+      background-color: #ced4da !important;
+      &.on {
+        background-color: #4caf50 !important;
+      }
+    }
+
+    .menu-item-v2 {
+      background-color: rgba(255, 255, 255, 0.55) !important;
+      border: 1px solid rgba(255, 255, 255, 0.4) !important;
+      border-bottom: 1px dashed rgba(0, 0, 0, 0.08) !important;
+      box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.01) !important;
+
+      &:hover {
+        border-color: #cda45e !important;
+        box-shadow: 0px 4px 15px rgba(205, 164, 94, 0.1) !important;
+        background-color: rgba(205, 164, 94, 0.04) !important;
+      }
+    }
+
+    .item-name-v2 {
+      color: #1a1814 !important;
+    }
+
+    .item-price-v2 {
+      color: #cda45e !important;
+    }
+
+    .item-divider-dots {
+      border-bottom: 1px dashed rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .loyalty-display {
+      background-color: rgba(255, 255, 255, 0.5) !important;
+      color: #333333 !important;
+      border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    }
+  }
+
+  // Food Item Modal specific overrides inside items-menu popup
+  .modal-overlay-v2 {
+    background: rgba(0, 0, 0, 0.25) !important;
+    backdrop-filter: blur(8px) !important;
+  }
+  .modal-card-v2 {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.08) !important;
+    color: #212529 !important;
+  }
+  .modal-title-v2 {
+    color: #1a1814 !important;
+  }
+  .flavour-label-v2 {
+    color: #666666 !important;
+  }
+  .flavour-select-v2 {
+    background-color: rgba(255, 255, 255, 0.5) !important;
+    color: #212529 !important;
+    border: 1px solid rgba(205, 164, 94, 0.25) !important;
+  }
+  .size-row-v2 {
+    background: rgba(255, 255, 255, 0.45) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #212529 !important;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.65) !important;
+    }
+  }
+  .size-name-v2 {
+    color: #212529 !important;
+  }
+  .size-cost-v2 {
+    color: #cda45e !important;
+  }
+  .modal-price-v2 {
+    color: #cda45e !important;
+  }
+  .qty-control-v2 {
+    border-color: rgba(205, 164, 94, 0.25) !important;
+    background-color: rgba(255, 255, 255, 0.45) !important;
+    
+    button {
+      background: transparent !important;
+      color: #333333 !important;
+      border: none !important;
+      
+      &:hover {
+        background: rgba(0, 0, 0, 0.05) !important;
+      }
+    }
+    input {
+      color: #212529 !important;
+      background-color: transparent !important;
+    }
+  }
+  .modal-close-v2 {
+    color: #666666 !important;
+    &:hover {
+      color: #000000 !important;
+    }
+  }
+
+  // Cart Component Items inside right drawer
+  app-items-cart {
+    .cart-item-name {
+      color: #1a1814 !important;
+    }
+    .qty-control-v2 button {
+      border-color: rgba(0, 0, 0, 0.08) !important;
+      color: #333333 !important;
+    }
+    .qty-control-v2 span {
+      color: #1a1814 !important;
+    }
+    .total-section-v2 {
+      border-top-color: rgba(0, 0, 0, 0.06) !important;
+      color: #1a1814 !important;
+    }
+    .place-order-btn-v2 {
+      background: #cda45e !important;
+      color: #ffffff !important;
+    }
+    .comment-area-v2 textarea {
+      background: rgba(255, 255, 255, 0.5) !important;
+      color: #212529 !important;
+      border: 1px solid rgba(205, 164, 94, 0.25) !important;
+    }
+    .cart-item-v2 {
+      background: rgba(255, 255, 255, 0.45) !important;
+      border-color: rgba(255, 255, 255, 0.3) !important;
+      color: #212529 !important;
+    }
+  }
+
+  // Settings dropdown dropdown menu in Light Mode (solid white)
+  .settings-dropdown {
+    .settings-menu.glass-panel {
+      background: #ffffff !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+      color: #212529 !important;
+    }
+    .settings-header h6 {
+      color: #cda45e !important;
+    }
+    .settings-label {
+      color: #666666 !important;
+      .value-badge {
+        background: rgba(205, 164, 94, 0.1) !important;
+        color: #cda45e !important;
+      }
+    }
+    .slider-container {
+      color: #666666 !important;
+      .custom-slider {
+        background: rgba(0, 0, 0, 0.08) !important;
+        &::-webkit-slider-thumb {
+          border: 2px solid #ffffff !important;
+        }
+        &::-moz-range-thumb {
+          border: 2px solid #ffffff !important;
+        }
+      }
+    }
+    .settings-menu .dropdown-divider {
+      border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+    }
+    .theme-toggle-group {
+      .theme-btn {
+        background: rgba(0, 0, 0, 0.03) !important;
+        border: 1px solid rgba(0, 0, 0, 0.06) !important;
+        color: #666666 !important;
+        &:hover {
+          background: rgba(0, 0, 0, 0.06) !important;
+          color: #333333 !important;
+        }
+        &.active {
+          background: rgba(205, 164, 94, 0.15) !important;
+          border-color: rgba(205, 164, 94, 0.4) !important;
+          color: #cda45e !important;
+        }
+      }
+    }
+  }
+
+  table {
+    color: #2b2b2b !important;
+    th {
+      background-color: rgba(0, 0, 0, 0.04) !important;
+      color: #1a1814 !important;
+      border-bottom: 2px solid rgba(0, 0, 0, 0.06) !important;
+    }
+    td {
+      background-color: rgba(255, 255, 255, 0.45) !important;
+      color: #333333 !important;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
+    }
+  }
+
+  // Liquid Glass Button & CTA Overrides in Light Mode (fixes low-contrast white on white buttons)
+  .book-a-table-btn,
+  #hero .btn-menu,
+  #hero .btn-book,
+  .menu-page-v2 .cap-btn,
+  .menu-page-v2 .add-bowl-v2,
+  .menu-page-v2 .qty-control-v2 button,
+  .place-order-btn-v2 {
+    background: #1a1814 !important;
+    color: #ffffff !important;
+    border: 1px solid #cda45e !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+    text-shadow: none !important;
+
+    &:hover {
+      background: #cda45e !important;
+      color: #1a1814 !important;
+      border-color: #cda45e !important;
+      box-shadow: 0 6px 20px rgba(205, 164, 94, 0.25) !important;
+    }
+  }
+
+  // Floating Waiter Bell & Floating Settings buttons in Light Mode (high contrast)
+  .floating-bell {
+    background: #cda45e !important;
+    color: #ffffff !important;
+    border: 1px solid #cda45e !important;
+    box-shadow: 0 8px 32px rgba(205, 164, 94, 0.3) !important;
+    
+    &:hover {
+      background: #d3af71 !important;
+      color: #ffffff !important;
+    }
+  }
+
+  .floating-settings {
+    .settings-btn {
+      background: transparent !important;
+      color: #cda45e !important;
+      border: none !important;
+      box-shadow: none !important;
+
+      &:hover {
+        background: transparent !important;
+        color: #b58d4c !important;
+      }
+    }
+  }
+
+  // Captain & Payment Page buttons in Light Mode (Bright Solid Colors)
+  .tab-btn {
+    background: rgba(255, 255, 255, 0.75) !important;
+    color: #444444 !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.95) !important;
+      border-color: rgba(0, 0, 0, 0.15) !important;
+      color: #1a1814 !important;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04) !important;
+    }
+  }
+
+  .tab.active {
+    background: #cda45e !important;
+    color: #ffffff !important;
+    border-color: #cda45e !important;
+    box-shadow: 0 4px 15px rgba(205, 164, 94, 0.3) !important;
+  }
+
+  // Captain Page Card & Outline Buttons in Light Mode (Bright Solid elements)
+  body.light-mode .card {
+    background: rgba(255, 255, 255, 0.65) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05) !important;
+    color: #1a1814 !important;
+
+    h1, h2, h3, h4, p, span, li, a, div:not(.buttons) {
+      color: #1a1814 !important;
+    }
+
+    .table {
+      background: rgba(0, 0, 0, 0.04) !important;
+      border: 1px solid rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .btn-outline-success {
+      background: #00cc4499 !important;
+      color: #1a1814 !important;
+      border: 1px solid #00cc4499 !important;
+      font-weight: 600 !important;
+      box-shadow: 0 4px 12px rgba(0, 204, 68, 0.2) !important;
+
+      &:hover:not(:disabled) {
+        background: #009933 !important;
+        border-color: #009933 !important;
+        color: #1a1814 !important;
+        box-shadow: 0 6px 16px rgba(0, 204, 68, 0.35) !important;
+      }
+    }
+
+    .btn-outline-danger {
+      background: #dc3545 !important;
+      color: #1a1814 !important;
+      border: 1px solid #dc3545 !important;
+      font-weight: 600 !important;
+      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2) !important;
+
+      &:hover:not(:disabled) {
+        background: #bb2d3b !important;
+        border-color: #bb2d3b !important;
+        color: #1a1814 !important;
+        box-shadow: 0 6px 16px rgba(220, 53, 69, 0.35) !important;
+      }
+    }
+  }
+
+  .btn-glass-gold,
+  .btn-premium-gold,
+  .login-btn {
+    background: #cda45e99 !important;
+    color: #1a1814 !important;
+    border: 1px solid #cda45e99 !important;
+    box-shadow: 0 4px 15px rgba(205, 164, 94, 0.25) !important;
+    font-weight: 600 !important;
+
+    &:hover:not(:disabled) {
+      background: #b58d4c !important;
+      border-color: #b58d4c !important;
+      color: #1a1814 !important;
+      box-shadow: 0 6px 20px rgba(205, 164, 94, 0.35) !important;
+      transform: translateY(-1px) !important;
+    }
+  }
+
+  .btn-glass-success,
+  .btn-invoice {
+    background: #00cc4499 !important;
+    color: #1a1814 !important;
+    border: 1px solid #00cc4499 !important;
+    box-shadow: 0 4px 15px rgba(0, 204, 68, 0.25) !important;
+
+    &:hover:not(:disabled) {
+      background: #009933 !important;
+      border-color: #009933 !important;
+      color: #1a1814 !important;
+      box-shadow: 0 6px 20px rgba(0, 204, 68, 0.35) !important;
+    }
+  }
+
+  .btn-glass-danger,
+  .btn-owner {
+    background: #dc3545 !important;
+    color: #1a1814 !important;
+    border: 1px solid #dc3545 !important;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.25) !important;
+
+    &:hover:not(:disabled) {
+      background: #bb2d3b !important;
+      border-color: #bb2d3b !important;
+      color: #1a1814 !important;
+      box-shadow: 0 6px 20px rgba(220, 53, 69, 0.35) !important;
+    }
+  }
+
+  .btn-paid {
+    background: #0d6efd !important;
+    color: #1a1814 !important;
+    border: 1px solid #0d6efd !important;
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.25) !important;
+
+    &:hover:not(:disabled) {
+      background: #0b5ed7 !important;
+      border-color: #0b5ed7 !important;
+      color: #1a1814 !important;
+      box-shadow: 0 6px 20px rgba(13, 110, 253, 0.35) !important;
+    }
+  }
+
+  // Footer Overrides for clean light styling
+  #footer {
+    background: #eceef1 !important;
+    color: #2b2b2b !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+
+    .footer-top {
+      background: rgba(255, 255, 255, 0.45) !important;
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+      border-top: 1px solid rgba(0, 0, 0, 0.05) !important;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.02) !important;
+    }
+
+    .footer-brand h3 {
+      color: #cda45e !important;
+      text-shadow: none !important;
+    }
+
+    .social-links a {
+      background: rgba(0, 0, 0, 0.03) !important;
+      color: #444444 !important;
+      border: 1px solid rgba(0, 0, 0, 0.06) !important;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04) !important;
+
+      &:hover {
+        background: #cda45e !important;
+        color: #ffffff !important;
+        border-color: #cda45e !important;
+        box-shadow: 0 0 12px rgba(205, 164, 94, 0.3) !important;
+      }
+    }
+
+    .footer-contact p {
+      color: #555555 !important;
+      strong {
+        color: #1a1814 !important;
+      }
+    }
+
+    .footer-bottom {
+      background: #eceef1 !important;
+      border-top: 1px solid rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .copyright {
+      color: #666666 !important;
+      span {
+        color: #1a1814 !important;
+      }
+    }
+  }
+
+  .version-tag {
+    color: rgba(205, 164, 94, 0.8) !important;
+  }
+
+    // Shopping Cart Drawer Overrides
+    .summary_card {
+      background: #f8f9fa !important;
+      border: 1px solid rgba(0, 0, 0, 0.05) !important;
+      box-shadow: none !important;
+    }
+
+    .left-btn {
+      background: #cda45e99 !important;
+      color: #1a1814 !important;
+      border: 2px solid #cda45e99 !important;
+
+      &:hover {
+        background: #b58d4c !important;
+        border-color: #b58d4c !important;
+        color: #1a1814 !important;
+      }
+    }
+
+    .prepare-btn {
+      background: #00cc4499 !important;
+      color: #1a1814 !important;
+      border: 2px solid #00cc4499 !important;
+
+      &:hover {
+        background: #009933 !important;
+        border-color: #009933 !important;
+        color: #1a1814 !important;
+      }
+    }
+
+    .order_total p {
+      color: #1a1814 !important;
+    }
+
+    .pqt {
+      color: #1a1814 !important;
+    }
+  }
+
+/* Ensure the right modal (cart drawer) and its backdrop overlay are always on top of all menu sections */
+.right-modal {
+  z-index: 110001 !important;
+}
+.backdrop {
+  z-index: 110000 !important;
+}
+#header {
+  z-index: 10002 !important;
+}
+.modal {
+  z-index: 120000 !important;
+}
+app-nav-bar {
+  display: block !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  z-index: 10005 !important;
+}

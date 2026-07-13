@@ -142,11 +142,11 @@ transform: translateX(0);
    
   }
   .item-list {
-    height: 140px;
-    max-height: 140px; /* Set a fixed maximum height */
+    width: 100%;
+    height: auto;
+    max-height: 160px; /* Set a maximum height */
     overflow-y: auto; /* Add a vertical scroll bar when content exceeds the maximum height */
     margin-bottom: 10px; /* Add some space below the item list */
-
   }
   .cost, .additional, .total {
     display: flex;
@@ -219,6 +219,7 @@ transform: translateX(0);
   
   .content {
     flex: 1;
+    width: 100%;
   }
   
   ul {
@@ -235,7 +236,8 @@ transform: translateX(0);
   
   .buttons {
     display: flex; /* Display the buttons in a single row */
-    justify-content: space-between; /* Space the buttons apart horizontally */
+    flex-wrap: wrap;
+    gap: 12px;
     margin-top: 20px;
   }
   
@@ -247,7 +249,6 @@ transform: translateX(0);
     border-radius: 5px;
     cursor: pointer;
     flex: 1; /* Allow the buttons to share the available space equally */
-    margin-right: 10px; /* Add a small margin between buttons */
   }
 
   
@@ -360,24 +361,16 @@ transform: translateX(0);
 }
 
 
-  @media screen and (max-width: 600px) {
+  @media screen and (max-width: 768px) {
     .card-container {
       width: -webkit-fill-available;
     }
     .card {
-      width: 100%
+      width: 100%;
+      max-width: 340px;
+      margin: 0 auto;
     }
   
-
-    .buttons {
-      flex-direction: column; /* Stack buttons vertically on smaller screens */
-    }
-  
-    .buttons button {
-      margin-right: 0;
-      margin-bottom: 10px;
-    }
-
     .refresh{
       flex-direction: column !important;
     }
@@ -431,7 +424,7 @@ transform: translateX(0);
       background: rgba(0, 0, 0, 0.5);
       display: flex;
       backdrop-filter: blur(5px);
-      z-index: 999;
+      z-index: 120000 !important;
       justify-content: center;
       align-items: center;
     }

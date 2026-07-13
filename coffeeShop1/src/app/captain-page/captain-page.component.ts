@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { WebSocketService } from '../service/WebSocket.service';
 import { Observable } from 'rxjs/internal/Observable';
 import { timer } from 'rxjs';
@@ -47,7 +47,7 @@ export class CaptainPageComponent implements AfterViewInit {
   bell_msg = "";
   constructor(private webSocketService: WebSocketService, private datePipe: DatePipe, private timerService: TimerService,
     private dropboxService: DropboxService, private graphqlService: GraphqlService,private customerService: CustomerService, 
-    private sharedService: SharedService, private router: Router,  private route: ActivatedRoute, ) {
+    private sharedService: SharedService, private router: Router,  private route: ActivatedRoute, private cdr: ChangeDetectorRef) {
     this.initializePushNotifications();
     this.sound = new Howl({
       src: ['assets/audio/order_waiting.mp3'],
@@ -91,6 +91,7 @@ export class CaptainPageComponent implements AfterViewInit {
 
     console.log("caption")
     this.loginCap()
+    this.loggedIn = true;
   }
 
   sendMessageToWebSocket(msg: any) {
@@ -308,110 +309,125 @@ export class CaptainPageComponent implements AfterViewInit {
     const startDate = today.toISOString();
 
     const currentTab = this.selectedTab;
-    const targetStatus = currentTab === 'waiting_order' ? 'approval_waiting' : 'Approved';
+    const targetStatuses = currentTab === 'waiting_order' ? ['approval_waiting'] : ['Approved', 'print'];
 
-    this.graphqlService.getActiveOrdersBasic(targetStatus, startDate).subscribe(
+    this.graphqlService.getActiveOrdersBasic(targetStatuses, startDate).subscribe(
       (result: any) => {
-        const activeOrders = result.data.kubera_order || [];
-        
-        // 1. Gather status map from DB
-        const dbStatusMap = new Map<number, string>();
-        activeOrders.forEach((o: any) => dbStatusMap.set(Number(o.id), o.order_status));
-
-        // 2. Identify missing/status-changed IDs we need to fetch
-        const idsToFetch: number[] = [];
-
-        activeOrders.forEach((o: any) => {
-          const id = Number(o.id);
-          const status = o.order_status;
+        try {
+          const activeOrders = result.data?.kubera_order || [];
           
-          if (targetStatus === 'approval_waiting') {
-            const existing = this.ApprovalOrderList.find(item => Number(item.order.id) === id);
-            if (!existing || existing.order.order_status !== status) {
-              idsToFetch.push(id);
+          // 1. Gather status map from DB
+          const dbStatusMap = new Map<number, string>();
+          activeOrders.forEach((o: any) => dbStatusMap.set(Number(o.id), o.order_status));
+
+          // 2. Identify missing/status-changed IDs we need to fetch
+          const idsToFetch: number[] = [];
+
+          activeOrders.forEach((o: any) => {
+            const id = Number(o.id);
+            const status = o.order_status;
+            
+            if (currentTab === 'waiting_order') {
+              const existing = this.ApprovalOrderList.find(item => item?.order && Number(item.order.id) === id);
+              if (!existing || !existing.order || existing.order.order_status !== status) {
+                idsToFetch.push(id);
+              }
+            } else {
+              const existing = this.ApprovedOrderList.find(item => item?.order && Number(item.order.id) === id);
+              if (!existing || !existing.order || existing.order.order_status !== status) {
+                idsToFetch.push(id);
+              }
             }
-          } else if (targetStatus === 'Approved') {
-            const existing = this.ApprovedOrderList.find(item => Number(item.order.id) === id);
-            if (!existing || existing.order.order_status !== status) {
-              idsToFetch.push(id);
-            }
+          });
+
+          // 3. Remove locally loaded orders that are no longer in DB or have changed status
+          if (currentTab === 'waiting_order') {
+            this.ApprovalOrderList = this.ApprovalOrderList.filter(item => {
+              if (!item || !item.order) return false;
+              const id = Number(item.order.id);
+              return dbStatusMap.get(id) === 'approval_waiting';
+            });
+          } else {
+            this.ApprovedOrderList = this.ApprovedOrderList.filter(item => {
+              if (!item || !item.order) return false;
+              const id = Number(item.order.id);
+              const dbStatus = dbStatusMap.get(id);
+              return dbStatus === 'Approved' || dbStatus === 'print';
+            });
           }
-        });
 
-        // 3. Remove locally loaded orders that are no longer in DB or have changed status
-        if (targetStatus === 'approval_waiting') {
-          this.ApprovalOrderList = this.ApprovalOrderList.filter(item => {
-            const id = Number(item.order.id);
-            return dbStatusMap.get(id) === 'approval_waiting';
-          });
-        } else if (targetStatus === 'Approved') {
-          this.ApprovedOrderList = this.ApprovedOrderList.filter(item => {
-            const id = Number(item.order.id);
-            return dbStatusMap.get(id) === 'Approved';
-          });
-        }
+          // 4. Fetch details for missing/changed orders
+          if (idsToFetch.length > 0) {
+            this.graphqlService.getPaidOrdersByIds(idsToFetch).subscribe(
+              (detailsResult: any) => {
+                try {
+                  const detailedOrders = detailsResult.data?.kubera_order || [];
+                  detailedOrders.forEach((dbOrder: any) => {
+                    let order: SingleFileOrderDto = new SingleFileOrderDto();
+                    order.order = {
+                      id: dbOrder.id,
+                      order_ref_id: dbOrder.order_ref_id,
+                      table_no: dbOrder.table_no,
+                      table_place: dbOrder.table_place,
+                      order_summary_amount: dbOrder.order_summary_amount,
+                      order_additional_service_amount: dbOrder.order_additional_service_amount,
+                      order_total_amount: dbOrder.order_total_amount,
+                      order_status: dbOrder.order_status,
+                      employee: dbOrder.employee,
+                      comments: dbOrder.comments,
+                      customer_number: dbOrder.customer_number,
+                      order_created_time: this.convertToIST(dbOrder.created_at),
+                      isExpanded: false
+                    };
+                    order.orderItems = (dbOrder.order_items || []).map((item: any) => ({
+                      id: item.id,
+                      item_name: item.item_name,
+                      item_quantity: item.item_quantity,
+                      item_cost: item.item_cost,
+                      item_description: item.item_description,
+                      status: item.status,
+                      order_id: item.order_id
+                    }));
 
-        // 4. Fetch details for missing/changed orders
-        if (idsToFetch.length > 0) {
-          this.graphqlService.getPaidOrdersByIds(idsToFetch).subscribe(
-            (detailsResult: any) => {
-              const detailedOrders = detailsResult.data.kubera_order || [];
-              detailedOrders.forEach((dbOrder: any) => {
-                let order: SingleFileOrderDto = new SingleFileOrderDto();
-                order.order = {
-                  id: dbOrder.id,
-                  order_ref_id: dbOrder.order_ref_id,
-                  table_no: dbOrder.table_no,
-                  table_place: dbOrder.table_place,
-                  order_summary_amount: dbOrder.order_summary_amount,
-                  order_additional_service_amount: dbOrder.order_additional_service_amount,
-                  order_total_amount: dbOrder.order_total_amount,
-                  order_status: dbOrder.order_status,
-                  employee: dbOrder.employee,
-                  comments: dbOrder.comments,
-                  customer_number: dbOrder.customer_number,
-                  order_created_time: this.convertToIST(dbOrder.created_at),
-                  isExpanded: false
-                };
-                order.orderItems = (dbOrder.order_items || []).map((item: any) => ({
-                  id: item.id,
-                  item_name: item.item_name,
-                  item_quantity: item.item_quantity,
-                  item_cost: item.item_cost,
-                  item_description: item.item_description,
-                  status: item.status,
-                  order_id: item.order_id
-                }));
+                    if (dbOrder.order_status === 'approval_waiting') {
+                      this.ApprovalOrderList = this.ApprovalOrderList.filter(o => o?.order && Number(o.order.id) !== dbOrder.id);
+                      this.ApprovalOrderList.push(order);
+                    } else if (dbOrder.order_status === 'Approved' || dbOrder.order_status === 'print') {
+                      this.ApprovedOrderList = this.ApprovedOrderList.filter(o => o?.order && Number(o.order.id) !== dbOrder.id);
+                      this.ApprovedOrderList.push(order);
+                    }
+                  });
 
-                if (dbOrder.order_status === 'approval_waiting') {
-                  this.ApprovalOrderList = this.ApprovalOrderList.filter(o => Number(o.order.id) !== dbOrder.id);
-                  this.ApprovalOrderList.push(order);
-                } else if (dbOrder.order_status === 'Approved') {
-                  this.ApprovedOrderList = this.ApprovedOrderList.filter(o => Number(o.order.id) !== dbOrder.id);
-                  this.ApprovedOrderList.push(order);
+                  // Finalize sorting and conversions
+                  this.finalizeActiveOrdersLists();
+                  this.isSyncingActiveOrders = false;
+                  if (callback) callback();
+                } catch (e) {
+                  console.error('Exception in getPaidOrdersByIds details handler:', e);
+                  this.isSyncingActiveOrders = false;
+                  if (callback) callback();
                 }
-              });
-
-              // Finalize sorting and conversions
-              this.finalizeActiveOrdersLists();
-              this.isSyncingActiveOrders = false;
-              if (callback) callback();
-            },
-            (err: any) => {
-              console.error('Error fetching delta active orders details:', err);
-              this.isSyncingActiveOrders = false;
-              if (callback) callback();
-            }
-          );
-        } else {
-          // No details to fetch, just clean up and render
-          this.finalizeActiveOrdersLists();
+              },
+              (err: any) => {
+                console.error('Error fetching delta active orders details:', err);
+                this.isSyncingActiveOrders = false;
+                if (callback) callback();
+              }
+            );
+          } else {
+            // No details to fetch, just clean up and render
+            this.finalizeActiveOrdersLists();
+            this.isSyncingActiveOrders = false;
+            if (callback) callback();
+          }
+        } catch (e) {
+          console.error('Exception in getActiveOrdersBasic next handler:', e);
           this.isSyncingActiveOrders = false;
           if (callback) callback();
         }
       },
       (err: any) => {
-        console.error('Error fetching basic orders for status ' + targetStatus, err);
+        console.error('Error fetching basic orders for statuses ' + targetStatuses.join(','), err);
         this.isSyncingActiveOrders = false;
         if (callback) callback();
       }
@@ -467,7 +483,6 @@ export class CaptainPageComponent implements AfterViewInit {
       // added only newly added files
       const addedNewFiles = this.updatedFiles.filter(item1 => !this.files.some(item2 => item2["name"] === item1["name"]));
       const removeOldFiles = this.files.filter(item1 => !this.updatedFiles.some(item2 => item2["name"] === item1["name"]));
-
       for (const file of addedNewFiles) {
         file.data = await this.dropboxService.getFileData(file.path_display);
         const respo = this.sharedService.parseNestedCsvToObject(file.data.fileBlob)
@@ -510,7 +525,7 @@ export class CaptainPageComponent implements AfterViewInit {
     } else {
       id = null; // Set to null if no match is found
     }
-    const index = this.ApprovalOrderList.findIndex(order => order.order.id === id);
+    const index = this.ApprovalOrderList.findIndex(order => order?.order?.id === id);
     if (index !== -1) {
       this.ApprovalOrderList.splice(index, 1);
     }
@@ -628,6 +643,7 @@ export class CaptainPageComponent implements AfterViewInit {
   @ViewChild('expandedDiv') expandedDiv: ElementRef | undefined;
 
   async declineOrder(id: any, order_ref_id: any) {
+    this.loadingOrderId = id;
     this.showSpinner = true;
     const sourcePath = '/orders/approval_waiting_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv';
     let kitchenDestinationPath = '/orders/decline_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv';
@@ -645,18 +661,21 @@ export class CaptainPageComponent implements AfterViewInit {
         (dbRes: any) => {
           console.log('DB updateOrderStatus to declined response:', dbRes);
           setTimeout(() => {
+            this.loadingOrderId = null;
             this.refreshOrder();
           }, 1000);
         },
         (error: any) => {
           console.error('Error updating status to declined in DB:', error);
           setTimeout(() => {
+            this.loadingOrderId = null;
             this.refreshOrder();
           }, 1000);
         }
       );
     } else {
       setTimeout(() => {
+        this.loadingOrderId = null;
         this.refreshOrder();
       }, 1000);
     }
@@ -665,6 +684,11 @@ export class CaptainPageComponent implements AfterViewInit {
 
   approvedFiles: any[] = [];
   async getApprovedOrders() {
+    if (USE_DATABASE) {
+      this.getApprovedOrdersDb();
+      return;
+    }
+
     this.ApprovedOrderList = []
     this.approvedShowSpinner = true;
     const folderPath = '/orders/approved_orders/'; // Replace with the desired folder path
@@ -689,6 +713,11 @@ export class CaptainPageComponent implements AfterViewInit {
 
   updatedApprovedOrderFiles: any[] = [];
   async getUpdatedApprovedOrders() {
+    if (USE_DATABASE) {
+      this.getApprovedOrdersDb();
+      return;
+    }
+
     //this.ApprovalOrderList = []
     this.approvedShowSpinner = true;
     const folderPath = '/orders/approved_orders/'; // Replace with the desired folder path
@@ -727,9 +756,9 @@ export class CaptainPageComponent implements AfterViewInit {
     await this.getApprovedOrdersDb();
   }
   CombinedApprovedOrders: any[] = [];
-
   converteLIstTomap(ApprovedOrderList: any) {
-    const yourMap: Map<string, SingleFileOrderDto[]> = ApprovedOrderList.reduce((map: any, obj: SingleFileOrderDto) => {
+    const yourMap: Map<string, SingleFileOrderDto[]> = (ApprovedOrderList || []).reduce((map: any, obj: SingleFileOrderDto) => {
+      if (!obj || !obj.order) return map;
       let key = '';
       if (obj.order.table_place) {
         key = String(obj.order.table_place) + String(obj.order.table_no);
@@ -752,10 +781,11 @@ export class CaptainPageComponent implements AfterViewInit {
     // Build the combined orders array
     const combined: any[] = [];
     yourMap.forEach((orders, tableKey) => {
+      if (!orders || orders.length === 0 || !orders[0].order) return;
       const firstOrder = orders[0].order;
       
       // Combine order IDs
-      const rawOrderIds = orders.map(o => '#' + o.order.id).reverse();
+      const rawOrderIds = orders.map(o => o?.order?.id ? '#' + o.order.id : '').filter(id => id !== '').reverse();
       const orderIds = rawOrderIds.join(', ');
       
       let displayedOrderIds = '';
@@ -771,41 +801,43 @@ export class CaptainPageComponent implements AfterViewInit {
 
       // Combine customer numbers (unique, non-empty)
       const customerNumbers = Array.from(new Set(
-        orders.map(o => o.order.customer_number).filter(n => n && n.trim() !== '')
+        orders.map(o => o?.order?.customer_number).filter(n => n && n.trim() !== '')
       )).join(', ');
 
       // Combine comments (non-empty)
-      const commentsList = orders.map(o => o.order.comments).filter(c => c && c.trim() !== '');
+      const commentsList = orders.map(o => o?.order?.comments).filter(c => c && c.trim() !== '');
       const combinedComments = commentsList.length > 0 ? commentsList.join('; ') : '';
 
       // Combine employees
       const employees = Array.from(new Set(
-        orders.map(o => o.order.employee).filter(e => e && e.trim() !== '')
+        orders.map(o => o?.order?.employee).filter(e => e && e.trim() !== '')
       )).join(', ');
 
       // Combine items (sum quantities for same item name)
       const itemMap = new Map<string, any>();
       orders.forEach(o => {
-        o.orderItems.forEach((item: any) => {
-          const name = item.item_name;
-          if (itemMap.has(name)) {
-            const existing = itemMap.get(name);
-            existing.item_quantity += item.item_quantity;
-          } else {
-            itemMap.set(name, {
-              item_name: name,
-              item_cost: item.item_cost,
-              item_quantity: item.item_quantity
-            });
-          }
-        });
+        if (o.orderItems) {
+          o.orderItems.forEach((item: any) => {
+            const name = item.item_name;
+            if (itemMap.has(name)) {
+              const existing = itemMap.get(name);
+              existing.item_quantity += item.item_quantity;
+            } else {
+              itemMap.set(name, {
+                item_name: name,
+                item_cost: item.item_cost,
+                item_quantity: item.item_quantity
+              });
+            }
+          });
+        }
       });
       const combinedItems = Array.from(itemMap.values());
 
       // Sum amounts
-      const subtotal = orders.reduce((sum, o) => sum + (o.order.order_summary_amount || 0), 0);
-      const service_charge = orders.reduce((sum, o) => sum + (o.order.order_additional_service_amount || 0), 0);
-      const total_amount = orders.reduce((sum, o) => sum + (o.order.order_total_amount || 0), 0);
+      const subtotal = orders.reduce((sum, o) => sum + (o.order?.order_summary_amount || 0), 0);
+      const service_charge = orders.reduce((sum, o) => sum + (o.order?.order_additional_service_amount || 0), 0);
+      const total_amount = orders.reduce((sum, o) => sum + (o.order?.order_total_amount || 0), 0);
 
       combined.push({
         tableKey: tableKey,
@@ -853,76 +885,146 @@ export class CaptainPageComponent implements AfterViewInit {
 
   async moveOrderToCheckOut() {
     let data = this.entry;
-    if (data && data.length > 0) {
-      this.loadingCheckoutTable = data[0].order.table_no;
+    if (data && data.length > 0 && data[0] && data[0].order) {
+      const firstOrder = data[0].order;
+      if (firstOrder.table_place) {
+        this.loadingCheckoutTable = String(firstOrder.table_place) + String(firstOrder.table_no);
+      } else {
+        this.loadingCheckoutTable = String(firstOrder.table_no);
+      }
     }
-    
-    if (this.USE_DATABASE) {
-      const checkoutId = 'CHK_' + new Date().getTime().toString() + '_' + Math.floor(Math.random() * 1000).toString();
-      data.forEach((field: any) => {
-        let id = field.order.id;
-        this.graphqlService.updateOrderStatusWithCheckoutId(Number(id), 'checkout', checkoutId).subscribe(
-          (dbRes: any) => {
-            console.log('DB updateOrderStatus checkout response:', dbRes);
-          },
-          (err: any) => console.error('DB updateOrderStatus checkout error:', err)
-        );
-      });
-      setTimeout(() => { this.loadingCheckoutTable = ''; this.refreshApprovedOrder(); }, 1000);
-      this.sendMessageToWebSocket('payment');
+
+    const clearSpinnerAndClose = () => {
+      this.loadingCheckoutTable = '';
       this.showCheckOutModal = false;
+      this.refreshApprovedOrder();
+    };
+
+    if (this.USE_DATABASE) {
+      try {
+        if (!data || data.length === 0) {
+          clearSpinnerAndClose();
+          return;
+        }
+
+        const checkoutId = 'CHK_' + new Date().getTime().toString() + '_' + Math.floor(Math.random() * 1000).toString();
+        let completed = 0;
+        let hasError = false;
+
+        data.forEach((field: any) => {
+          if (field && field.order && field.order.id) {
+            let id = field.order.id;
+            this.graphqlService.updateOrderStatusWithCheckoutId(Number(id), 'checkout', checkoutId).subscribe(
+              (dbRes: any) => {
+                completed++;
+                if (completed === data.length) {
+                  setTimeout(() => {
+                    clearSpinnerAndClose();
+                  }, 1000);
+                  this.sendMessageToWebSocket('payment');
+                }
+              },
+              (err: any) => {
+                console.error('DB updateOrderStatus checkout error:', err);
+                completed++;
+                if (!hasError) {
+                  hasError = true;
+                  setTimeout(() => {
+                    clearSpinnerAndClose();
+                  }, 1000);
+                }
+              }
+            );
+          } else {
+            completed++;
+            if (completed === data.length) {
+              setTimeout(() => {
+                clearSpinnerAndClose();
+              }, 1000);
+            }
+          }
+        });
+      } catch (e) {
+        console.error("Exception in moveOrderToCheckOut DB path:", e);
+        clearSpinnerAndClose();
+      }
       return;
     }
 
-    const currentDate = new Date();
-    const formattedDate = this.datePipe.transform(currentDate, 'yyyyMMddHHmm');
-    const value = this.objectsToCsv2(data);
-    let orderData: any = [];
-    let orderItem: any = [];
-    let filepaths: any = [];
-    let id = "";
-    data.forEach((field: any) => {
-
-      let path = '/orders/approved_orders/' + 'order_' + field.order.id + '_order_ref_' + field.order.order_ref_id + '.csv'
-      // Check if the path already exists in filepaths array
-      if (!filepaths.includes(path)) {
-        filepaths.push(path);
-        orderData.push(field.order);
-        orderData[0].billNo = formattedDate;
-        id = id + "_" + field.order.id
-        field.orderItems.forEach((item: any) => {
-          orderItem.push(item)
-        })
+    // Dropbox flow
+    try {
+      if (!data || data.length === 0) {
+        clearSpinnerAndClose();
+        return;
       }
-    })
-    const csvOrderTableDataCsv = this.objectsToCsv2(orderData);
-    const orderItemTableDataListCsv = this.objectsToCsv2(orderItem);
-    const orderTableCsvData = csvOrderTableDataCsv + "\n" + orderItemTableDataListCsv
-    const orderTableFilePath = '/orders/checkout_orders/' + 'order' + id + '.csv';
-    await this.dropboxService.uploadFile(orderTableFilePath, orderTableCsvData).then(async (response: any) => {
-      console.log('File uploaded:', response);
-      let resw = await this.dropboxService.deleteFile(filepaths);
-      console.log(resw);
-      setTimeout(() => { this.loadingCheckoutTable = ''; this.refreshApprovedOrder(); }, 3000);
-      this.sendMessageToWebSocket('payment');
-      this.showCheckOutModal=false
-      //delete the approved orders
 
+      const currentDate = new Date();
+      const formattedDate = this.datePipe.transform(currentDate, 'yyyyMMddHHmm');
+      let orderData: any = [];
+      let orderItem: any = [];
+      let filepaths: any = [];
+      let id = "";
 
-    }).catch((error) => {
-      this.dropboxService.updateFile(orderTableFilePath, orderTableCsvData).then((response: any) => {
-        console.log('File updated:', response);
-        this.dropboxService.deleteFile(filepaths);
-        setTimeout(() => { this.loadingCheckoutTable = ''; this.refreshApprovedOrder(); }, 3000);
-        this.sendMessageToWebSocket('payment');
-      }).catch((error) => {
-
-        console.error('Error uploading file:', error);
+      data.forEach((field: any) => {
+        if (field && field.order) {
+          let path = '/orders/approved_orders/' + 'order_' + field.order.id + '_order_ref_' + field.order.order_ref_id + '.csv';
+          // Check if the path already exists in filepaths array
+          if (!filepaths.includes(path)) {
+            filepaths.push(path);
+            orderData.push(field.order);
+            if (orderData[0]) {
+              orderData[0].billNo = formattedDate;
+            }
+            id = id + "_" + field.order.id;
+            if (field.orderItems) {
+              field.orderItems.forEach((item: any) => {
+                orderItem.push(item);
+              });
+            }
+          }
+        }
       });
 
-      console.error('Error uploading file:', error);
-    });
+      const csvOrderTableDataCsv = this.objectsToCsv2(orderData);
+      const orderItemTableDataListCsv = this.objectsToCsv2(orderItem);
+      const orderTableCsvData = csvOrderTableDataCsv + "\n" + orderItemTableDataListCsv;
+      const orderTableFilePath = '/orders/checkout_orders/' + 'order' + id + '.csv';
 
+      try {
+        await this.dropboxService.uploadFile(orderTableFilePath, orderTableCsvData);
+        console.log('File uploaded successfully');
+        try {
+          await this.dropboxService.deleteFile(filepaths);
+        } catch (delErr) {
+          console.error('Error deleting approved order files:', delErr);
+        }
+        setTimeout(() => {
+          clearSpinnerAndClose();
+        }, 3000);
+        this.sendMessageToWebSocket('payment');
+      } catch (uploadErr) {
+        console.warn('Upload failed, trying updateFile:', uploadErr);
+        try {
+          await this.dropboxService.updateFile(orderTableFilePath, orderTableCsvData);
+          console.log('File updated successfully');
+          try {
+            await this.dropboxService.deleteFile(filepaths);
+          } catch (delErr) {
+            console.error('Error deleting approved order files on update:', delErr);
+          }
+          setTimeout(() => {
+            clearSpinnerAndClose();
+          }, 3000);
+          this.sendMessageToWebSocket('payment');
+        } catch (updateErr) {
+          console.error('Error updating file on Dropbox:', updateErr);
+          clearSpinnerAndClose();
+        }
+      }
+    } catch (e) {
+      console.error("Exception in moveOrderToCheckOut Dropbox path:", e);
+      clearSpinnerAndClose();
+    }
   }
 
 
@@ -1029,8 +1131,9 @@ export class CaptainPageComponent implements AfterViewInit {
   }
 
   getOrderItemStatus(apporvedList: any) {
-    if (apporvedList.length > 0) {
+    if (apporvedList && apporvedList.length > 0) {
       this.orderItemsStatusList = apporvedList.map((item: any) => {
+        if (!item || !item.order) return null;
         return {
           id: item.order.id,
           table_no: item.order.table_no,
@@ -1039,7 +1142,7 @@ export class CaptainPageComponent implements AfterViewInit {
           order_status: item.order.order_status,
           employee: item.order.employee,
           comments: item.order.comments,
-          order_items: item.orderItems.map((oi: any) => ({
+          order_items: (item.orderItems || []).map((oi: any) => ({
             id: oi.id,
             item_name: oi.item_name,
             item_quantity: oi.item_quantity,
@@ -1047,7 +1150,7 @@ export class CaptainPageComponent implements AfterViewInit {
             order_id: oi.order_id
           }))
         };
-      });
+      }).filter((item: any) => item !== null);
     } else {
       this.orderItemsStatusList = [];
     }
@@ -1132,8 +1235,11 @@ export class CaptainPageComponent implements AfterViewInit {
   }
 
   toggleModal(): void {
+    console.log('toggleModal() triggered. Previous state of showOrderModal:', this.showOrderModal);
     this.showOrderModal = !this.showOrderModal;
+    console.log('toggleModal() triggered. New state of showOrderModal:', this.showOrderModal);
     this.toggleBodyScroll(this.showOrderModal);
+    this.cdr.detectChanges();
   }
 
   convertTo12HourFormat(time: string): string {
@@ -1176,6 +1282,8 @@ export class CaptainPageComponent implements AfterViewInit {
 
       if (object.order_status == 'approval_waiting') {
         this.updateOrderStatuskot(object.id, "Done")
+      } else if (object.order_status == 'Approved' || object.order_status == 'print') {
+        this.updateOrderStatuskot(object.id, "print")
       }
 
     }

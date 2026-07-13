@@ -186,6 +186,22 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
 
 
 
+  updateOrderTotalAmountBasedOnItems(order: any) {
+    if (!order || !order.orderItems || !order.order || !order.order[0]) return;
+    
+    let actualAmount = 0;
+    order.orderItems.forEach((item: any) => {
+      let gstCost = Math.ceil(parseFloat(item.item_cost) || 0);
+      actualAmount += (item.item_quantity || 0) * gstCost;
+    });
+    
+    let sgst = parseFloat(((actualAmount * 2.5) / 100).toFixed(2));
+    let cgst = parseFloat(((actualAmount * 2.5) / 100).toFixed(2));
+    let grandTotal = parseFloat(actualAmount.toFixed(2)) + sgst + cgst;
+    
+    order.order[0].order_total_amount = parseFloat(grandTotal.toFixed(2));
+  }
+
   files: any[] = [];
   checkOutOrderList: SingleFileOrderDto[] = [];
   isSyncingCheckout = false;
@@ -309,6 +325,10 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
                 return order;
               });
 
+              this.checkOutOrderList.forEach(order => {
+                this.updateOrderTotalAmountBasedOnItems(order);
+              });
+
               this.checkOutOrderList.sort((a, b) => {
                 const dateA = a.order && a.order[0] && a.order[0].created_at ? new Date(a.order[0].created_at).getTime() : 0;
                 const dateB = b.order && b.order[0] && b.order[0].created_at ? new Date(b.order[0].created_at).getTime() : 0;
@@ -353,6 +373,7 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
     this.checkOutOrderList.forEach(order => {
       let conItems = this.combineOrderItemsQuantities(order.orderItems)
       order.orderItems = conItems
+      this.updateOrderTotalAmountBasedOnItems(order);
     })
     this.showSpinner = false;
   }
@@ -497,6 +518,7 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
                 item_description: dbItem.item_description
               }));
               orderDto.orderItems = this.combineOrderItemsQuantities(orderDto.orderItems);
+              this.updateOrderTotalAmountBasedOnItems(orderDto);
 
               orderDto.paidDetails = [{
                 actual_amount: p.actual_amount,
@@ -523,7 +545,28 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
               }
             });
 
-            this.paidOrderList.push(...newPaidOrders);
+            const uniquePaidOrdersMap = new Map<string, PaidFileOrderDto>();
+            const noIdOrders: PaidFileOrderDto[] = [];
+            
+            this.paidOrderList.concat(newPaidOrders).forEach((item: PaidFileOrderDto) => {
+              if (item.order && item.order[0] && item.order[0].id) {
+                const key = item.order[0].id.toString();
+                if (uniquePaidOrdersMap.has(key)) {
+                  const existing = uniquePaidOrdersMap.get(key);
+                  const existingTime = existing?.paidDetails?.[0]?.period || '';
+                  const newTime = item.paidDetails?.[0]?.period || '';
+                  if (newTime > existingTime) {
+                    uniquePaidOrdersMap.set(key, item);
+                  }
+                } else {
+                  uniquePaidOrdersMap.set(key, item);
+                }
+              } else {
+                noIdOrders.push(item);
+              }
+            });
+            
+            this.paidOrderList = [...Array.from(uniquePaidOrdersMap.values()), ...noIdOrders];
             this.paidOrderList.sort((a, b) => {
               const dateA = a.order && a.order[0] && a.order[0].created_at ? new Date(a.order[0].created_at).getTime() : 0;
               const dateB = b.order && b.order[0] && b.order[0].created_at ? new Date(b.order[0].created_at).getTime() : 0;
@@ -586,6 +629,7 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
           order.orderItems = (await respo).headers2
           order.paidDetails = (await respo).headers3
           
+          this.updateOrderTotalAmountBasedOnItems(order);
           this.paidOrderList.push(order);
           console.log("respo - ", (await respo).headers1)
           this.TotalPaidAmount = this.TotalPaidAmount + parseFloat(order.paidDetails[0].paid_amount);

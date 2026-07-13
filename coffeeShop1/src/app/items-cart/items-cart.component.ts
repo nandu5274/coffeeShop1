@@ -160,8 +160,16 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
 
   getEmployeeName()
   {
-    let user_details = JSON.parse(atob(localStorage.getItem('cap_user')!));
-    return user_details.user_name;
+    let capUser = localStorage.getItem('cap_user');
+    if (!capUser) {
+      return '';
+    }
+    try {
+      let user_details = JSON.parse(atob(capUser));
+      return user_details.user_name || '';
+    } catch (e) {
+      return '';
+    }
   }
 
   sentOrder() {
