@@ -9,7 +9,9 @@ import {
   KUBERA_ACCOUNT_MENU_PUBLISH_API,
   KUBERA_ACCOUNT_MENU_INSERT_API,
   KUBERA_ACCOUNT_MENU_DELETE_API,
-  KUBERA_ACCOUNT_MENU_UPDATE_API
+  KUBERA_ACCOUNT_MENU_UPDATE_API,
+  UPSTASH_REDIS_REST_URL,
+  UPSTASH_REDIS_REST_TOKEN
 } from '../common/constanst';
 import * as localMenuJsonData from 'src/app/sampleResponse/menu-list.json';
 
@@ -909,6 +911,21 @@ export class MenuUpdateComponent implements OnInit {
     document.body.style.overflow = 'auto';
   }
 
+  private invalidateRedisCache(): void {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
+      'Content-Type': 'application/json'
+    });
+    this.http.post<any>(UPSTASH_REDIS_REST_URL, ['DEL', 'menu_data'], { headers }).subscribe({
+      next: (res) => {
+        console.log('Redis cache invalidated successfully:', res);
+      },
+      error: (err) => {
+        console.error('Failed to invalidate Redis cache:', err);
+      }
+    });
+  }
+
   executePublish(): void {
     this.showPublishConfirmModal = false;
     document.body.style.overflow = 'auto';
@@ -920,6 +937,9 @@ export class MenuUpdateComponent implements OnInit {
 
     this.http.post<any>(KUBERA_ACCOUNT_MENU_PUBLISH_API, {}, { headers }).subscribe({
       next: (response) => {
+        // Invalidate Redis Cache
+        this.invalidateRedisCache();
+
         // Send the publish history entry using Hasura Rest API
         const historyPayload = {
           username: this.usernameInput || 'anonymous',

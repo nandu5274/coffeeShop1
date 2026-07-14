@@ -5,7 +5,7 @@ import { SharedService } from '../service/shared-service';
 import * as menuListJsonData from 'src/app/sampleResponse/menu-list.json';
 import * as menuCourseCuisineListJsonData from 'src/app/sampleResponse/cuisine-list.json';
 import { CustomerService } from '../service/customer.service';
-import { KUBERA_ACCOUNT_MENU_GRAPHQL_QUERY_API, KUBERA_ACCOUNT_MENU_GRAPHQL_KEY } from '../common/constanst';
+import { KUBERA_ACCOUNT_MENU_GRAPHQL_QUERY_API, KUBERA_ACCOUNT_MENU_GRAPHQL_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN } from '../common/constanst';
 import { firstValueFrom, Observable, Subject } from 'rxjs';
 
 
@@ -248,12 +248,66 @@ onFlavourChange() {
     }
   }
 
+  private async fetchRedisMenuData(): Promise<any> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
+      'Content-Type': 'application/json'
+    });
+    try {
+      const response = await firstValueFrom(
+        this.http.post<any>(UPSTASH_REDIS_REST_URL, ['GET', 'menu_data'], { headers })
+      );
+      if (response && response.result) {
+        return JSON.parse(response.result);
+      }
+    } catch (e) {
+      console.error('Failed to fetch menu from Redis:', e);
+    }
+    return null;
+  }
+
+  private async setRedisMenuData(menuData: any): Promise<any> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
+      'Content-Type': 'application/json'
+    });
+    try {
+      await firstValueFrom(
+        this.http.post<any>(
+          UPSTASH_REDIS_REST_URL,
+          ['SET', 'menu_data', JSON.stringify(menuData)],
+          { headers }
+        )
+      );
+    } catch (e) {
+      console.error('Failed to set menu in Redis:', e);
+    }
+  }
+
   async populateMenuList() {
     this.isLoading = true;
     if (this.useRemoteMenuData && this.menuEndpointUrl) {
       try {
+        console.log('Checking Redis cache for menu...');
+        const cachedMenu = await this.fetchRedisMenuData();
+        if (cachedMenu) {
+          console.log('Redis cache hit for menu!');
+          this.menuListData = cachedMenu;
+          this.processMenuData(this.menuListData);
+          this.isLoading = false;
+          return;
+        }
+
+        console.log('Redis cache miss! Fetching menu from Hasura...');
         const result = await firstValueFrom(this.fetchRemoteMenuData());
         this.menuListData = this.normalizeRemoteMenuData(result);
+
+        this.setRedisMenuData(this.menuListData).then(() => {
+          console.log('Cached menu in Redis successfully.');
+        }).catch(err => {
+          console.error('Error caching menu in Redis:', err);
+        });
+
         this.processMenuData(this.menuListData);
       } catch (error: any) {
         console.error('Remote menu fetch failed, falling back to local JSON.', error);
