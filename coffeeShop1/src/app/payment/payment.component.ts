@@ -294,23 +294,24 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
                   billNo = this.datePipe.transform(createdDate, 'yyyyMMddHHmm') || '';
                 }
 
-                order.order = [{
+                order.order = group.orders.map((o: any) => ({
                   id: combinedIds as any,
-                  order_ref_id: primaryOrder.order_ref_id,
-                  table_no: primaryOrder.table_no,
-                  table_place: primaryOrder.table_place,
-                  order_summary_amount: primaryOrder.order_summary_amount,
-                  order_additional_service_amount: primaryOrder.order_additional_service_amount,
-                  order_total_amount: primaryOrder.order_total_amount,
-                  order_status: primaryOrder.order_status,
-                  employee: primaryOrder.employee,
-                  comments: primaryOrder.comments,
-                  customer_number: primaryOrder.customer_number,
-                  order_created_time: this.sharedService.convertDateTimeToDateString(primaryOrder.created_at),
-                  created_at: primaryOrder.created_at,
+                  original_id: o.id,
+                  order_ref_id: o.order_ref_id,
+                  table_no: o.table_no,
+                  table_place: o.table_place,
+                  order_summary_amount: o.order_summary_amount,
+                  order_additional_service_amount: o.order_additional_service_amount,
+                  order_total_amount: o.order_total_amount,
+                  order_status: o.order_status,
+                  employee: o.employee,
+                  comments: o.comments,
+                  customer_number: o.customer_number,
+                  order_created_time: this.sharedService.convertDateTimeToDateString(o.created_at),
+                  created_at: o.created_at,
                   check_out_id: group.check_out_id,
                   billNo: billNo
-                }];
+                }));
 
                 order.orderItems = group.items.map((dbItem: any) => ({
                   id: dbItem.id,
@@ -318,7 +319,9 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
                   item_quantity: dbItem.item_quantity,
                   item_cost: dbItem.item_cost,
                   status: dbItem.status,
-                  item_description: dbItem.item_description
+                  item_description: dbItem.item_description,
+                  order_id: dbItem.order_id,
+                  created_at: dbItem.created_at
                 }));
                 
                 order.orderItems = this.combineOrderItemsQuantities(order.orderItems);
@@ -1297,7 +1300,84 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
     paymentType.actual_amount =paymentType.actual_amount - (paymentType.actual_amount * 0.10);
     paymentType.discountPercentage =  discountPercentage
   }
+}
 
+  prepareQStashPayload(data: any, actualAmount: number, paidAmount: number, paymentMode: string): any {
+    try {
+      let idsStr = (data.order && data.order[0]?.id) ? data.order[0].id.toString() : "";
+      let orderIds = idsStr.split(',').map((idStr: string) => parseInt(idStr.trim())).filter((id: number) => !isNaN(id));
+      let primaryOrderId = orderIds[0] || null;
+
+      const orderData = (data.order || []).map((o: any) => {
+        return {
+          id: o.original_id ? Number(o.original_id) : null,
+          order_ref_id: o.order_ref_id ? Number(o.order_ref_id) : null,
+          table_no: o.table_no ? Number(o.table_no) : null,
+          table_place: o.table_place || "",
+          customer_number: o.customer_number || "",
+          employee: o.employee || "",
+          order_status: "paid",
+          check_out_id: o.check_out_id ? String(o.check_out_id) : "",
+          comments: o.comments || "",
+          created_at: o.created_at || new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+      });
+
+      const itemData = (data.orderItems || []).map((item: any) => {
+        const matchingOrder = (data.order || []).find((o: any) => o.original_id === item.order_id);
+        const orderRefId = matchingOrder ? matchingOrder.order_ref_id : (data.order && data.order[0]?.order_ref_id);
+
+        return {
+          order_ref_id: orderRefId ? Number(orderRefId) : null,
+          order_id: item.order_id ? Number(item.order_id) : primaryOrderId,
+          item_name: item.item_name || "",
+          item_description: item.item_description || "",
+          item_quantity: item.item_quantity ? Number(item.item_quantity) : 0,
+          status: item.status || "Preparing",
+          created_at: item.created_at || new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+      });
+
+      let billNoRaw = data.order && data.order[0]?.billNo;
+      let billNo = billNoRaw ? String(billNoRaw) : "";
+
+      const modeMapped = paymentMode === 'online' ? 'Card' : (paymentMode === 'cash' ? 'Cash' : paymentMode);
+
+      const paymentData = [
+        {
+          order_id: idsStr,
+          bill_no: billNo,
+          payment_mode: modeMapped,
+          actual_amount: actualAmount,
+          paid_amount: paidAmount,
+          created_at: this.sharedService.updateCurrentDateInIST(),
+          created_time: this.sharedService.updateCurrentDateTimeInIST()
+        }
+      ];
+
+      return {
+        orderData,
+        itemData,
+        paymentData
+      };
+    } catch (e) {
+      console.error("Error preparing QStash payload:", e);
+      return null;
+    }
+  }
+
+  sendQStashPayload(payload: any) {
+    if (!payload) return;
+    this.dataService.postToQStash(payload).subscribe(
+      (response: any) => {
+        console.log("Successfully posted to QStash queue:", response);
+      },
+      (error: any) => {
+        console.error("Error posting to QStash queue:", error);
+      }
+    );
   }
 
   async moveOrderToPaid(data: any) {
@@ -1313,6 +1393,12 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
     paymentType.period = this.sharedService.updateCurrentDateTimeInIST();
     if(data.customer_detail != null){
       this.addDiscountToActualAmount(data, paymentType )
+    }
+
+    // Prepare QStash payload before database/file operations
+    let qstashPayload: any = null;
+    if (USE_DATABASE) {
+      qstashPayload = this.prepareQStashPayload(data, parseFloat(paymentType.actual_amount) || 0, parseFloat(paymentType.paid_amount) || 0, paymentType.mode);
     }
 
     if (USE_DATABASE) {
@@ -1339,6 +1425,9 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
           this.graphqlService.updateOrderStatus(id, "paid").subscribe(() => {
             completed++;
             if (completed === orderIds.length) {
+              if (USE_DATABASE && qstashPayload) {
+                this.sendQStashPayload(qstashPayload);
+              }
               this.sendMailPaymentOrder(data);
               setTimeout(() => { this.closePaymentTypePopup(); this.refreshOrder(); }, 3000);
             }
@@ -1406,6 +1495,12 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
     paymentType.mode = "online"
     paymentType.period = this.sharedService.updateCurrentDateTimeInIST();
 
+    // Prepare QStash payload before database/file operations
+    let qstashPayload: any = null;
+    if (USE_DATABASE) {
+      qstashPayload = this.prepareQStashPayload(data, parseFloat(paymentType.actual_amount) || 0, parseFloat(paymentType.paid_amount) || 0, "owner");
+    }
+
     if (USE_DATABASE) {
       let idsStr = data.order[0].id.toString();
       let orderIds = idsStr.split(',').map((idStr: string) => parseInt(idStr.trim())).filter((id: number) => !isNaN(id));
@@ -1430,11 +1525,14 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
           this.graphqlService.updateOrderStatus(id, "paid").subscribe(() => {
             completed++;
             if (completed === orderIds.length) {
+              if (USE_DATABASE && qstashPayload) {
+                this.sendQStashPayload(qstashPayload);
+              }
               this.sendMailAdminPaymentOrder(data);
               setTimeout(() => { this.closeOwnerPasswordPopup(); this.refreshOrder(); }, 3000);
             }
-          }, (err: any) => {
-            console.error('Error updating status:', err);
+          }, (err: any) => { 
+            console.error('Error updating status:', err); 
             if (!hasError) {
               hasError = true;
               this.showSpinner = false;
@@ -2133,6 +2231,32 @@ generateAdvancedConsolidatedPdfReport(
     platforms: reportAmounts
   };
  
+  /* ================= INSERT DAILY SALES REPORT TO HASURA ================= */
+  const dailyReportPayload = {
+    report_date: paymentDate,
+    total_orders: orders.length,
+    total_actual: totalActual,
+    total_paid: totalPaid,
+    difference: totalDifference,
+    cash_amount: cashTotal,
+    online_amount: onlineTotal,
+    swiggy_amount: reportAmounts.swiggy,
+    zomato_amount: reportAmounts.zomato,
+    swiggy_dine_in_amount: reportAmounts.swiggyDineIn,
+    dstrict_amount: reportAmounts.dstrict,
+    platform_total: platformTotal,
+    grand_total: grandTotal
+  };
+
+  this.hasuraDataService.insertDailySalesReport(dailyReportPayload).subscribe({
+    next: (res) => {
+      console.log('Daily sales report inserted successfully:', res);
+    },
+    error: (err) => {
+      console.error('Error inserting daily sales report:', err);
+    }
+  });
+
   /* ================= SEND EMAIL ================= */
   this.sendReportEmail(pdf, page3Summary);
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { KUBERA_ACCOUNT_GRAPHQL_API, KUBERA_ACCOUNT_GRAPHQL_GET_CONFIG_API, KUBERA_ACCOUNT_GRAPHQL_GET_CONFIG_BY_TYPE_API, KUBERA_ACCOUNT_GRAPHQL_KEY, KUBERA_ACCOUNT_GRAPHQL_QUERY_API, KUBERA_ACCOUNT_GRAPHQL_UPDATE_CONFIG_BY_TYPE_API } from '../common/constanst';
+import { KUBERA_ACCOUNT_GRAPHQL_API, KUBERA_ACCOUNT_GRAPHQL_GET_CONFIG_API, KUBERA_ACCOUNT_GRAPHQL_GET_CONFIG_BY_TYPE_API, KUBERA_ACCOUNT_GRAPHQL_KEY, KUBERA_ACCOUNT_GRAPHQL_QUERY_API, KUBERA_ACCOUNT_GRAPHQL_UPDATE_CONFIG_BY_TYPE_API, DAILY_SALES_REPORT_API, PAYMENT_HASURA_ADMIN_SECRET } from '../common/constanst';
 import { gql } from 'graphql-tag';
 
 @Injectable({
@@ -198,6 +198,15 @@ export class HasuraApiService {
 
   }
 
-
+  insertDailySalesReport(data: any): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'x-hasura-admin-secret': PAYMENT_HASURA_ADMIN_SECRET
+    });
+    const body = {
+      reportData: [data]
+    };
+    return this.http.post<any>(DAILY_SALES_REPORT_API, body, { headers });
+  }
 
 }
