@@ -45,6 +45,9 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
   isSyncingPaid: boolean = false;
 
   bell_msg = "";
+  isMergePopupOpen: boolean = false;
+  selectedOrderToMerge: any = null;
+  orderIdsToMergeInput: string = '';
   constructor(private webSocketService: WebSocketService, private datePipe: DatePipe, private dropboxService: DropboxService,
     private sharedService: SharedService, private dataService: DataService, private hasuraDataService: HasuraApiService,
      private graphqlService: GraphqlService, private customerService: CustomerService,private mailService: MailService) {
@@ -205,11 +208,12 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
   files: any[] = [];
   checkOutOrderList: SingleFileOrderDto[] = [];
   isSyncingCheckout = false;
-  async getCheckOutOrders() {
+  async getCheckOutOrders(force: boolean = false) {
+    if (USE_DATABASE && this.isSyncingCheckout && !force) return;
+
     this.showSpinner = true;
 
     if (USE_DATABASE) {
-      if (this.isSyncingCheckout) return;
       this.isSyncingCheckout = true;
 
       const today = new Date();
@@ -241,7 +245,7 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
             }
           }
 
-          if (isIdentical) {
+          if (isIdentical && !force) {
             // Nothing changed! Just stop spinner and return
             this.showSpinner = false;
             this.isSyncingCheckout = false;
@@ -995,7 +999,10 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
     const flatIds: string[] = [];
     ids.forEach(id => {
       id.toString().split(',').forEach((part: string) => {
-        if (part.trim()) flatIds.push(part.trim());
+        const trimmed = part.trim();
+        if (trimmed && !flatIds.includes(trimmed)) {
+          flatIds.push(trimmed);
+        }
       });
     });
 
@@ -1155,6 +1162,110 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
   closeOwnerPasswordPopup() {
     this.isOwnerPopupOpen = false;
   }
+
+  mergeOrdersPrompt(order: any) {
+    this.selectedOrderToMerge = order;
+    this.orderIdsToMergeInput = '';
+    this.isMergePopupOpen = true;
+  }
+
+  closeMergePopup() {
+    this.isMergePopupOpen = false;
+    this.selectedOrderToMerge = null;
+    this.orderIdsToMergeInput = '';
+  }
+
+  executeMergeOrders() {
+    if (!this.selectedOrderToMerge || !this.orderIdsToMergeInput.trim()) {
+      return;
+    }
+
+    if (!USE_DATABASE) {
+      this.errorMessage = "Merge is only supported in Database mode.";
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    const orderIds = this.orderIdsToMergeInput
+      .split(',')
+      .map((s: string) => parseInt(s.trim(), 10))
+      .filter((n: number) => !isNaN(n));
+
+    if (orderIds.length === 0) {
+      this.errorMessage = "Please enter valid numeric Order IDs.";
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    // Capture all needed values from selectedOrderToMerge before closing the popup and resetting properties
+    const primaryOrder = this.selectedOrderToMerge.order[0];
+    const mainTableNo = primaryOrder.table_no;
+    const mainTablePlace = primaryOrder.table_place;
+    const mainOrderIds = this.selectedOrderToMerge.order.map((o: any) => o.original_id !== undefined ? o.original_id : o.id);
+    let mainCheckoutId = primaryOrder.check_out_id;
+
+    // Close the merge popup immediately so the user returns to the main page while processing
+    this.closeMergePopup();
+
+    this.showSpinner = true;
+
+    // Fetch order details to verify their table numbers
+    this.graphqlService.getPaidOrdersByIds(orderIds).subscribe(
+      (result: any) => {
+        const dbOrders = result.data.kubera_order || [];
+
+        if (dbOrders.length !== orderIds.length) {
+          this.errorMessage = "Some entered Order IDs do not exist.";
+          this.showSpinner = false;
+          setTimeout(() => this.errorMessage = '', 3000);
+          return;
+        }
+
+        // Verify all target orders are from the same table (matching table number and place)
+        const invalidOrders = dbOrders.filter((o: any) => o.table_no !== mainTableNo || o.table_place !== mainTablePlace);
+        if (invalidOrders.length > 0) {
+          this.errorMessage = `All orders must be from the same table (Table ${mainTableNo}${mainTablePlace ? ' ' + mainTablePlace : ''}).`;
+          this.showSpinner = false;
+          setTimeout(() => this.errorMessage = '', 4000);
+          return;
+        }
+
+        let mainOrdersNeedUpdate = false;
+
+        if (!mainCheckoutId || !mainCheckoutId.startsWith('CHK_')) {
+          mainCheckoutId = 'CHK_' + new Date().getTime().toString() + '_' + Math.floor(Math.random() * 1000).toString();
+          mainOrdersNeedUpdate = true;
+        }
+
+        const allIdsToUpdate = [...orderIds];
+        if (mainOrdersNeedUpdate) {
+          allIdsToUpdate.push(...mainOrderIds);
+        }
+
+        this.graphqlService.updateMultipleOrdersCheckout(allIdsToUpdate, 'checkout', mainCheckoutId).subscribe(
+          (res: any) => {
+            this.successMessage = "Orders merged successfully!";
+            this.webSocketService.sendMessage("payment");
+            this.getCheckOutOrders(true);
+            setTimeout(() => this.successMessage = '', 3000);
+          },
+          (err: any) => {
+            console.error("Error merging orders:", err);
+            this.errorMessage = "Failed to merge orders.";
+            this.showSpinner = false;
+            setTimeout(() => this.errorMessage = '', 3000);
+          }
+        );
+      },
+      (err: any) => {
+        console.error("Error checking order tables:", err);
+        this.errorMessage = "Error verifying order table numbers.";
+        this.showSpinner = false;
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    );
+  }
+
   makePaymentCompleted() {
     //convert the object tpo csv and save to the paidorder folder 
     this.moveOrderToPaid(this.selectedOrder);
@@ -1404,21 +1515,21 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
     if (USE_DATABASE) {
       let idsStr = data.order[0].id.toString();
       let orderIds = idsStr.split(',').map((idStr: string) => parseInt(idStr.trim())).filter((id: number) => !isNaN(id));
-      let primaryOrderId = orderIds[0];
 
       const formattedDate = this.sharedService.updateCurrentDateInIST();
 
       let paymentPayload = {
         actual_amount: parseFloat(paymentType.actual_amount),
         paid_amount: parseFloat(paymentType.paid_amount),
-        order_id: primaryOrderId.toString(),
+        order_id: idsStr,
         payment_mode: paymentType.mode,
-        bill_no: data.order[0].order_ref_id.toString(),
+        bill_no: data.order[0].billNo.toString(),
         created_time: paymentType.period,
         created_at: formattedDate
       };
 
-      this.graphqlService.insertPaymentDetails(paymentPayload).subscribe(() => {
+      this.graphqlService.insertPaymentDetails(paymentPayload).subscribe((response: any) => {
+        const paymentId = response?.data?.insert_kubera_payment_details_one?.id;
         let completed = 0;
         let hasError = false;
         orderIds.forEach((id: number) => {
@@ -1426,6 +1537,9 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
             completed++;
             if (completed === orderIds.length) {
               if (USE_DATABASE && qstashPayload) {
+                if (paymentId && qstashPayload.paymentData && qstashPayload.paymentData.length > 0) {
+                  qstashPayload.paymentData[0].payment_detail_id_ref = paymentId;
+                }
                 this.sendQStashPayload(qstashPayload);
               }
               this.sendMailPaymentOrder(data);
@@ -1504,21 +1618,21 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
     if (USE_DATABASE) {
       let idsStr = data.order[0].id.toString();
       let orderIds = idsStr.split(',').map((idStr: string) => parseInt(idStr.trim())).filter((id: number) => !isNaN(id));
-      let primaryOrderId = orderIds[0];
 
       const formattedDate = this.sharedService.updateCurrentDateInIST();
 
       let paymentPayload = {
         actual_amount: parseFloat(paymentType.actual_amount),
         paid_amount: 0.0,
-        order_id: primaryOrderId.toString(),
+        order_id: idsStr,
         payment_mode: "owner",
-        bill_no: data.order[0].order_ref_id.toString(),
+        bill_no: data.order[0].billNo.toString(),
         created_time: paymentType.period,
         created_at: formattedDate
       };
 
-      this.graphqlService.insertPaymentDetails(paymentPayload).subscribe(() => {
+      this.graphqlService.insertPaymentDetails(paymentPayload).subscribe((response: any) => {
+        const paymentId = response?.data?.insert_kubera_payment_details_one?.id;
         let completed = 0;
         let hasError = false;
         orderIds.forEach((id: number) => {
@@ -1526,6 +1640,9 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
             completed++;
             if (completed === orderIds.length) {
               if (USE_DATABASE && qstashPayload) {
+                if (paymentId && qstashPayload.paymentData && qstashPayload.paymentData.length > 0) {
+                  qstashPayload.paymentData[0].payment_detail_id_ref = paymentId;
+                }
                 this.sendQStashPayload(qstashPayload);
               }
               this.sendMailAdminPaymentOrder(data);

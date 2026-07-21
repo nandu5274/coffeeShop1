@@ -1239,7 +1239,8 @@ input:checked + .slider:before {
   }
 
   .card-action-buttons {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 8px;
     width: 100%;
 
@@ -1285,6 +1286,17 @@ input:checked + .slider:before {
           background: #ff6b6b;
           color: #000;
           border-color: #ff6b6b;
+        }
+      }
+
+      &.btn-merge {
+        color: #ffc107;
+        border-color: rgba(255, 193, 7, 0.3);
+        background: rgba(255, 193, 7, 0.05);
+        &:hover {
+          background: #ffc107;
+          color: #000;
+          border-color: #ffc107;
         }
       }
     }

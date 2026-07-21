@@ -38,6 +38,7 @@ import { AdminPaymentFormComponent } from './admin-payment-form/admin-payment-fo
 import { CapSelectorComponent } from './cap-selector/cap-selector.component';
 import { CounterCapComponent } from './counter-cap/counter-cap.component';
 import { MenuUpdateComponent } from './menu-update/menu-update.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
 
 
 @NgModule({
@@ -68,7 +69,8 @@ import { MenuUpdateComponent } from './menu-update/menu-update.component';
     AdminPaymentFormComponent,
     CapSelectorComponent,
     CounterCapComponent,
-    MenuUpdateComponent
+    MenuUpdateComponent,
+    DashboardComponent
   ],
   imports: [
     BrowserModule,

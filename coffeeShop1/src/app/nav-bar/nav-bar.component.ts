@@ -170,6 +170,12 @@ navigateToMenu(nav:any) {
   }
 }
 
+navigateToDashboard() {
+  this.isMenuActive = false;
+  this.router.navigate(['/dashboard']);
+  sessionStorage.setItem("previousUrl", "dashboard");
+}
+
 showModal: boolean = false;
 
 

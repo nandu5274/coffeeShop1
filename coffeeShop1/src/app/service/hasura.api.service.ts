@@ -209,4 +209,58 @@ export class HasuraApiService {
     return this.http.post<any>(DAILY_SALES_REPORT_API, body, { headers });
   }
 
+  getPaymentDetailsFromAlive(): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'x-hasura-admin-secret': PAYMENT_HASURA_ADMIN_SECRET
+    });
+    const body = {
+      query: `
+        query {
+          payment_details(order_by: {created_at: desc}) {
+            id
+            actual_amount
+            paid_amount
+            payment_mode
+            created_at
+            created_time
+            bill_no
+            order_id
+          }
+        }
+      `
+    };
+    return this.http.post<any>('https://alive-bedbug-11.hasura.app/v1/graphql', body, { headers });
+  }
+
+  getOrdersFromAlive(): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'x-hasura-admin-secret': PAYMENT_HASURA_ADMIN_SECRET
+    });
+    const body = {
+      query: `
+        query {
+          order(order_by: {created_at: desc}) {
+            id
+            order_ref_id
+            order_status
+            table_no
+            created_at
+          }
+          order_item(order_by: {created_at: desc}) {
+            id
+            item_name
+            item_quantity
+            item_description
+            created_at
+            order_ref_id
+            order_id
+          }
+        }
+      `
+    };
+    return this.http.post<any>('https://alive-bedbug-11.hasura.app/v1/graphql', body, { headers });
+  }
+
 }

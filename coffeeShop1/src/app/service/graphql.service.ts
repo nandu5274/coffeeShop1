@@ -410,6 +410,32 @@ export class GraphqlService {
     });
   }
 
+  updateMultipleOrdersCheckout(orderIds: number[], order_status: string, check_out_id: string): any {
+    const mutation = gql`
+      mutation update_multiple_orders_checkout($orderIds: [Int!]!, $order_status: String!, $check_out_id: String!) {
+        update_kubera_order(
+          where: { id: { _in: $orderIds } }
+          _set: { order_status: $order_status, check_out_id: $check_out_id }
+        ) {
+          affected_rows
+        }
+      }
+    `;
+    return this.apollo.mutate({
+      mutation,
+      variables: {
+        orderIds,
+        order_status,
+        check_out_id
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': GRAPHQL_KEY,
+        },
+      },
+    });
+  }
+
   deleteOrderItemsByOrderIds(orderIds: number[]): any {
     const mutation = gql`
       mutation delete_kubera_order_item($orderIds: [Int!]!) {

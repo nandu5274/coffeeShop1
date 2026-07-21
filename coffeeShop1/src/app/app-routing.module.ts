@@ -13,6 +13,7 @@ import { CustomerProfileComponent } from './customer-profile/customer-profile.co
 import { CapSelectorComponent } from './cap-selector/cap-selector.component';
 import { CounterCapComponent } from './counter-cap/counter-cap.component';
 import { MenuUpdateComponent } from './menu-update/menu-update.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
 
 const routes: Routes = [
   { path: '', component: HomePageComponent },
@@ -28,6 +29,7 @@ const routes: Routes = [
   { path: 'external-profile', component: ProfileComponent },
   { path: 'card', component: MembershipCardComponent },
   { path: 'profile', component: CustomerProfileComponent },
+  { path: 'dashboard', component: DashboardComponent },
 ];
 
 @NgModule({

@@ -893,6 +893,8 @@ export class CaptainPageComponent implements AfterViewInit {
         this.loadingCheckoutTable = String(firstOrder.table_no);
       }
     }
+    // Close the checkout modal popup immediately
+    this.showCheckOutModal = false;
 
     const clearSpinnerAndClose = () => {
       this.loadingCheckoutTable = '';
@@ -918,9 +920,7 @@ export class CaptainPageComponent implements AfterViewInit {
               (dbRes: any) => {
                 completed++;
                 if (completed === data.length) {
-                  setTimeout(() => {
-                    clearSpinnerAndClose();
-                  }, 1000);
+                  clearSpinnerAndClose();
                   this.sendMessageToWebSocket('payment');
                 }
               },
@@ -929,18 +929,14 @@ export class CaptainPageComponent implements AfterViewInit {
                 completed++;
                 if (!hasError) {
                   hasError = true;
-                  setTimeout(() => {
-                    clearSpinnerAndClose();
-                  }, 1000);
+                  clearSpinnerAndClose();
                 }
               }
             );
           } else {
             completed++;
             if (completed === data.length) {
-              setTimeout(() => {
-                clearSpinnerAndClose();
-              }, 1000);
+              clearSpinnerAndClose();
             }
           }
         });
@@ -998,9 +994,7 @@ export class CaptainPageComponent implements AfterViewInit {
         } catch (delErr) {
           console.error('Error deleting approved order files:', delErr);
         }
-        setTimeout(() => {
-          clearSpinnerAndClose();
-        }, 3000);
+        clearSpinnerAndClose();
         this.sendMessageToWebSocket('payment');
       } catch (uploadErr) {
         console.warn('Upload failed, trying updateFile:', uploadErr);
@@ -1012,9 +1006,7 @@ export class CaptainPageComponent implements AfterViewInit {
           } catch (delErr) {
             console.error('Error deleting approved order files on update:', delErr);
           }
-          setTimeout(() => {
-            clearSpinnerAndClose();
-          }, 3000);
+          clearSpinnerAndClose();
           this.sendMessageToWebSocket('payment');
         } catch (updateErr) {
           console.error('Error updating file on Dropbox:', updateErr);

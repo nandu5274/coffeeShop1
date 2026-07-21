@@ -204,7 +204,18 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
   }
   getTokenNumbersFromData(data:any)
   {
-     return data.order.map((obj: any) => obj.id).join(',');
+     const ids: string[] = [];
+     data.order.forEach((obj: any) => {
+       if (obj && obj.id) {
+         obj.id.toString().split(',').forEach((part: string) => {
+           const trimmed = part.trim();
+           if (trimmed && !ids.includes(trimmed)) {
+             ids.push(trimmed);
+           }
+         });
+       }
+     });
+     return ids.join(',');
   }
   
   formatStringWithTwoDecimalPlaces(value :any): string {
