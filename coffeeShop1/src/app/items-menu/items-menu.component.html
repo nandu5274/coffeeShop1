@@ -200,6 +200,79 @@
   </div>
 </div>
 
+<!-- ======= Premium Quick Guide Demo Modal ======= -->
+<div *ngIf="showFirstTimeDemo" class="modal-overlay-v2 demo-overlay-blur" (click)="dismissDemo()">
+  <div class="modal-card-v2 demo-card-v2" (click)="$event.stopPropagation()">
+    
+    <!-- Top Header -->
+    <div class="demo-top-v2">
+      <div class="demo-badge-v2">
+        <span class="badge-dot"></span>
+        Menu Tip &bull; Step {{demoStep}} of 2
+      </div>
+      <button class="modal-close-v2" (click)="dismissDemo()">&times;</button>
+    </div>
+
+    <!-- Step 1: Swipe Categories -->
+    <div *ngIf="demoStep === 1" class="demo-step-v2 fade-in">
+      <div class="mockup-bar-container">
+        <div class="mockup-category-bar loop-mockup">
+          <span class="mockup-chip active">All Dishes</span>
+          <span class="mockup-chip">Coffee ☕</span>
+          <span class="mockup-chip">Breakfast 🥐</span>
+          <span class="mockup-chip">Snacks 🥪</span>
+          <span class="mockup-chip">Desserts 🍰</span>
+          <span class="mockup-chip active">All Dishes</span>
+          <span class="mockup-chip">Coffee ☕</span>
+          <span class="mockup-chip">Breakfast 🥐</span>
+          <span class="mockup-chip">Snacks 🥪</span>
+          <span class="mockup-chip">Desserts 🍰</span>
+        </div>
+        <div class="mockup-hand-gesture">
+          <div class="ripple-ring"></div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" fill="#cda45e" viewBox="0 0 24 24" class="hand-swipe-svg">
+            <path d="M9 11.24V7.5a1.5 1.5 0 0 1 3 0v3.74a3 3 0 0 1 1.05-.24 1.5 1.5 0 0 1 1.5 1.5v3.18a5.5 5.5 0 0 1-4.22 5.35L9 21l-3.3-3.66a2 2 0 0 1 .15-2.82l.83-.75a1.5 1.5 0 0 1 2.06.12L9 14.17v-2.93zM12 2a1.5 1.5 0 0 1 1.5 1.5v4a1.5 1.5 0 0 1-3 0v-4A1.5 1.5 0 0 1 12 2z"/>
+          </svg>
+        </div>
+      </div>
+      <h3 class="demo-title-v2">Swipe Categories</h3>
+      <p class="demo-desc-v2">Swipe horizontally left &amp; right on the category bar to explore all Cuisines and Add-ons.</p>
+    </div>
+
+    <!-- Step 2: Click Category to View Dishes -->
+    <div *ngIf="demoStep === 2" class="demo-step-v2 fade-in">
+      <div class="mockup-bar-container">
+        <div class="mockup-category-bar">
+          <span class="mockup-chip">All</span>
+          <span class="mockup-chip active pulse-click">Coffee ☕</span>
+          <span class="mockup-chip">Snacks 🥪</span>
+          <span class="mockup-chip">Desserts 🍰</span>
+        </div>
+        <div class="mockup-tap-gesture">
+          <div class="pulse-ring"></div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" fill="#cda45e" viewBox="0 0 24 24" class="tap-click-svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+          </svg>
+        </div>
+      </div>
+      <h3 class="demo-title-v2">Click Category to View Dishes</h3>
+      <p class="demo-desc-v2">Tap any category chip (e.g. Coffee or Snacks) to instantly view all dishes listed under it.</p>
+    </div>
+
+    <!-- Footer Navigation -->
+    <div class="demo-footer-v2">
+      <div class="demo-dots-v2">
+        <span [class.active]="demoStep === 1" (click)="demoStep = 1"></span>
+        <span [class.active]="demoStep === 2" (click)="demoStep = 2"></span>
+      </div>
+      <button class="demo-btn-v2" (click)="nextDemoStep()">
+        <span>{{ demoStep === 1 ? 'Next Step →' : 'Start Exploring!' }}</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
 <!-- Vendor JS Files -->
 <script src="assets/vendor/aos/aos.js"></script>
 <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>

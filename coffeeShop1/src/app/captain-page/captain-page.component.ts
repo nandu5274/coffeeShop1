@@ -1070,10 +1070,7 @@ export class CaptainPageComponent implements AfterViewInit {
     sessionStorage.setItem('isCap', 'true');
     this.sharedService.setShowMenuFlag(1);
 
-    this.menuPopupTableInfo = (data[0].order.table_place ?? '') + ' ' + data[0].order.table_no;
-    this.isMenuPopupHidden = false;
-    this.showMenuPopup = true;
-    document.body.style.overflow = 'hidden';
+    this.sharedService.navigateToMenu('menu');
   }
 
   closeMenuPopup() {

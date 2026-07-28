@@ -10,7 +10,7 @@ export class CapSelectorComponent implements OnInit {
    constructor(private router: Router) {}
 
   ngOnInit(): void {
-   this.openPopup();
+    this.router.navigate(['/captain']);
   }
   loggedIn: any = false;
     showSpinner: Boolean = false;

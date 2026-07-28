@@ -27,9 +27,13 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
   showCourse: any = false
   useRemoteMenuData: boolean = true;
   menuEndpointUrl: string = KUBERA_ACCOUNT_MENU_GRAPHQL_QUERY_API;
+  showFirstTimeDemo: boolean = false;
+  demoStep: number = 1;
+
   ngOnInit(): void {
     this.useRemoteMenuData = true;
     this.populateMenuList();
+    this.checkFirstTimeUserDemo();
     this.sharedService.getIsLoginFlag().subscribe((data) => {
       this.is_login = sessionStorage.getItem('is_login');
       if (data) {
@@ -37,8 +41,34 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
       }
 
     })
+  }
 
+  checkFirstTimeUserDemo() {
+    this.isCap = sessionStorage.getItem('isCap');
+    if (this.isCap === 'true' || this.isCap === true) {
+      this.showFirstTimeDemo = false;
+      return;
+    }
+    this.showFirstTimeDemo = true;
+    this.demoStep = 1;
+  }
 
+  openDemo() {
+    this.demoStep = 1;
+    this.showFirstTimeDemo = true;
+  }
+
+  nextDemoStep() {
+    if (this.demoStep < 2) {
+      this.demoStep++;
+    } else {
+      this.dismissDemo();
+    }
+  }
+
+  dismissDemo() {
+    this.showFirstTimeDemo = false;
+    sessionStorage.setItem('hasSeenMenuDemo', 'true');
   }
   public loadScript(url: string) {
     let node = document.createElement('script');
@@ -78,22 +108,51 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
       this.getLoyalPoints();
     }
 
-  
-
+    this.triggerScrollHintNudge();
   }
-  handleCustomEvent(event: Event): void {
 
-    // Do your handling logic here
-    // Remove the event listener to prevent further execution
+  triggerScrollHintNudge() {
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      const el = document.getElementById('cuisine-filters-v2');
+      if (el && el.scrollWidth > el.clientWidth) {
+        clearInterval(interval);
+        
+        const totalCycles = 2;
+        const cycleDuration = 900;
+        const totalDuration = totalCycles * cycleDuration;
+        const distance = 60;
+        const startTime = performance.now();
+
+        const animatePeek = (currentTime: number) => {
+          const elapsed = currentTime - startTime;
+
+          if (elapsed < totalDuration) {
+            const currentCycleProgress = (elapsed % cycleDuration) / cycleDuration;
+            const offset = Math.sin(currentCycleProgress * Math.PI) * distance;
+            el.scrollLeft = offset;
+            requestAnimationFrame(animatePeek);
+          } else {
+            el.scrollLeft = 0;
+          }
+        };
+
+        requestAnimationFrame(animatePeek);
+      } else if (attempts > 30) {
+        clearInterval(interval);
+      }
+    }, 150);
+  }
+
+  handleCustomEvent(event: Event): void {
     window.removeEventListener('customEvent', this.handleCustomEvent);
   }
   private destroy$ = new Subject<void>();
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    // Clean up: Remove the event listener when the component is destroyed
     window.removeEventListener('customEvent', this.handleCustomEvent);
-
   }
 
   showModal = false;
@@ -357,6 +416,8 @@ onFlavourChange() {
       setTimeout(() => {
       const loadEvent = new Event('load');
       window.dispatchEvent(loadEvent);
+      this.triggerScrollHintNudge();
+      this.checkFirstTimeUserDemo();
     }, 20);
 
 
