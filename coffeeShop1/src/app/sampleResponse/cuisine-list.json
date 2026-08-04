@@ -2,6 +2,15 @@
   "cuisines": [
     {
       "cuisine": {
+        "type": "ChefSPL",
+        "class": ".filter-ChefSPL",
+        "items": [
+          "ChefSPL"
+        ]
+      }
+    },
+    {
+      "cuisine": {
         "type": "Combos",
         "class": ".filter-Combos",
         "items": [
@@ -9,7 +18,6 @@
         ]
       }
     },
-
     {
       "cuisine": {
         "type": "BreakFast",
@@ -28,7 +36,7 @@
         ]
       }
     },
-            {
+    {
       "cuisine": {
         "type": "Matcha",
         "class": ".filter-Combos",
@@ -37,7 +45,6 @@
         ]
       }
     },
-    
     {
       "cuisine": {
         "type": "Barista",

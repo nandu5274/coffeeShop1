@@ -39,6 +39,7 @@ import { CapSelectorComponent } from './cap-selector/cap-selector.component';
 import { CounterCapComponent } from './counter-cap/counter-cap.component';
 import { MenuUpdateComponent } from './menu-update/menu-update.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
+import { ArViewComponent } from './ar-view/ar-view.component';
 
 
 @NgModule({
@@ -78,6 +79,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
     BrowserAnimationsModule,
     AgGridModule,
     FormsModule,
+    ArViewComponent,
     GraphQLModule,
     HttpClientModule,
     ReactiveFormsModule,

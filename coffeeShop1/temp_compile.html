@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+</head>
+<body>
+<script>
+window.compileDone = false;
+window.compiledData = null;
+
+async function runCompile() {
+  try {
+    const compiler = new MINDAR.IMAGE.Compiler();
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = async () => {
+      try {
+        console.log('Loaded image', img.width, img.height);
+        await compiler.compileImageTargets([img], (p) => console.log('Compile progress:', Math.round(p * 100) + '%'));
+        const exportedBuffer = await compiler.exportData();
+        const bytes = new Uint8Array(exportedBuffer);
+        let binary = '';
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        window.compiledData = btoa(binary);
+        window.compileDone = true;
+        console.log('SUCCESS_EXPORTED:' + window.compiledData.length);
+      } catch (e) {
+        console.error('Compile err:', e);
+      }
+    };
+    img.src = 'hero-m-bg.jpg';
+  } catch (err) {
+    console.error('Init err:', err);
+  }
+}
+runCompile();
+</script>
+</body>
+</html>

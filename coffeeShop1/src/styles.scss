@@ -44,7 +44,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 #hero .btn-book,
 .menu-page-v2 .cap-btn,
 .menu-page-v2 .add-bowl-v2,
-.menu-page-v2 .qty-control-v2 button {
+.menu-page-v2 .qty-control-v2 button,
+.chef-spl-cta {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
   backdrop-filter: blur(12px) saturate(140%) !important;
   -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
@@ -104,7 +105,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 /* Add specialized gold glow highlights to primary call-to-actions */
 #hero .btn-menu,
-.menu-page-v2 .add-bowl-v2 {
+.menu-page-v2 .add-bowl-v2,
+.chef-spl-cta {
   border-color: rgba(205, 164, 94, 0.35) !important;
   box-shadow: 0 4px 15px rgba(205, 164, 94, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
 
@@ -879,7 +881,8 @@ body.light-mode {
   .menu-page-v2 .cap-btn,
   .menu-page-v2 .add-bowl-v2,
   .menu-page-v2 .qty-control-v2 button,
-  .place-order-btn-v2 {
+  .place-order-btn-v2,
+  .chef-spl-cta {
     background: #1a1814 !important;
     color: #ffffff !important;
     border: 1px solid #cda45e !important;

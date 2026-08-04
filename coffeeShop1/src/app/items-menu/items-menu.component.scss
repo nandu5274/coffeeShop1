@@ -1936,3 +1936,395 @@ margin: 5px 0;
   }
 }
 
+/* ---- Chef Specials Popup ---- */
+.chef-spl-overlay {
+  z-index: 10009;
+  align-items: center;
+  padding: 30px 14px;
+  background: rgba(4, 3, 2, 0.78) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+.chef-spl-card {
+  max-width: 380px !important;
+  width: 100%;
+  max-height: min(86vh, 660px);
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 22px 22px !important;
+  background:
+    radial-gradient(ellipse 100% 60% at 50% -5%, rgba(228, 192, 122, 0.2) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 40% at 50% 100%, rgba(205, 164, 94, 0.08) 0%, transparent 60%),
+    linear-gradient(170deg, rgba(36, 30, 22, 0.99) 0%, rgba(11, 9, 7, 1) 45%, rgba(18, 14, 10, 0.99) 100%) !important;
+  border: 1px solid rgba(228, 192, 122, 0.45) !important;
+  border-radius: 26px !important;
+  box-shadow:
+    0 48px 90px rgba(0, 0, 0, 0.82),
+    0 0 80px rgba(205, 164, 94, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 0 60px rgba(205, 164, 94, 0.05) !important;
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  overflow: hidden;
+  position: relative;
+}
+
+.chef-spl-sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.04) 48%,
+    transparent 62%
+  );
+  animation: chefSplSheen 7s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes chefSplSheen {
+  0%, 100% { opacity: 0.35; transform: translateX(-8%); }
+  50% { opacity: 0.7; transform: translateX(8%); }
+}
+
+.chef-spl-glow {
+  position: absolute;
+  top: -90px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 170px;
+  background: radial-gradient(ellipse at center, rgba(240, 213, 154, 0.3) 0%, transparent 68%);
+  pointer-events: none;
+  animation: chefSplGlowSoft 4.5s ease-in-out infinite;
+}
+
+@keyframes chefSplGlowSoft {
+  0%, 100% { opacity: 0.65; }
+  50% { opacity: 1; }
+}
+
+.chef-spl-frame {
+  position: absolute;
+  inset: 11px;
+  border: 1px solid rgba(228, 192, 122, 0.18);
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 0;
+
+  span {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-color: rgba(240, 213, 154, 0.8);
+    border-style: solid;
+  }
+
+  .c-tl {
+    top: -1px;
+    left: -1px;
+    border-width: 1.5px 0 0 1.5px;
+  }
+
+  .c-tr {
+    top: -1px;
+    right: -1px;
+    border-width: 1.5px 1.5px 0 0;
+  }
+
+  .c-bl {
+    bottom: -1px;
+    left: -1px;
+    border-width: 0 0 1.5px 1.5px;
+  }
+
+  .c-br {
+    bottom: -1px;
+    right: -1px;
+    border-width: 0 1.5px 1.5px 0;
+  }
+}
+
+.chef-spl-top {
+  position: relative;
+  text-align: center;
+  margin-bottom: 8px;
+  padding: 2px 6px 0;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.chef-spl-kicker {
+  margin: 0 0 8px;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 3.6px;
+  text-transform: uppercase;
+  color: rgba(232, 201, 138, 0.78);
+  font-family: "Poppins", sans-serif;
+}
+
+.chef-spl-heading {
+  margin: 0;
+  font-size: 1.78rem;
+  font-weight: 700;
+  font-family: "Playfair Display", Georgia, serif;
+  letter-spacing: 0.6px;
+  line-height: 1.1;
+  background: linear-gradient(185deg, #fff4d4 0%, #e8c98a 38%, #cda45e 72%, #a67c2d 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 20px rgba(205, 164, 94, 0.4));
+}
+
+.chef-spl-heading-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 14px;
+  margin-bottom: 6px;
+
+  span {
+    display: block;
+    width: 64px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(240, 213, 154, 0.85), transparent);
+  }
+
+  em {
+    font-style: normal;
+    font-size: 0.65rem;
+    color: #e4c07a;
+    line-height: 1;
+    text-shadow: 0 0 14px rgba(205, 164, 94, 0.85);
+  }
+}
+
+.chef-spl-list {
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 4px 2px 10px;
+  padding: 2px 2px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+  z-index: 1;
+
+  &::-webkit-scrollbar {
+    width: 2px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(205, 164, 94, 0.35);
+    border-radius: 4px;
+  }
+}
+
+.chef-spl-item {
+  display: grid;
+  grid-template-columns: 11px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 14px;
+  width: 100%;
+  min-height: 52px;
+  height: auto;
+  flex: 0 0 auto;
+  padding: 15px 4px;
+  box-sizing: border-box;
+  background: transparent;
+  border: none;
+  border-bottom: none;
+  border-radius: 0;
+  cursor: default;
+  pointer-events: none;
+  text-align: left;
+  color: inherit;
+  box-shadow: none;
+  animation: chefSplItemIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(228, 192, 122, 0.28) 20%,
+      rgba(228, 192, 122, 0.45) 50%,
+      rgba(228, 192, 122, 0.28) 80%,
+      transparent 100%
+    );
+  }
+
+  &:last-child::after {
+    display: none;
+  }
+}
+
+@keyframes chefSplItemIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chef-spl-diet {
+  width: 8px;
+  height: 8px;
+  border-radius: 1.5px;
+  border: 1.5px solid;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  background: transparent !important;
+  opacity: 0.9;
+
+  &.is-veg {
+    border-color: #4ade80;
+
+    &::after {
+      content: '';
+      display: block;
+      width: 3px;
+      height: 3px;
+      margin: 1.25px auto 0;
+      border-radius: 50%;
+      background: #4ade80;
+    }
+  }
+
+  &.is-nonveg {
+    border-color: #f87171;
+
+    &::after {
+      content: '';
+      display: block;
+      width: 3px;
+      height: 3px;
+      margin: 1.25px auto 0;
+      border-radius: 50%;
+      background: #f87171;
+    }
+  }
+}
+
+.chef-spl-item-name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #f8f0e4;
+  font-family: "Playfair Display", Georgia, serif;
+  font-style: italic;
+  line-height: 1.4;
+  letter-spacing: 0.35px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+}
+
+.chef-spl-footer-ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 2px 0 14px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+
+  span {
+    display: block;
+    width: 40px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(228, 192, 122, 0.55), transparent);
+  }
+
+  em {
+    font-style: normal;
+    font-size: 0.45rem;
+    color: rgba(228, 192, 122, 0.8);
+    line-height: 1;
+  }
+}
+
+.chef-spl-cta {
+  width: 100%;
+  flex: 0 0 auto;
+  margin-top: 0 !important;
+  border-radius: 999px !important;
+  padding: 14px 22px !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 2.2px !important;
+  text-transform: uppercase !important;
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+  color: #fff8ea !important;
+
+  span {
+    position: relative;
+    z-index: 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .chef-spl-overlay {
+    align-items: center;
+    padding: 32px 12px;
+  }
+
+  .chef-spl-card {
+    max-height: 84vh;
+    border-radius: 24px !important;
+    padding: 24px 18px 18px !important;
+  }
+
+  .chef-spl-heading {
+    font-size: 1.55rem;
+  }
+
+  .chef-spl-kicker {
+    font-size: 0.54rem;
+    letter-spacing: 3px;
+  }
+
+  .chef-spl-list {
+    margin: 2px 0 8px;
+    padding: 0;
+  }
+
+  .chef-spl-item {
+    min-height: 50px;
+    padding: 14px 2px;
+    column-gap: 12px;
+    grid-template-columns: 10px minmax(0, 1fr);
+  }
+
+  .chef-spl-item-name {
+    font-size: 0.98rem;
+  }
+
+  .chef-spl-cta {
+    padding: 13px 16px !important;
+    font-size: 0.68rem !important;
+    letter-spacing: 1.8px !important;
+  }
+}
+

@@ -200,6 +200,55 @@
   </div>
 </div>
 
+<!-- ======= Chef Specials Popup ======= -->
+<div *ngIf="showChefSplPopup" class="modal-overlay-v2 demo-overlay-blur chef-spl-overlay" (click)="dismissChefSplPopup()">
+  <div class="modal-card-v2 chef-spl-card" (click)="$event.stopPropagation()">
+
+    <div class="chef-spl-sheen" aria-hidden="true"></div>
+    <div class="chef-spl-glow" aria-hidden="true"></div>
+    <div class="chef-spl-frame" aria-hidden="true">
+      <span class="c-tl"></span>
+      <span class="c-tr"></span>
+      <span class="c-bl"></span>
+      <span class="c-br"></span>
+    </div>
+
+    <div class="chef-spl-top">
+      <p class="chef-spl-kicker">Chef’s Selection</p>
+      <h2 class="chef-spl-heading">Today's Specials</h2>
+      <div class="chef-spl-heading-line" aria-hidden="true">
+        <span></span>
+        <em>✦</em>
+        <span></span>
+      </div>
+    </div>
+
+    <div class="chef-spl-list">
+      <div
+        class="chef-spl-item"
+        *ngFor="let item of chefSplItems; let i = index"
+        [style.animation-delay]="(i * 0.06) + 's'">
+        <span
+          class="chef-spl-diet"
+          [ngClass]="(item.type || '').toLowerCase() === 'veg' || (item.type || '').toLowerCase() === 'v' ? 'is-veg' : 'is-nonveg'"
+          [attr.title]="(item.type || '').toLowerCase() === 'veg' || (item.type || '').toLowerCase() === 'v' ? 'Veg' : 'Non-Veg'"></span>
+        <h3 class="chef-spl-item-name">{{ item.name }}</h3>
+      </div>
+    </div>
+
+    <div class="chef-spl-footer-ornament" aria-hidden="true">
+      <span></span>
+      <em>◆</em>
+      <span></span>
+    </div>
+
+    <button type="button" class="add-bowl-v2 chef-spl-cta" (click)="dismissChefSplPopup()">
+      <span>Explore Full Menu</span>
+    </button>
+
+  </div>
+</div>
+
 <!-- ======= Premium Quick Guide Demo Modal ======= -->
 <div *ngIf="showFirstTimeDemo" class="modal-overlay-v2 demo-overlay-blur" (click)="dismissDemo()">
   <div class="modal-card-v2 demo-card-v2" (click)="$event.stopPropagation()">

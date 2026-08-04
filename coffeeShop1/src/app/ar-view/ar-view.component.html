@@ -1,0 +1,206 @@
+<div class="ar-viewport-container" (click)="userStartVideo()">
+  
+  <!-- Instagram Reel Style Welcome Screen Landing Modal -->
+  <div class="ar-welcome-screen" *ngIf="showWelcomeModal">
+    <div class="welcome-card text-center">
+      <div class="brand-logo-badge mb-3">
+        <i class="fa fa-cube"></i> CAFE KUBERA
+      </div>
+      <h2 class="welcome-title">3D Wall Mural WebAR</h2>
+      <p class="welcome-subtitle">
+        Point camera at Cafe Kubera mural painting (assets/img/hero-m-bg.jpg). Living video painting locks and sticks directly onto the physical 3D wall plane!
+      </p>
+
+      <div class="mural-preview-box mb-3">
+        <div class="reticle-guide"></div>
+        <p class="mural-guide-text">Point camera at Cafe Kubera mural photo</p>
+      </div>
+
+      <div class="btn-stack d-flex flex-column gap-2 mb-2">
+        <button class="btn btn-start-ar w-100" (click)="startArFlow(); $event.stopPropagation()">
+          🚀 Start 3D Wall AR Experience
+        </button>
+        <button class="btn btn-outline-gold w-100" (click)="toggleVideoPreviewModal(); $event.stopPropagation()">
+          🎬 Preview Wall Video
+        </button>
+      </div>
+
+      <small class="d-block text-muted mt-2">Requires camera access to track the 3D wall.</small>
+    </div>
+  </div>
+
+  <!-- Live GIF Wall Video Preview Modal -->
+  <div class="ar-overlay-screen preview-modal-screen" *ngIf="showVideoPreviewModal">
+    <div class="overlay-card text-center preview-card">
+      <div class="modal-header-bar d-flex justify-content-between align-items-center mb-3">
+        <h5 class="m-0 text-gold"><i class="fa fa-cube me-1"></i> 3D Wall AR Video Preview</h5>
+        <button class="btn-close-modal" (click)="toggleVideoPreviewModal(); $event.stopPropagation()">×</button>
+      </div>
+
+      <div class="video-preview-window mb-3">
+        <div class="preview-badge">3D AR Wall Video</div>
+        <img src="assets/mural-overlay.gif" class="w-100 h-100 object-fit-cover rounded-3" alt="Cafe Kubera AR Wall Video" />
+      </div>
+
+      <p class="preview-description text-muted mb-3">
+        This video sticks directly onto the physical 3D wall surface in WebGL camera space!
+      </p>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-gold flex-grow-1" (click)="startArFlow(); $event.stopPropagation()">
+          🚀 Launch AR Scanner Now
+        </button>
+        <button class="btn btn-outline-light" (click)="toggleVideoPreviewModal(); $event.stopPropagation()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Target Compilation & Initializing Overlay -->
+  <div class="ar-overlay-screen" *ngIf="(isInitializing || isCompilingTargets) && !showWelcomeModal">
+    <div class="overlay-card text-center">
+      <div class="spinner-border text-gold mb-3" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <h4 class="brand-title">Cafe Kubera WebAR</h4>
+      <p class="status-text">{{ statusMessage }}</p>
+      <small class="text-muted">Starting camera & tracking 3D wall plane...</small>
+    </div>
+  </div>
+
+  <!-- Camera Error Overlay -->
+  <div class="ar-overlay-screen error-screen" *ngIf="cameraError && !showWelcomeModal && !showVideoPreviewModal">
+    <div class="overlay-card text-center">
+      <div class="error-icon mb-3">
+        <i class="fa fa-exclamation-triangle"></i>
+      </div>
+      <h4>Camera Access Required</h4>
+      <p class="error-message">{{ cameraError }}</p>
+      <div class="btn-group gap-2 mt-3">
+        <button class="btn btn-gold" (click)="requestCameraPermission()">Grant Permission</button>
+        <a routerLink="/" class="btn btn-outline-light">Return Home</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scanning Guide Overlay (HUD) -->
+  <div class="ar-hud-overlay" *ngIf="!showWelcomeModal && !isInitializing && !isCompilingTargets && !cameraError && !showVideoPreviewModal">
+    <!-- Top Header Bar -->
+    <div class="hud-header">
+      <a routerLink="/" class="back-btn">
+        <i class="fa fa-arrow-left me-1"></i> Home
+      </a>
+      <div class="brand-badge">
+        <i class="fa fa-cube me-1"></i> 3D Wall AR
+      </div>
+      <div class="match-score-badge" [class.high-match]="targetFound || isSimulatedTarget || currentMatchPercentage >= 60">
+        <span>Match: <strong>{{ currentMatchPercentage }}%</strong> (Triggers @ &gt;60%)</span>
+      </div>
+    </div>
+
+    <!-- Live On-Screen Debug Console Panel -->
+    <div class="ar-debug-console" *ngIf="showLogs">
+      <div class="console-header">
+        <span><i class="fa fa-terminal me-1"></i> Target Logs (3D Wall Plane Tracking)</span>
+        <div class="console-actions">
+          <button class="btn-xs" (click)="clearLogs(); $event.stopPropagation()">Clear</button>
+          <button class="btn-xs" (click)="toggleLogs(); $event.stopPropagation()">×</button>
+        </div>
+      </div>
+      <div class="console-body">
+        <div *ngFor="let log of debugLogs" class="log-row" [ngClass]="'log-' + log.type">
+          <span class="log-time">[{{ log.time }}]</span>
+          <span class="log-text">{{ log.text }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Reticle / Scanning Frame -->
+    <div class="scanning-frame" [class.target-locked]="targetFound || isSimulatedTarget || currentMatchPercentage >= 60">
+      <div class="corner corner-tl"></div>
+      <div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div>
+      <div class="corner corner-br"></div>
+      <div class="scan-line" *ngIf="!targetFound && !isSimulatedTarget && currentMatchPercentage < 60"></div>
+    </div>
+
+    <!-- Bottom Status Pill & Interactive Action Menu -->
+    <div class="hud-footer">
+      <!-- Status Pill -->
+      <div class="status-pill" [class.locked]="targetFound || isSimulatedTarget || currentMatchPercentage >= 60">
+        <span class="status-indicator"></span>
+        <span class="status-label">
+          {{ (targetFound || isSimulatedTarget || currentMatchPercentage >= 60) ? '3D Wall Locked (' + currentMatchPercentage + '% Match - Video Stick to Wall Surface)' : 'Scanning Wall: assets/img/hero-m-bg.jpg (' + currentMatchPercentage + '% Match)...' }}
+        </span>
+      </div>
+
+      <!-- Snapshot Notification Banner -->
+      <div class="snapshot-alert" *ngIf="snapshotSuccess">
+        📸 Snapshot captured & saved to downloads!
+      </div>
+
+      <!-- Instagram Reel Interactive Floating Bar -->
+      <div class="interactive-ar-bar">
+        <button class="ar-bar-btn btn-video-preview" (click)="toggleVideoPreviewModal(); $event.stopPropagation()">
+          <i class="fa fa-picture-o"></i>
+          <span>Show Video</span>
+        </button>
+        <button class="ar-bar-btn btn-photo" (click)="captureSnapshot(); $event.stopPropagation()">
+          <i class="fa fa-camera"></i>
+          <span>Snapshot</span>
+        </button>
+        <button class="ar-bar-btn btn-audio" (click)="toggleAudio(); $event.stopPropagation()">
+          <i class="fa" [ngClass]="isAudioMuted ? 'fa-volume-off' : 'fa-volume-up'"></i>
+          <span>{{ isAudioMuted ? 'Muted' : 'Sound' }}</span>
+        </button>
+        <button class="ar-bar-btn btn-logs" (click)="toggleLogs(); $event.stopPropagation()">
+          <i class="fa fa-terminal"></i>
+          <span>Logs</span>
+        </button>
+        <button class="ar-bar-btn btn-demo" (click)="toggleSimulateTarget(); $event.stopPropagation()">
+          <i class="fa" [ngClass]="isSimulatedTarget ? 'fa-video-camera' : 'fa-magic'"></i>
+          <span>{{ isSimulatedTarget ? 'Scanner' : 'Test AR' }}</span>
+        </button>
+      </div>
+
+      <p class="instruction-text" *ngIf="!targetFound && !isSimulatedTarget">
+        Point camera at mural photo. Living video locks and <strong>sticks to physical 3D wall surface</strong> when match reaches &gt;60%.
+      </p>
+    </div>
+  </div>
+
+  <!-- WebAR A-Scene: image-tracked mural with video plane flush to wall -->
+  <a-scene
+    *ngIf="arTargetSrc"
+    #arScene
+    [attr.mindar-image]="'imageTargetSrc: ' + arTargetSrc + '; maxTrack: 1; autoStart: true; uiLoading: no; uiError: no; uiScanning: no; filterMinCF: 0.001; filterBeta: 10; warmupTolerance: 5; missTolerance: 5;'"
+    color-space="sRGB"
+    embedded
+    renderer="colorManagement: true, physicallyCorrectLights"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
+
+    <a-assets>
+      <img id="muralGifAsset" src="assets/mural-overlay.gif" crossorigin="anonymous" />
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <!--
+      MindAR normalizes target width to 1; height = imageH/imageW.
+      Mural (1024x576) => height 0.5625. Slight +Z keeps the plane on the wall without z-fighting.
+    -->
+    <a-entity #targetEntity0 mindar-image-target="targetIndex: 0" ar-video-sync>
+      <a-plane
+        class="wall-video-plane"
+        src="#muralGifAsset"
+        position="0 0 0.01"
+        width="1"
+        height="0.5625"
+        rotation="0 0 0"
+        material="shader: flat; transparent: true; side: double; opacity: 1">
+      </a-plane>
+    </a-entity>
+  </a-scene>
+</div>

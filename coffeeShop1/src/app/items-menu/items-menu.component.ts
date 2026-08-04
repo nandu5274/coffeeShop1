@@ -29,11 +29,12 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
   menuEndpointUrl: string = KUBERA_ACCOUNT_MENU_GRAPHQL_QUERY_API;
   showFirstTimeDemo: boolean = false;
   demoStep: number = 1;
+  showChefSplPopup: boolean = false;
+  chefSplItems: any[] = [];
 
   ngOnInit(): void {
     this.useRemoteMenuData = true;
     this.populateMenuList();
-    this.checkFirstTimeUserDemo();
     this.sharedService.getIsLoginFlag().subscribe((data) => {
       this.is_login = sessionStorage.getItem('is_login');
       if (data) {
@@ -49,8 +50,33 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
       this.showFirstTimeDemo = false;
       return;
     }
+    if (this.showChefSplPopup) {
+      return;
+    }
     this.showFirstTimeDemo = true;
     this.demoStep = 1;
+  }
+
+  openChefSplPopup() {
+    if (!this.sharedService.getShowMenuFlagData()) {
+      return;
+    }
+    this.chefSplItems = this.menuItemsList.filter(
+      (item: any) => item.cuisine === 'ChefSPL'
+    );
+    if (this.chefSplItems.length === 0) {
+      this.checkFirstTimeUserDemo();
+      return;
+    }
+    this.showFirstTimeDemo = false;
+    this.showChefSplPopup = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  dismissChefSplPopup() {
+    this.showChefSplPopup = false;
+    document.body.style.overflow = '';
+    this.checkFirstTimeUserDemo();
   }
 
   openDemo() {
@@ -417,7 +443,7 @@ onFlavourChange() {
       const loadEvent = new Event('load');
       window.dispatchEvent(loadEvent);
       this.triggerScrollHintNudge();
-      this.checkFirstTimeUserDemo();
+      this.openChefSplPopup();
     }, 20);
 
 
