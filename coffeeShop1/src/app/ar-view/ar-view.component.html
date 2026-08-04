@@ -39,7 +39,16 @@
 
       <div class="video-preview-window mb-3">
         <div class="preview-badge">3D AR Wall Video</div>
-        <img src="assets/mural-overlay.gif" class="w-100 h-100 object-fit-cover rounded-3" alt="Cafe Kubera AR Wall Video" />
+        <video
+          [src]="muralVideoSrc"
+          class="w-100 h-100 object-fit-cover rounded-3"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+          [attr.aria-label]="'Cafe Kubera AR Wall Video'">
+        </video>
       </div>
 
       <p class="preview-description text-muted mb-3">
@@ -94,8 +103,8 @@
       <div class="brand-badge">
         <i class="fa fa-cube me-1"></i> 3D Wall AR
       </div>
-      <div class="match-score-badge" [class.high-match]="targetFound || isSimulatedTarget || currentMatchPercentage >= 60">
-        <span>Match: <strong>{{ currentMatchPercentage }}%</strong> (Triggers @ &gt;60%)</span>
+      <div class="match-score-badge" [class.high-match]="targetFound || isSimulatedTarget">
+        <span>Match: <strong>{{ currentMatchPercentage }}%</strong>{{ (targetFound || isSimulatedTarget) ? ' · On wall' : ' · Scanning' }}</span>
       </div>
     </div>
 
@@ -117,21 +126,21 @@
     </div>
 
     <!-- Center Reticle / Scanning Frame -->
-    <div class="scanning-frame" [class.target-locked]="targetFound || isSimulatedTarget || currentMatchPercentage >= 60">
+    <div class="scanning-frame" [class.target-locked]="targetFound || isSimulatedTarget">
       <div class="corner corner-tl"></div>
       <div class="corner corner-tr"></div>
       <div class="corner corner-bl"></div>
       <div class="corner corner-br"></div>
-      <div class="scan-line" *ngIf="!targetFound && !isSimulatedTarget && currentMatchPercentage < 60"></div>
+      <div class="scan-line" *ngIf="!targetFound && !isSimulatedTarget"></div>
     </div>
 
     <!-- Bottom Status Pill & Interactive Action Menu -->
     <div class="hud-footer">
       <!-- Status Pill -->
-      <div class="status-pill" [class.locked]="targetFound || isSimulatedTarget || currentMatchPercentage >= 60">
+      <div class="status-pill" [class.locked]="targetFound || isSimulatedTarget">
         <span class="status-indicator"></span>
         <span class="status-label">
-          {{ (targetFound || isSimulatedTarget || currentMatchPercentage >= 60) ? '3D Wall Locked (' + currentMatchPercentage + '% Match - Video Stick to Wall Surface)' : 'Scanning Wall: assets/img/hero-m-bg.jpg (' + currentMatchPercentage + '% Match)...' }}
+          {{ (targetFound || isSimulatedTarget) ? ('Wall locked · video on mural (' + currentMatchPercentage + '%)') : ('Point at Cafe Kubera mural (' + currentMatchPercentage + '%)...') }}
         </span>
       </div>
 
@@ -165,41 +174,51 @@
       </div>
 
       <p class="instruction-text" *ngIf="!targetFound && !isSimulatedTarget">
-        Point camera at mural photo. Living video locks and <strong>sticks to physical 3D wall surface</strong> when match reaches &gt;60%.
+        Point at the Cafe Kubera wall mural. When tracked, the video plays <strong>on the wall</strong>.
+      </p>
+      <p class="instruction-text" *ngIf="targetFound || isSimulatedTarget">
+        ✓ Animated mural playing on wall surface
       </p>
     </div>
   </div>
 
-  <!-- WebAR A-Scene: image-tracked mural with video plane flush to wall -->
+  <!-- Hidden looping video — WebGL VideoTexture (GIF does not animate as a texture) -->
+  <video
+    #muralVideo
+    class="gif-source-hidden"
+    [src]="muralVideoSrc"
+    muted
+    loop
+    playsinline
+    webkit-playsinline
+    preload="auto"
+    crossorigin="anonymous"
+    aria-hidden="true">
+  </video>
+  <canvas #animCanvas class="anim-canvas-hidden" aria-hidden="true"></canvas>
+
+  <!-- WebAR: video plane is a child of MindAR target so it sticks to the wall -->
   <a-scene
     *ngIf="arTargetSrc"
     #arScene
-    [attr.mindar-image]="'imageTargetSrc: ' + arTargetSrc + '; maxTrack: 1; autoStart: true; uiLoading: no; uiError: no; uiScanning: no; filterMinCF: 0.001; filterBeta: 10; warmupTolerance: 5; missTolerance: 5;'"
+    [attr.mindar-image]="'imageTargetSrc: ' + arTargetSrc + '; maxTrack: 1; autoStart: true; uiLoading: no; uiError: no; uiScanning: no; filterMinCF: 0.0005; filterBeta: 10; warmupTolerance: 5; missTolerance: 10;'"
     color-space="sRGB"
     embedded
     renderer="colorManagement: true, physicallyCorrectLights"
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false">
 
-    <a-assets>
-      <img id="muralGifAsset" src="assets/mural-overlay.gif" crossorigin="anonymous" />
-    </a-assets>
-
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-    <!--
-      MindAR normalizes target width to 1; height = imageH/imageW.
-      Mural (1024x576) => height 0.5625. Slight +Z keeps the plane on the wall without z-fighting.
-    -->
-    <a-entity #targetEntity0 mindar-image-target="targetIndex: 0" ar-video-sync>
+    <a-entity mindar-image-target="targetIndex: 0" ar-video-sync>
       <a-plane
+        id="wallGifPlane"
         class="wall-video-plane"
-        src="#muralGifAsset"
-        position="0 0 0.01"
+        position="0 0 0.02"
         width="1"
         height="0.5625"
         rotation="0 0 0"
-        material="shader: flat; transparent: true; side: double; opacity: 1">
+        material="shader: flat; transparent: true; side: double; opacity: 1; depthTest: true; color: #ffffff">
       </a-plane>
     </a-entity>
   </a-scene>
