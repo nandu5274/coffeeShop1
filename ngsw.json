@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1785186155396,
+  "timestamp": 1785845566616,
   "index": "https://nandu5274.github.io/coffeeShop1/index.html",
   "assetGroups": [
     {
@@ -16,11 +16,11 @@
         "https://nandu5274.github.io/coffeeShop1/678.3e629a584d39cfc9.js",
         "https://nandu5274.github.io/coffeeShop1/favicon.ico",
         "https://nandu5274.github.io/coffeeShop1/index.html",
-        "https://nandu5274.github.io/coffeeShop1/main.676bffe3f0b6ca99.js",
+        "https://nandu5274.github.io/coffeeShop1/main.925a0132a7c7e8fe.js",
         "https://nandu5274.github.io/coffeeShop1/manifest.webmanifest",
         "https://nandu5274.github.io/coffeeShop1/polyfills.1516670616894585.js",
         "https://nandu5274.github.io/coffeeShop1/runtime.d3f73159170267af.js",
-        "https://nandu5274.github.io/coffeeShop1/styles.541d18443c4c6a2c.css"
+        "https://nandu5274.github.io/coffeeShop1/styles.fbc1513d7cfacf83.css"
       ],
       "patterns": []
     },
@@ -36,6 +36,7 @@
         "https://nandu5274.github.io/coffeeShop1/assets/audio/ipl.mp3",
         "https://nandu5274.github.io/coffeeShop1/assets/audio/kitchen.mp3",
         "https://nandu5274.github.io/coffeeShop1/assets/audio/order_waiting.mp3",
+        "https://nandu5274.github.io/coffeeShop1/assets/cafe-animation.webm",
         "https://nandu5274.github.io/coffeeShop1/assets/css/style.css",
         "https://nandu5274.github.io/coffeeShop1/assets/icons/icon-128x128.png",
         "https://nandu5274.github.io/coffeeShop1/assets/icons/icon-144x144.png",
@@ -47,6 +48,7 @@
         "https://nandu5274.github.io/coffeeShop1/assets/icons/icon-96x96.png",
         "https://nandu5274.github.io/coffeeShop1/assets/img/Crispy-babycorn copy.png",
         "https://nandu5274.github.io/coffeeShop1/assets/img/Crispy-babycorn.jpg",
+        "https://nandu5274.github.io/coffeeShop1/assets/img/My Video.gif",
         "https://nandu5274.github.io/coffeeShop1/assets/img/about-bg.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/about.png",
         "https://nandu5274.github.io/coffeeShop1/assets/img/about1.jpg",
@@ -439,7 +441,10 @@
         "https://nandu5274.github.io/coffeeShop1/assets/img/testimonials/testimonials-4.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/img/testimonials/testimonials-5.jpg",
         "https://nandu5274.github.io/coffeeShop1/assets/js/main.js",
+        "https://nandu5274.github.io/coffeeShop1/assets/mural-overlay-1.gif",
+        "https://nandu5274.github.io/coffeeShop1/assets/mural-overlay.gif",
         "https://nandu5274.github.io/coffeeShop1/assets/scss/Readme.txt",
+        "https://nandu5274.github.io/coffeeShop1/assets/targets.mind",
         "https://nandu5274.github.io/coffeeShop1/assets/vendor/animate.css/animate.compat.css",
         "https://nandu5274.github.io/coffeeShop1/assets/vendor/animate.css/animate.css",
         "https://nandu5274.github.io/coffeeShop1/assets/vendor/animate.css/animate.min.css",
@@ -533,6 +538,7 @@
     "https://nandu5274.github.io/coffeeShop1/assets/audio/ipl.mp3": "7624a1c883c45ecc66a33d44aeb9af47d88def04",
     "https://nandu5274.github.io/coffeeShop1/assets/audio/kitchen.mp3": "48bd1ee6d4e6b9a9f0115d7cecca4631075a9ec9",
     "https://nandu5274.github.io/coffeeShop1/assets/audio/order_waiting.mp3": "a24ce4b53a2d276664df57c12e1dfc832363fdfe",
+    "https://nandu5274.github.io/coffeeShop1/assets/cafe-animation.webm": "1513020bfae53eb13842f960d48ec47aba3f90de",
     "https://nandu5274.github.io/coffeeShop1/assets/css/style.css": "12d94dc59500264c715510345bdcc7841bb4155a",
     "https://nandu5274.github.io/coffeeShop1/assets/icons/icon-128x128.png": "dae3b6ed49bdaf4327b92531d4b5b4a5d30c7532",
     "https://nandu5274.github.io/coffeeShop1/assets/icons/icon-144x144.png": "b0bd89982e08f9bd2b642928f5391915b74799a7",
@@ -544,6 +550,7 @@
     "https://nandu5274.github.io/coffeeShop1/assets/icons/icon-96x96.png": "3914125a4b445bf111c5627875fc190f560daa41",
     "https://nandu5274.github.io/coffeeShop1/assets/img/Crispy-babycorn copy.png": "6ea1bbbf761432c86e851afa5dcfd2eb093459d9",
     "https://nandu5274.github.io/coffeeShop1/assets/img/Crispy-babycorn.jpg": "5ad35452a7737a1ed7ebc88a88ea79f5e6bfb47a",
+    "https://nandu5274.github.io/coffeeShop1/assets/img/My Video.gif": "8de829c7fad474f1de9a0de988c89bdffee05ae7",
     "https://nandu5274.github.io/coffeeShop1/assets/img/about-bg.jpg": "f9f8a2f27aa47044046d43e843ef4f4c6ef18d96",
     "https://nandu5274.github.io/coffeeShop1/assets/img/about.png": "37c8c263a90dde67662e95be94e20881d56e645a",
     "https://nandu5274.github.io/coffeeShop1/assets/img/about1.jpg": "81e2bfd841fc0608ed96e0f814e6a4c62221656c",
@@ -591,7 +598,7 @@
     "https://nandu5274.github.io/coffeeShop1/assets/img/gallery/gallery-8.jpg": "72e69243599d5f6f56b02d25bb3c6cff1c30020a",
     "https://nandu5274.github.io/coffeeShop1/assets/img/hero-beg.jpg": "5091cde57dfcd2751a2d1f01152f2f68d043aff8",
     "https://nandu5274.github.io/coffeeShop1/assets/img/hero-bg.jpg": "159e8fd6078e358150ce4b52f7316dfc4925da10",
-    "https://nandu5274.github.io/coffeeShop1/assets/img/hero-m-bg.jpg": "9c6c0750b344d1a1a2cd9100c564cb80b6377bbc",
+    "https://nandu5274.github.io/coffeeShop1/assets/img/hero-m-bg.jpg": "4e23d451ef644c995dfebd303e4b285982337c7e",
     "https://nandu5274.github.io/coffeeShop1/assets/img/hero-m2-bg.jpg": "8e99d07bfa70034fab7fbb7e705c6f62ba77e153",
     "https://nandu5274.github.io/coffeeShop1/assets/img/hero-m3-bg.jpg": "434a6dab7679ec12c74b35ca3e8dca352314e44f",
     "https://nandu5274.github.io/coffeeShop1/assets/img/invoice.png": "6e7b320a1a19f4a81725f510711258e4e0c10721",
@@ -936,7 +943,10 @@
     "https://nandu5274.github.io/coffeeShop1/assets/img/testimonials/testimonials-4.jpg": "368bfe1667571509db2ad844c121db0b5f4f0ea7",
     "https://nandu5274.github.io/coffeeShop1/assets/img/testimonials/testimonials-5.jpg": "2a06a247a67ff8eedf1a6e219a92549b747dde8d",
     "https://nandu5274.github.io/coffeeShop1/assets/js/main.js": "1fd41fa0eb94e8b14cd94fe89fa8c4d42649f1b9",
+    "https://nandu5274.github.io/coffeeShop1/assets/mural-overlay-1.gif": "cf2d1dd22cf630de06e8c3433b2fb7823a1b833f",
+    "https://nandu5274.github.io/coffeeShop1/assets/mural-overlay.gif": "8de829c7fad474f1de9a0de988c89bdffee05ae7",
     "https://nandu5274.github.io/coffeeShop1/assets/scss/Readme.txt": "3b26ae9d72232e47d4ccfe69667dd13ab6aa59ee",
+    "https://nandu5274.github.io/coffeeShop1/assets/targets.mind": "0e8998633da8f110342bfcb74cb2336edb83c654",
     "https://nandu5274.github.io/coffeeShop1/assets/vendor/animate.css/animate.compat.css": "66c9a4a522bc14de448f5bdd9d43df1ca70edccb",
     "https://nandu5274.github.io/coffeeShop1/assets/vendor/animate.css/animate.css": "afcaf144854f4916f4cc4ad17d196bca1aa66bc8",
     "https://nandu5274.github.io/coffeeShop1/assets/vendor/animate.css/animate.min.css": "b81ef1b22de26af8a7a4656f565fbc91a69d7518",
@@ -1018,12 +1028,12 @@
     "https://nandu5274.github.io/coffeeShop1/assets/vendor/swiper/swiper-bundle.min.js.map": "8476a6a709730180c88f23d341d400ee50aad267",
     "https://nandu5274.github.io/coffeeShop1/favicon.ico": "22f6a4a3bcaafafb0254e0f2fa4ceb89e505e8b2",
     "https://nandu5274.github.io/coffeeShop1/hero-bg.a36d8e2629eb4538.jpg": "159e8fd6078e358150ce4b52f7316dfc4925da10",
-    "https://nandu5274.github.io/coffeeShop1/index.html": "0bb3bf359da3d190f1a678a29fa995144c181fe1",
-    "https://nandu5274.github.io/coffeeShop1/main.676bffe3f0b6ca99.js": "8e08b3181667f3cabbe403134490bf89fbfaf032",
+    "https://nandu5274.github.io/coffeeShop1/index.html": "24a632bfb7b0ca4a0e25e5cc773cd59e8069e27e",
+    "https://nandu5274.github.io/coffeeShop1/main.925a0132a7c7e8fe.js": "e33f9c62f98d5377e4856b698c6cf1e872ef8fe1",
     "https://nandu5274.github.io/coffeeShop1/manifest.webmanifest": "d60dcd6811325a69a3c68475d205b1288b2003a4",
     "https://nandu5274.github.io/coffeeShop1/polyfills.1516670616894585.js": "9f1ff95e833f87d4f9d4e0aa0c010bb481ae11fa",
     "https://nandu5274.github.io/coffeeShop1/runtime.d3f73159170267af.js": "1346174c5a7d7960eb3110a217d26867a729885c",
-    "https://nandu5274.github.io/coffeeShop1/styles.541d18443c4c6a2c.css": "97737bf4c051f147a06ca4e039e9746c10c4b3a5"
+    "https://nandu5274.github.io/coffeeShop1/styles.fbc1513d7cfacf83.css": "44d17daa2ab3ed8bb478dc31ffbf55275a2b29a1"
   },
   "navigationUrls": [
     {
