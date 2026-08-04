@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Compile MindAR Target</title>
+  <style>
+    body { font-family: ui-monospace, monospace; background: #111; color: #eee; padding: 16px; }
+    #status { white-space: pre-wrap; word-break: break-word; }
+  </style>
+  <script>
+    // mindar-image-aframe.prod.js registers AFRAME components after exporting Compiler.
+    // Stub AFRAME so we can use Compiler without loading A-Frame from CDN.
+    window.AFRAME = {
+      registerSystem: function () {},
+      registerComponent: function () {},
+      THREE: {
+        Matrix4: function () { this.set = function () { return this; }; this.compose = function () {}; this.elements = []; this.multiply = function () { return this; }; },
+        Vector3: function () {},
+        Quaternion: function () {}
+      }
+    };
+  </script>
+  <script src="/mind-ar/mindar-image-aframe.prod.js"></script>
+</head>
+<body>
+  <h1>MindAR mural compile</h1>
+  <pre id="status">starting...</pre>
+  <script>
+    const status = document.getElementById('status');
+    const set = (t) => { status.textContent = t; document.title = String(t).slice(0, 80); };
+
+    async function loadImage(src) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = src;
+      await img.decode();
+      return img;
+    }
+
+    (async () => {
+      try {
+        const Compiler = window.MINDAR && window.MINDAR.IMAGE && window.MINDAR.IMAGE.Compiler;
+        if (!Compiler) throw new Error('MINDAR.IMAGE.Compiler missing after aframe bundle load');
+
+        set('loading hero-m-bg.jpg...');
+        const img = await loadImage('/hero-m-bg.jpg');
+        set('compiling ' + img.width + 'x' + img.height + '...');
+
+        const compiler = new Compiler();
+        await compiler.compileImageTargets([img], (p) => {
+          set('compile progress: ' + Number(p).toFixed(1) + '%');
+        });
+
+        set('exporting .mind buffer...');
+        const buffer = await compiler.exportData();
+        set('uploading ' + buffer.byteLength + ' bytes...');
+
+        const res = await fetch('/save-targets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/octet-stream' },
+          body: buffer
+        });
+        const text = await res.text();
+        if (!res.ok) throw new Error(text || res.statusText);
+
+        set('COMPILE_OK_' + buffer.byteLength + '\n' + text);
+        document.title = 'COMPILE_OK_' + buffer.byteLength;
+      } catch (e) {
+        set('COMPILE_FAIL\n' + (e && e.stack ? e.stack : e));
+        document.title = 'COMPILE_FAIL';
+      }
+    })();
+  </script>
+</body>
+</html>

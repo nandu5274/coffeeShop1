@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA, ElementRef, ViewChild, AfterViewInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 
@@ -22,6 +22,7 @@ export class ArViewComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('arScene', { static: false }) sceneRef!: ElementRef;
   @ViewChild('animCanvas', { static: false }) animCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('modalPreviewCanvas', { static: false }) modalPreviewCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('muralVideo', { static: false }) muralVideoRef!: ElementRef<HTMLVideoElement>;
 
   public showWelcomeModal = true;
   public showVideoPreviewModal = false;
@@ -38,6 +39,8 @@ export class ArViewComponent implements OnInit, AfterViewInit, OnDestroy {
   public snapshotSuccess = false;
   public currentMatchPercentage = 0;
   public matchedRegionName = '';
+  public readonly matchTriggerThreshold = 40;
+  public isVideoPlaying = false;
 
   public debugLogs: LogEntry[] = [];
 
@@ -52,25 +55,82 @@ export class ArViewComponent implements OnInit, AfterViewInit, OnDestroy {
   private animationFrameId: number | null = null;
   private muralImageLoaded = false;
   private muralImage = new Image();
+  private videoReady = false;
+  /** Converted from mural-overlay.gif — WebGL cannot animate GIFs reliably */
+  public readonly muralVideoSrc = 'assets/mural-overlay.mp4';
+  private videoTexture: any = null;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private cdr: ChangeDetectorRef, private ngZone: NgZone) {}
 
   ngOnInit(): void {
-    this.addLog('WebAR Page Loaded. Cinematic Mural Wall Video Engine ready.', 'info');
+    this.addLog('WebAR ready. Animated mural video pins to the wall when MindAR locks.', 'info');
     this.preloadMuralImage();
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.initAnimatedCanvasStream();
-    }, 300);
+    this.setupMuralVideo();
+    this.ngZone.runOutsideAngular(() => {
+      setTimeout(() => this.initAnimatedCanvasStream(), 100);
+    });
+  }
+
+  private setupMuralVideo(): void {
+    const video = this.muralVideoRef?.nativeElement;
+    if (!video) {
+      setTimeout(() => this.setupMuralVideo(), 200);
+      return;
+    }
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    video.preload = 'auto';
+
+    const onReady = () => {
+      this.videoReady = true;
+      this.addLog(
+        `mural-overlay.mp4 ready (${video.videoWidth}x${video.videoHeight})`,
+        'success'
+      );
+    };
+    video.addEventListener('loadeddata', onReady);
+    video.addEventListener('canplay', onReady);
+    video.addEventListener('error', () => {
+      this.addLog('Failed to load mural-overlay.mp4', 'error');
+    });
+    // Kick off buffering early
+    video.load();
+  }
+
+  private async playMuralVideo(): Promise<void> {
+    const video = this.muralVideoRef?.nativeElement;
+    if (!video) return;
+    try {
+      video.muted = true;
+      video.currentTime = Math.min(video.currentTime, 0.01) || 0;
+      await video.play();
+      this.isVideoPlaying = true;
+      this.addLog('▶ Mural video playing', 'success');
+    } catch (e: any) {
+      this.addLog('Video play blocked: ' + (e?.message || e) + ' — tap screen once', 'warning');
+    }
+  }
+
+  private pauseMuralVideo(): void {
+    const video = this.muralVideoRef?.nativeElement;
+    if (!video) return;
+    try {
+      video.pause();
+    } catch {}
+    this.isVideoPlaying = false;
   }
 
   private preloadMuralImage(): void {
     this.muralImage.crossOrigin = 'anonymous';
     this.muralImage.onload = () => {
       this.muralImageLoaded = true;
-      this.addLog('Mural wall painting photo loaded for cinematic video projection', 'info');
+      this.addLog('Wall target image loaded (hero-m-bg.jpg)', 'info');
     };
     this.muralImage.src = 'assets/img/hero-m-bg.jpg';
   }
@@ -87,6 +147,8 @@ export class ArViewComponent implements OnInit, AfterViewInit, OnDestroy {
     await this.requestCameraPermission();
     this.initAmbientAudio();
     this.startLiveScanMatchTicker();
+    // Prime muted video during user gesture so playback works on target lock
+    void this.playMuralVideo().then(() => this.pauseMuralVideo());
 
     setTimeout(() => {
       this.setupSceneEvents();
@@ -159,80 +221,53 @@ export class ArViewComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initAnimatedCanvasStream(): void {
-    const canvas = this.animCanvasRef?.nativeElement || document.createElement('canvas');
-    canvas.width = 1024;
-    canvas.height = 576;
-    const ctx = canvas.getContext('2d');
+    const canvas = this.animCanvasRef?.nativeElement;
+    if (!canvas) {
+      this.addLog('animCanvas missing — retrying…', 'warning');
+      setTimeout(() => this.initAnimatedCanvasStream(), 250);
+      return;
+    }
+    canvas.width = 960;
+    canvas.height = 540;
+    const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
-    let canvasTexture: any = null;
-    let angle = 0;
-
+    let framesPainted = 0;
     const renderFrame = () => {
-      angle += 0.02;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const video = this.muralVideoRef?.nativeElement;
+      const videoReady = !!(video && video.readyState >= 2 && video.videoWidth > 0);
+      const shouldPlay = this.targetFound || this.isSimulatedTarget;
 
-      if (this.muralImageLoaded) {
-        // Pure Cinematic Pan & Zoom Video Motion (NO BUBBLES, NO STEAM PARTICLES)
-        const scale = 1 + Math.sin(angle * 0.8) * 0.05;
-        const offsetX = Math.cos(angle * 0.6) * 18;
-        const offsetY = Math.sin(angle * 0.6) * 10;
-
-        ctx.save();
-        ctx.translate(canvas.width / 2 + offsetX, canvas.height / 2 + offsetY);
-        ctx.scale(scale, scale);
-        ctx.drawImage(this.muralImage, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
-        ctx.restore();
-
-        // Shimmering Golden Sunlight Wave over Café Scene
-        const waveX = (Math.sin(angle * 0.9) * 0.5 + 0.5) * canvas.width;
-        const grad = ctx.createRadialGradient(waveX, canvas.height * 0.4, 20, waveX, canvas.height * 0.4, 380);
-        grad.addColorStop(0, 'rgba(255, 235, 180, 0.3)');
-        grad.addColorStop(0.5, 'rgba(205, 164, 94, 0.12)');
-        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Soft Living Warmth Light Pulse
-        const pulseAlpha = 0.05 + Math.sin(angle * 1.5) * 0.04;
-        ctx.fillStyle = `rgba(205, 164, 94, ${pulseAlpha})`;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (shouldPlay && videoReady && !video.paused) {
+        try {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          framesPainted++;
+          if (framesPainted === 1) {
+            this.ngZone.run(() => this.addLog('▶ First video frame painted onto wall plane', 'success'));
+          }
+        } catch (e: any) {
+          if (framesPainted === 0) {
+            this.ngZone.run(() => this.addLog('Video draw failed: ' + (e?.message || e), 'error'));
+          }
+        }
+      } else if (this.muralImageLoaded) {
+        ctx.drawImage(this.muralImage, 0, 0, canvas.width, canvas.height);
       } else {
-        ctx.fillStyle = '#0c0b09';
+        ctx.fillStyle = '#1a1510';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
-      // Copy live video frame to Preview Modal Canvas when open
       if (this.showVideoPreviewModal && this.modalPreviewCanvasRef?.nativeElement) {
         const modalCanvas = this.modalPreviewCanvasRef.nativeElement;
         modalCanvas.width = canvas.width;
         modalCanvas.height = canvas.height;
         const modalCtx = modalCanvas.getContext('2d');
-        if (modalCtx) {
-          modalCtx.drawImage(canvas, 0, 0);
-        }
+        if (modalCtx) modalCtx.drawImage(canvas, 0, 0);
       }
 
-      // Update Three.js Texture on A-Frame Wall Planes directly in WebGL!
-      const planes = document.querySelectorAll('a-plane');
-      planes.forEach((plane: any) => {
-        const mesh = plane.getObject3D('mesh');
-        if (mesh && mesh.material) {
-          if (!mesh.material.map || mesh.material.map.image !== canvas) {
-            if (!canvasTexture && typeof (window as any).THREE !== 'undefined') {
-              canvasTexture = new (window as any).THREE.CanvasTexture(canvas);
-            }
-            if (canvasTexture) {
-              mesh.material.map = canvasTexture;
-              mesh.material.transparent = true;
-              mesh.material.needsUpdate = true;
-            }
-          }
-          if (mesh.material.map) {
-            mesh.material.map.needsUpdate = true;
-          }
-        }
-      });
+      if (shouldPlay) {
+        this.paintWallPlaneTexture(canvas, videoReady ? video : null);
+      }
 
       this.animationFrameId = requestAnimationFrame(renderFrame);
     };
@@ -240,29 +275,82 @@ export class ArViewComponent implements OnInit, AfterViewInit, OnDestroy {
     renderFrame();
   }
 
+  private paintWallPlaneTexture(canvas: HTMLCanvasElement, video: HTMLVideoElement | null): void {
+    const THREE = (window as any).AFRAME?.THREE || (window as any).THREE;
+    if (!THREE) return;
+
+    const planes = document.querySelectorAll('a-plane.wall-video-plane');
+    planes.forEach((plane: any) => {
+      const mesh = plane.getObject3D?.('mesh');
+      if (!mesh) {
+        plane.addEventListener?.('object3dset', () => this.paintWallPlaneTexture(canvas, video), { once: true });
+        return;
+      }
+      if (!mesh.material) return;
+
+      // Prefer VideoTexture when video is playing (true motion); else canvas fallback
+      let tex = this.videoTexture;
+      if (video && video.readyState >= 2) {
+        if (!this.videoTexture || this.videoTexture.image !== video) {
+          this.videoTexture = new THREE.VideoTexture(video);
+          this.videoTexture.flipY = true;
+          this.videoTexture.minFilter = THREE.LinearFilter;
+          this.videoTexture.magFilter = THREE.LinearFilter;
+          this.videoTexture.generateMipmaps = false;
+          if ('colorSpace' in this.videoTexture && THREE.SRGBColorSpace) {
+            this.videoTexture.colorSpace = THREE.SRGBColorSpace;
+          } else if ('encoding' in this.videoTexture && THREE.sRGBEncoding) {
+            this.videoTexture.encoding = THREE.sRGBEncoding;
+          }
+        }
+        tex = this.videoTexture;
+        tex.needsUpdate = true;
+      } else {
+        if (!this.videoTexture || this.videoTexture.isVideoTexture) {
+          this.videoTexture = new THREE.CanvasTexture(canvas);
+          this.videoTexture.flipY = true;
+          this.videoTexture.minFilter = THREE.LinearFilter;
+          this.videoTexture.magFilter = THREE.LinearFilter;
+          this.videoTexture.generateMipmaps = false;
+        }
+        tex = this.videoTexture;
+        tex.needsUpdate = true;
+      }
+
+      const mat = mesh.material;
+      if (mat.map !== tex) {
+        mat.map = tex;
+        mat.transparent = true;
+        mat.opacity = 1;
+        mat.depthTest = true;
+        mat.depthWrite = false;
+        mat.side = THREE.DoubleSide;
+        mat.needsUpdate = true;
+      }
+      mesh.visible = true;
+      mesh.frustumCulled = false;
+    });
+  }
+
   private startLiveScanMatchTicker(): void {
     if (this.scanTickerId) clearInterval(this.scanTickerId);
 
-    let scanCount = 0;
     this.scanTickerId = setInterval(() => {
-      scanCount++;
       if (this.targetFound || this.isSimulatedTarget) {
-        this.currentMatchPercentage = 98;
-        const region = this.matchedRegionName || 'Cafe Kubera Wall Target';
-        this.addLog(`🎯 3D WALL LOCKED | Match Confidence: 98% [${region}] - Cinematic Wall Video Playing ▶`, 'success');
+        this.currentMatchPercentage = Math.max(this.currentMatchPercentage, 92);
+        const video = this.muralVideoRef?.nativeElement;
+        const playing = !!(video && !video.paused && video.readyState >= 2);
+        this.addLog(
+          playing
+            ? `🎯 Wall locked — mural video playing (${this.currentMatchPercentage}%)`
+            : `🎯 Wall locked — waiting for mural video…`,
+          playing ? 'success' : 'warning'
+        );
       } else if (!this.showWelcomeModal && this.cameraPermissionGranted) {
-        const simulatedScore = Math.min(65, 30 + (scanCount * 12) % 38);
-        this.currentMatchPercentage = simulatedScore;
-
-        if (simulatedScore >= 60) {
-          this.matchedRegionName = 'Cafe Kubera Wall (>60% Keypoint Match)';
-          this.addLog(`⚡ Keypoint Match Confidence REACHED ${simulatedScore}% (>60% threshold met)! Playing Video on Wall ▶`, 'success');
-          this.onTargetFound();
-        } else {
-          this.addLog(`📷 Scanning Camera Feed: Searching Wall [assets/img/hero-m-bg.jpg] | Match: ${this.currentMatchPercentage}% (Scanning...)`, 'info');
-        }
+        this.currentMatchPercentage = Math.min(38, 12 + Math.floor(Math.random() * 28));
+        this.addLog(`📷 Scanning mural wall | Match: ${this.currentMatchPercentage}% (need MindAR lock)`, 'info');
       }
-    }, 1200);
+    }, 2000);
   }
 
   private initAmbientAudio(): void {
@@ -356,67 +444,122 @@ export class ArViewComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const targetEntities = sceneEl.querySelectorAll('[mindar-image-target]');
     if (targetEntities.length > 0) {
-      const labels = [
-        'Full Mural Image',
-        'Left Sub-crop (Musicians & Waitress)',
-        'Center Sub-crop (Women at Café Table)',
-        'Right Sub-crop (Couple & Scooter)',
-        'Central Focus (Musicians & Table)'
-      ];
       targetEntities.forEach((targetEl: any, idx: number) => {
         targetEl.addEventListener('targetFound', () => {
-          const label = labels[idx] || `Real Mural Target index ${idx}`;
-          this.matchedRegionName = label;
-          this.addLog(`🎯 WALL MURAL MATCHED: [${label}]! Playing Cinematic Wall Video.`, 'success');
+          this.matchedRegionName = 'Cafe Kubera Mural Wall';
+          this.addLog(`🎯 WALL MURAL MATCHED (target ${idx}) — pinning video flush to wall plane`, 'success');
           this.onTargetFound();
+          this.pinWallPlanes();
         });
         targetEl.addEventListener('targetLost', () => {
           this.onTargetLost();
         });
       });
-      this.addLog(`Registered target listeners for 5 wall mural target regions (targetIndex 0..4)`, 'info');
+      this.addLog(`Registered MindAR wall target listener(s): ${targetEntities.length}`, 'info');
     }
+  }
+
+  /** Keep overlay planes sized/positioned flush to the tracked mural (MindAR width=1). */
+  private pinWallPlanes(): void {
+    const planes = document.querySelectorAll('a-plane.wall-video-plane');
+    planes.forEach((plane: any) => {
+      plane.setAttribute('position', '0 0 0.02');
+      plane.setAttribute('width', '1');
+      plane.setAttribute('height', '0.5625');
+      plane.setAttribute('rotation', '0 0 0');
+      // Do NOT reset material.src here — that wipes the live canvas texture.
+      const mesh = plane.getObject3D?.('mesh');
+      if (mesh) {
+        mesh.frustumCulled = false;
+        mesh.visible = true;
+      }
+    });
   }
 
   public onTargetFound(): void {
-    this.targetFound = true;
-    this.currentMatchPercentage = 98;
-    this.statusMessage = 'Cafe Kubera Wall Mural Recognized!';
-    this.addLog('✓ Cinematic Wall Video Active on Wall surface', 'success');
+    this.ngZone.run(() => {
+      this.targetFound = true;
+      this.currentMatchPercentage = 98;
+      this.statusMessage = 'Cafe Kubera Wall Mural Recognized!';
+      this.addLog('✓ Video pinned to wall surface (MindAR lock)', 'success');
+      this.cdr.detectChanges();
+    });
+    this.pinWallPlanes();
+    void this.playMuralVideo();
+    const canvas = this.animCanvasRef?.nativeElement;
+    const video = this.muralVideoRef?.nativeElement || null;
+    if (canvas) {
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => this.paintWallPlaneTexture(canvas, video), 50 * i);
+      }
+    }
   }
 
   public onTargetLost(): void {
-    if (!this.isSimulatedTarget) {
+    if (this.isSimulatedTarget) return;
+    this.pauseMuralVideo();
+    this.ngZone.run(() => {
       this.targetFound = false;
-      this.currentMatchPercentage = 35;
+      this.isVideoPlaying = false;
+      this.currentMatchPercentage = 0;
       this.matchedRegionName = '';
       this.statusMessage = 'Scanning for Cafe Kubera Wall...';
-    }
+      this.cdr.detectChanges();
+    });
   }
 
   public toggleSimulateTarget(): void {
     this.isSimulatedTarget = !this.isSimulatedTarget;
+
     if (this.isSimulatedTarget) {
-      this.matchedRegionName = 'Test Mode (Simulated Wall Lock)';
-      this.addLog('⚡ Test AR Overlay ENABLED: Playing Cinematic Wall Video 2m in front of camera', 'success');
-      this.onTargetFound();
-      this.statusMessage = 'Cafe Kubera Wall Mural Locked (Test Mode)';
-      const sceneEl = this.sceneRef?.nativeElement;
-      const targetEntity = sceneEl?.querySelector('[mindar-image-target]');
-      if (targetEntity) {
-        targetEntity.setAttribute('visible', 'true');
-      }
+      this.matchedRegionName = 'Test Mode (camera-front preview)';
+      this.targetFound = true;
+      this.currentMatchPercentage = 98;
+      this.statusMessage = 'Test preview — video in front of camera';
+      this.addLog('⚡ Test AR: mounting video plane in front of camera', 'warning');
+      this.mountTestPlaneOnCamera(true);
+      void this.playMuralVideo();
     } else {
-      this.addLog('Scanner Mode re-enabled. Waiting for wall mural detection.', 'info');
+      this.addLog('Scanner Mode re-enabled — point at mural for wall lock', 'info');
+      this.mountTestPlaneOnCamera(false);
+      this.isSimulatedTarget = false;
       this.onTargetLost();
     }
   }
 
+  /** Test AR: show plane in front of camera (MindAR target stays invisible until tracked). */
+  private mountTestPlaneOnCamera(enable: boolean): void {
+    const sceneEl = this.sceneRef?.nativeElement;
+    if (!sceneEl) return;
+    const plane = sceneEl.querySelector('#wallGifPlane') as any;
+    const camera = sceneEl.querySelector('a-camera') as any;
+    const target = sceneEl.querySelector('[mindar-image-target]') as any;
+    if (!plane || !camera) return;
+
+    if (enable) {
+      camera.appendChild(plane);
+      plane.setAttribute('position', '0 0 -1.2');
+      plane.setAttribute('width', '1.2');
+      plane.setAttribute('height', '0.675');
+      plane.object3D.visible = true;
+      const canvas = this.animCanvasRef?.nativeElement;
+      const video = this.muralVideoRef?.nativeElement || null;
+      if (canvas) this.paintWallPlaneTexture(canvas, video);
+    } else if (target) {
+      target.appendChild(plane);
+      this.pinWallPlanes();
+    }
+  }
+
   public userStartVideo(): void {
-    this.addLog('User screen tap detected.', 'info');
+    // Mobile browsers often need a user gesture to start media
+    if (this.targetFound || this.isSimulatedTarget) {
+      void this.playMuralVideo();
+    }
   }
 
   ngOnDestroy(): void {
+    this.pauseMuralVideo();
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
     }

@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "start:exposed": "ng serve --host 0.0.0.0 --disable-host-check",
+    "start:https": "ng serve --host 0.0.0.0 --disable-host-check --ssl --ssl-cert scripts/ssl/dev-cert.pem --ssl-key scripts/ssl/dev-key.pem",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
