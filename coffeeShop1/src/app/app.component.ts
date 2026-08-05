@@ -1,6 +1,7 @@
 import { trigger, transition, style, animate } from '@angular/animations';
 
 import { Component, ElementRef, HostListener, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { Howl } from 'howler';
 import { VERSION } from './common/constanst';
 import { HasuraApiService } from './service/hasura.api.service';
 import { WebSocketService } from './service/WebSocket.service';

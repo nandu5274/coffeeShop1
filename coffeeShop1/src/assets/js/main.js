@@ -12,11 +12,17 @@
    * Easy selector helper function
    */
   const select = (el, all = false) => {
-    el = el.trim()
-    if (all) {
-      return [...document.querySelectorAll(el)]
-    } else {
-      return document.querySelector(el)
+    if (el == null) return all ? [] : null
+    el = String(el).trim()
+    if (!el) return all ? [] : null
+    try {
+      if (all) {
+        return [...document.querySelectorAll(el)]
+      } else {
+        return document.querySelector(el)
+      }
+    } catch (e) {
+      return all ? [] : null
     }
   }
 
@@ -44,7 +50,7 @@
   /**
    * Navbar links active state on scroll
    */
-  let navbarlinks = select('#navbar .scrollto', true)
+  let navbarlinks = select('#navbar .scrollto', true) || []
   const navbarlinksActive = () => {
     let position = window.scrollY + 200
     navbarlinks.forEach(navbarlink => {
@@ -65,10 +71,12 @@
    * Scrolls to an element with header offset
    */
   const scrollto = (el) => {
+    if (!el) return
     let header = select('#header')
-    let offset = header.offsetHeight
-
-    let elementPos = select(el).offsetTop
+    let offset = header ? header.offsetHeight : 0
+    let target = select(el)
+    if (!target) return
+    let elementPos = target.offsetTop
     window.scrollTo({
       top: elementPos - offset,
       behavior: 'smooth'
@@ -118,7 +126,9 @@
    * Mobile nav toggle
    */
   on('click', '.mobile-nav-toggle', function(e) {
-    select('#navbar').classList.toggle('navbar-mobile')
+    const nav = select('#navbar')
+    if (!nav) return
+    nav.classList.toggle('navbar-mobile')
     this.classList.toggle('bi-list')
     this.classList.toggle('bi-x')
   })
@@ -127,9 +137,12 @@
    * Mobile nav dropdowns activate
    */
   on('click', '.navbar .dropdown > a', function(e) {
-    if (select('#navbar').classList.contains('navbar-mobile')) {
+    const nav = select('#navbar')
+    if (nav && nav.classList.contains('navbar-mobile')) {
       e.preventDefault()
-      this.nextElementSibling.classList.toggle('dropdown-active')
+      if (this.nextElementSibling) {
+        this.nextElementSibling.classList.toggle('dropdown-active')
+      }
     }
   }, true)
 
@@ -137,15 +150,18 @@
    * Scrool with ofset on links with a class name .scrollto
    */
   on('click', '.scrollto', function(e) {
+    if (!this.hash) return
     if (select(this.hash)) {
       e.preventDefault()
 
       let navbar = select('#navbar')
-      if (navbar.classList.contains('navbar-mobile')) {
+      if (navbar && navbar.classList.contains('navbar-mobile')) {
         navbar.classList.remove('navbar-mobile')
         let navbarToggle = select('.mobile-nav-toggle')
-        navbarToggle.classList.toggle('bi-list')
-        navbarToggle.classList.toggle('bi-x')
+        if (navbarToggle) {
+          navbarToggle.classList.toggle('bi-list')
+          navbarToggle.classList.toggle('bi-x')
+        }
       }
       scrollto(this.hash)
     }

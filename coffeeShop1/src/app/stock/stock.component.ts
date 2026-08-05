@@ -1,4 +1,5 @@
 import { Component, HostListener } from '@angular/core';
+import { Howl } from 'howler';
 import { SingleFileOrderDto } from '../dtos/singleFileOrderDto';
 import { WebSocketService } from '../service/WebSocket.service';
 import { DatePipe } from '@angular/common';

@@ -1,0 +1,46 @@
+Cafe Kubera — connect cafekubera.in to GitHub Pages
+====================================================
+
+Existing host: https://nandu5274.github.io/coffeeShop1/
+Deploy command: npm run deploy:pages
+
+----------------------------------------------------
+1) GoDaddy DNS (DNS Management for cafekubera.in)
+----------------------------------------------------
+Remove old A/CNAME/forwarding for @ and www that point elsewhere.
+
+Apex (cafekubera.in) — four A records:
+  Type  Name  Value
+  A     @     185.199.108.153
+  A     @     185.199.109.153
+  A     @     185.199.110.153
+  A     @     185.199.111.153
+
+www — one CNAME:
+  Type   Name  Value
+  CNAME  www   nandu5274.github.io
+
+Save. Wait for DNS (minutes to a few hours).
+Check: dig +short cafekubera.in A
+       dig +short www.cafekubera.in CNAME
+
+----------------------------------------------------
+2) GitHub Pages UI
+----------------------------------------------------
+Open: https://github.com/nandu5274/coffeeShop1/settings/pages
+
+- Source: Deploy from a branch → gh-pages / (root)
+- Custom domain: cafekubera.in  (Save)
+- After DNS shows as verified, enable "Enforce HTTPS"
+
+(The deploy also writes a CNAME file on gh-pages with cafekubera.in.)
+
+----------------------------------------------------
+3) Publish app
+----------------------------------------------------
+  npm run deploy:pages
+
+Live URLs after DNS + HTTPS:
+  https://cafekubera.in/
+  https://cafekubera.in/ar-view
+  https://www.cafekubera.in/

@@ -10,20 +10,43 @@
   z-index: 9999;
 }
 
-/* Full Screen A-Frame Canvas & 3D WebGL Scene */
-::ng-deep a-scene {
-  width: 100vw !important;
-  height: 100vh !important;
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  z-index: 1 !important;
+/*
+  MindAR uses .ar-mind-container as resize root.
+  It sets camera <video> top/left/width/height in JS for letterboxing.
+  Do NOT force object-fit or 100% size on that video/canvas — breaks wall lock.
+*/
+.ar-mind-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+  background: #000;
+}
 
-  canvas {
-    width: 100vw !important;
-    height: 100vh !important;
-    object-fit: cover !important;
-  }
+::ng-deep .ar-mind-container a-scene {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+}
+
+/* A-Frame canvas fills scene; MindAR FOV matches letterboxed camera video */
+::ng-deep .ar-mind-container a-scene canvas.a-canvas {
+  display: block !important;
+}
+
+/* Only the MindAR-injected camera feed (direct child), never overlay assets */
+::ng-deep .ar-mind-container > video {
+  position: absolute !important;
+  z-index: 0 !important;
+  object-fit: unset !important;
+  max-width: none !important;
+  max-height: none !important;
 }
 
 /* Instagram Reel Welcome Screen Landing Modal */

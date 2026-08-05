@@ -237,96 +237,67 @@ let expiryDate = new Date(expiryDateParts[0], expiryDateParts[1] - 1, expiryDate
     return orderCost;
   }
   printPage(): void {
-    
-    // Create a new window with the printable content
-    const printWindow = window.open('', '_blank')
-    
-    // Inject the printable content into the new window
-    printWindow?.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Printable Invoice</title>
-          <style>
-          @page {
-            size: auto;
-            size: A3;
-            margin: 0mm;
-        }
-      td,
-      th,
-      tr,
-      table {
-          border-top: 1px solid black;
-          border-collapse: collapse;
-      }
-      
-      td.description,
-      th.description {
-          width: 60px;
-          max-width: 60px;
-      }
-      
-      td.quantity,
-      th.quantity {
-          width: 40px;
-          max-width: 40px;
-          word-break: break-all;
-      }
-      
-      td.price,
-      th.price {
-          width: 24px;
-          max-width: 24px;
-          word-break: break-all;
-      }
-      
-      .centered {
-          margin: auto;
-          text-align: center;
-          align-content: center;
-      }
-      .hr{
-          opacity: 100%;
-          border-top: 1px solid #000;
-          margin: 3px 0px 3px 0px;
-      }
-      .grand-total {
-          color: black;
-          font-size: medium;
-          font-weight: bold;
-      }
-      
-      .ticket {
-          width: 275px;
-          max-width: 275px;
-      }
-      
-      img {
-          max-width: inherit;
-          width: inherit;
-      }
-      
-      @media print {
-          .hidden-print,
-          .hidden-print * {
-              display: none !important;
-          }
-      }
-      
-        </style>
-        </head>
-   
-          ${document.querySelector('.printable-content')?.innerHTML}
-  
-      </html>
-    `);
+    const content = document.querySelector('.printable-content')?.innerHTML;
+    if (!content) return;
 
-    // Close the document stream
-    printWindow?.document.close();
-    
-    // Trigger the print dialog for the new window
-    printWindow?.print();
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('title', 'Invoice print');
+    iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;pointer-events:none;';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc) {
+      iframe.remove();
+      return;
+    }
+
+    doc.open();
+    doc.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Printable Invoice</title>
+  <style>
+    @page { size: auto; margin: 0mm; }
+    td, th, tr, table { border-top: 1px solid black; border-collapse: collapse; }
+    td.description, th.description { width: 60px; max-width: 60px; }
+    td.quantity, th.quantity { width: 40px; max-width: 40px; word-break: break-all; }
+    td.price, th.price { width: 24px; max-width: 24px; word-break: break-all; }
+    .centered { margin: auto; text-align: center; align-content: center; }
+    .hr { opacity: 100%; border-top: 1px solid #000; margin: 3px 0; }
+    .grand-total { color: black; font-size: medium; font-weight: bold; }
+    .ticket { width: 275px; max-width: 275px; }
+    img { max-width: inherit; width: inherit; }
+    @media print {
+      .hidden-print, .hidden-print * { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  ${content}
+</body>
+</html>`);
+    doc.close();
+
+    const win = iframe.contentWindow;
+    const cleanup = () => {
+      try { iframe.remove(); } catch {}
+    };
+
+    if (win) {
+      win.addEventListener('afterprint', cleanup, { once: true });
+      setTimeout(() => {
+        try {
+          win.focus();
+          win.print();
+        } catch {
+          cleanup();
+        }
+      }, 50);
+      setTimeout(cleanup, 60_000);
+    } else {
+      cleanup();
+    }
   }
 
   test()

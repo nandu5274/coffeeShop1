@@ -29,6 +29,7 @@ export class GraphqlService {
           order_total_amount
           table_no
           table_place
+          employee
           comments
           order_items {
             item_name

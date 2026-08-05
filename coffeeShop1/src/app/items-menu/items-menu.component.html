@@ -12,16 +12,16 @@
       <!-- Table info (CAP mode only) -->
       <div *ngIf="isCap === 'true'" class="table-info-bar">
         <img src="assets/img/table.png" class="table-icon" alt="">
-        <span>{{tablePlace}} {{tableNumber}}</span>
-        <span *ngIf="tableCustomerName"> · {{tableCustomerName}}</span>
+        <span>{{tablePlace || ''}} {{tableNumber || ''}}</span>
+        <span *ngIf="tableCustomerName && tableCustomerName !== 'undefined'"> · {{tableCustomerName}}</span>
       </div>
 
       <p class="breakfast-note">* Breakfast served 9:30 AM – 12:30 PM only</p>
 
       <!-- CAP Buttons -->
       <div *ngIf="isCap === 'true'" class="cap-actions">
-        <button class="cap-btn" routerLink="/cap">CAP</button>
-        <button class="cap-btn" (click)="pointsChecker()">Points</button>
+        <button type="button" class="cap-btn" (click)="goToCap()">CAP</button>
+        <button type="button" class="cap-btn" (click)="pointsChecker()">Points</button>
       </div>
 
       <!-- Loyalty Points (non-CAP) -->

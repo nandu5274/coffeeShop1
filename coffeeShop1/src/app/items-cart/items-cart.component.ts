@@ -166,20 +166,25 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
     }
     try {
       let user_details = JSON.parse(atob(capUser));
-      return user_details.user_name || '';
+      return (user_details.user_name || user_details.username || '').trim();
     } catch (e) {
       return '';
     }
   }
 
   sentOrder() {
+    let employee_Name = this.getEmployeeName();
+    if (!employee_Name) {
+      alert('Please login as captain/waiter before placing an order. Waiter name is required.');
+      this.orderProcessingStatus.emit('error');
+      return;
+    }
+
     let dataList:any = [];
     let rdm_order_ref_id = this.sharedService.generateRandomNumberWithDateTime();
     let data = {
       data:dataList
     }
-    //getEmployeeName
-   let employee_Name =  this.getEmployeeName();
   
     let orderTableData = {
       order_status: 'approval_waiting',

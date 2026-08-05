@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, OnInit, Output, ViewChild, Renderer2, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { CartItemDto } from '../dtos/CartItemDto';
 import { SharedService } from '../service/shared-service';
 import * as menuListJsonData from 'src/app/sampleResponse/menu-list.json';
@@ -22,7 +23,8 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
   isLoading: boolean = false;
 
   constructor(private sharedService: SharedService, private renderer: Renderer2,
-    private customerService: CustomerService, private el: ElementRef, private cdRef: ChangeDetectorRef, private http: HttpClient) { }
+    private customerService: CustomerService, private el: ElementRef, private cdRef: ChangeDetectorRef,
+    private http: HttpClient, private router: Router) { }
   showMenu: any = false
   showCourse: any = false
   useRemoteMenuData: boolean = true;
@@ -128,13 +130,21 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
     this.tableNumber = sessionStorage.getItem('table');
     this.tablePlace = sessionStorage.getItem('tablePlace');
     this.is_login = sessionStorage.getItem('is_login');
-    this.tableCustomerName = sessionStorage.getItem('tableCustomerName');
+    const customerName = sessionStorage.getItem('tableCustomerName');
+    this.tableCustomerName =
+      customerName && customerName !== 'undefined' && customerName !== 'null'
+        ? customerName
+        : '';
 
     if (!this.isCap && this.is_login) {
       this.getLoyalPoints();
     }
 
     this.triggerScrollHintNudge();
+  }
+
+  goToCap(): void {
+    this.router.navigate(['/cap']);
   }
 
   triggerScrollHintNudge() {

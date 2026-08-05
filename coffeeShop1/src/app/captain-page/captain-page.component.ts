@@ -91,7 +91,6 @@ export class CaptainPageComponent implements AfterViewInit {
 
     console.log("caption")
     this.loginCap()
-    this.loggedIn = true;
   }
 
   sendMessageToWebSocket(msg: any) {
@@ -1294,23 +1293,36 @@ export class CaptainPageComponent implements AfterViewInit {
 
   handleLoginStatus(status: boolean) {
     this.loggedIn = status;
+    if (status) {
+      // Refresh waiter name after successful login so new orders store employee
+      this.loginCap();
+    } else {
+      this.employee_name = '';
+    }
   }
   loginCap() {
     let localStorageData = localStorage.getItem("cap_user");
 
     if (localStorageData) {
-      let user_details = JSON.parse(atob(localStorage.getItem('cap_user')!));
-      this.employee_name = user_details.user_name;
-      let is_user_Session_Expired: any = this.validateUserSession(user_details);
-      if (!is_user_Session_Expired) {
-        this.loggedIn = !is_user_Session_Expired;
-      } else {
-        this.loggedIn = false
+      try {
+        let user_details = JSON.parse(atob(localStorageData));
+        this.employee_name = user_details.user_name || '';
+        let is_user_Session_Expired: any = this.validateUserSession(user_details);
+        if (!is_user_Session_Expired) {
+          this.loggedIn = true;
+        } else {
+          this.loggedIn = false;
+          this.employee_name = '';
+          localStorage.removeItem("cap_user");
+        }
+      } catch {
+        this.loggedIn = false;
+        this.employee_name = '';
         localStorage.removeItem("cap_user");
-
       }
     } else {
-      this.loggedIn = false
+      this.loggedIn = false;
+      this.employee_name = '';
     }
 
   }

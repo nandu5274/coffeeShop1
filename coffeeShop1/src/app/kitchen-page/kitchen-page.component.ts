@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Howl } from 'howler';
 import { WebSocketService } from '../service/WebSocket.service';
 import { DatePipe } from '@angular/common';
 import { DropboxService } from '../service/dropbox.service';

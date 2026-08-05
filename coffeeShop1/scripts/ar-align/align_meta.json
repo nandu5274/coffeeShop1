@@ -1,0 +1,12 @@
+{
+  "track": "src/assets/img/hero-m-bg.jpg",
+  "track_size": [
+    1024,
+    512
+  ],
+  "plane_height": 0.5,
+  "overlay_gif": "src/assets/mural-overlay.gif",
+  "overlay_mp4": "src/assets/mural-overlay.mp4",
+  "frames": 79,
+  "diff": 56.08096059163412
+}
