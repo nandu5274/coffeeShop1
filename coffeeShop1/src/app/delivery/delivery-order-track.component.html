@@ -1,0 +1,96 @@
+<section class="track-page delivery-shell" *ngIf="!loading && order">
+  <div class="inner">
+    <div class="header">
+      <button type="button" class="linkish" (click)="back()">← All orders</button>
+      <h1>Track order</h1>
+      <p>{{ order.table_no }} · Ref {{ order.order_ref_id }}</p>
+    </div>
+
+    <div class="panel steps-panel">
+      <div class="panel-head">
+        <i class="bi bi-truck" aria-hidden="true"></i>
+        <h2>Progress</h2>
+      </div>
+      <ol class="steps">
+        <li
+          *ngFor="let s of steps; let i = index"
+          [class.done]="stepIndex(order.order_status) > i"
+          [class.current]="stepIndex(order.order_status) === i"
+        >
+          <span class="dot" aria-hidden="true"></span>
+          <span class="label">{{ s.label }}</span>
+        </li>
+      </ol>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <i class="bi bi-receipt" aria-hidden="true"></i>
+        <h2>Order summary</h2>
+      </div>
+      <div class="detail-row">
+        <span>Status</span>
+        <strong class="status-pill">{{ statusLabel(order.order_status) }}</strong>
+      </div>
+      <div class="detail-row">
+        <span>Pay</span>
+        <strong>{{ payLabel(order.payment_method) }}</strong>
+      </div>
+      <div class="detail-row save" *ngIf="order.coupon_code">
+        <span>Coupon</span>
+        <strong>{{ order.coupon_code }} (−₹{{ order.discount_amount | number:'1.0-0' }})</strong>
+      </div>
+      <div class="detail-row total">
+        <span>Amount</span>
+        <strong>₹{{ (order.amount_to_pay ?? order.order_total_amount) | number:'1.0-0' }}</strong>
+      </div>
+      <div class="addr-chip" *ngIf="order.delivery_address_text">
+        <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+        <span>{{ order.delivery_address_text }}</span>
+      </div>
+    </div>
+
+    <div class="panel" *ngIf="items().length">
+      <div class="panel-head">
+        <i class="bi bi-bag-fill" aria-hidden="true"></i>
+        <h2>Items</h2>
+      </div>
+      <div class="item-line" *ngFor="let it of items()">
+        <span>{{ it.name || it.item_name }}</span>
+        <span class="qty">×{{ it.qty || it.quantity || it.item_quantity }}</span>
+      </div>
+    </div>
+
+    <div class="panel updates-panel" *ngIf="latestUpdate() as u">
+      <div class="panel-head">
+        <i class="bi bi-bell" aria-hidden="true"></i>
+        <h2>Updates</h2>
+      </div>
+      <ul class="track-updates">
+        <li>
+          <span class="t">{{ u.created_at | date:'short' }}</span>
+          <span class="msg">{{ u.message || statusLabel(u.status) }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <button type="button" class="secondary" (click)="back()">All orders</button>
+  </div>
+</section>
+
+<section class="track-page delivery-shell" *ngIf="loading">
+  <div class="inner">
+    <p class="state">Loading your order…</p>
+  </div>
+</section>
+
+<section class="track-page delivery-shell" *ngIf="!loading && errorMsg">
+  <div class="inner">
+    <div class="header">
+      <button type="button" class="linkish" (click)="back()">← All orders</button>
+      <h1>Track order</h1>
+    </div>
+    <div class="banner error">{{ errorMsg }}</div>
+    <button type="button" class="secondary" (click)="back()">All orders</button>
+  </div>
+</section>

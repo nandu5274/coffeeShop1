@@ -10,7 +10,18 @@ import { DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { CustomerService } from '../service/customer.service';
 import { Subscription } from 'rxjs';
-
+import {
+  DELIVERY_FEE,
+  DELIVERY_RADIUS_KM,
+  DELIVERY_TABLE_PLACE,
+  RESTAURANT_LAT,
+  RESTAURANT_LNG,
+  deliveryDisplayTableNo,
+  deliveryOrderTableNoInt
+} from '../common/constanst';
+import { DeliveryHistoryService } from '../service/delivery-history.service';
+import { WhatsappNotifyService } from '../service/whatsapp-notify.service';
+import { WebSocketService } from '../service/WebSocket.service';
 @Component({
   selector: 'app-items-cart',
   templateUrl: './items-cart.component.html',
@@ -33,7 +44,10 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
   private cartDataSubscription!: Subscription;
   private orderResponseSubscription?: Subscription;
   constructor(private sharedService: SharedService, private router: Router, private graphqlService: GraphqlService,
-    private dropboxService: DropboxService, private datePipe: DatePipe, private http: HttpClient, private customerService: CustomerService,) { }
+    private dropboxService: DropboxService, private datePipe: DatePipe, private http: HttpClient, private customerService: CustomerService,
+    private deliveryHistoryService: DeliveryHistoryService,
+    private whatsappNotifyService: WhatsappNotifyService,
+    private webSocketService: WebSocketService) { }
 
   ngOnInit() {
     this.UserMobileNumber =  sessionStorage.getItem('customer_number' )??''; 
@@ -43,7 +57,7 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
       this.cartDataList = JSON.parse(atob(sessionStorage.getItem('cartDataList')!));
       this.orderSummery(this.cartDataList);
     }
-
+    this.publishCartCount();
 
     this.cartDataSubscription = this.sharedService.getItemToCartDataObservable().subscribe((data) => {
       this.UserMobileNumber =  sessionStorage.getItem('customer_number' )??''; 
@@ -56,6 +70,7 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
 
       if (data && (data as any).isProcessedInCart) {
         this.orderSummery(this.cartDataList);
+        this.publishCartCount();
         return;
       }
       if (data) {
@@ -71,10 +86,9 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
             if (data.quantity == 0) {
               this.cartDataList.splice(this.cartDataList.indexOf(item), 1);
               this.quantityUpdated = true;
-              this.cartDataListCount.emit(this.cartDataList.length);
             }
             else {
-              item.quantity = item.quantity + data.quantity
+              item.quantity = Number(item.quantity) + Number(data.quantity);
               item.totalCartCost = item.quantity * item.cost
               this.quantityUpdated = true;
             }
@@ -86,37 +100,76 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
       if (!this.quantityUpdated) {
         this.sharedData.totalCartCost = this.sharedData.quantity * this.sharedData.cost
         this.cartDataList.push(this.sharedData)
-        this.cartDataListCount.emit(this.cartDataList.length); // Emit the updated list
-        console.log("sahred record -" + JSON.stringify(this.sharedData))
-        this.cartDataList.forEach(item => console.log(item));
       }
       sessionStorage.removeItem("cartDataList");
       sessionStorage.setItem("cartDataList", btoa(JSON.stringify(this.cartDataList)));
       this.orderSummery(this.cartDataList);
+      this.publishCartCount();
     });
    
 
   }
   updatedCartItemDto: CartItemDto = new CartItemDto;
   increment(cartItem: any) {
-    cartItem.quantity = +1;
-    this.sharedService.setItemToCartData(cartItem!);
+    const delta = Object.assign(new CartItemDto(), cartItem, { quantity: 1 });
+    this.sharedService.setItemToCartData(delta);
   }
 
   decrement(cartItem: any) {
     if (cartItem.quantity > 1) {
-      cartItem.quantity = -1;
-      this.sharedService.setItemToCartData(cartItem!);
+      const delta = Object.assign(new CartItemDto(), cartItem, { quantity: -1 });
+      this.sharedService.setItemToCartData(delta);
+    } else {
+      this.removeItem(cartItem);
     }
   }
+
+  clearCart(): void {
+    this.cartDataList = [];
+    sessionStorage.removeItem('cartDataList');
+    this.orderSummery(this.cartDataList);
+    this.publishCartCount();
+  }
+
+  private publishCartCount(): void {
+    const qty = this.cartDataList.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+    this.cartDataListCount.emit(qty);
+    this.sharedService.setCartCount(qty);
+  }
+
+  get deliveryAddressShort(): string {
+    const text = sessionStorage.getItem('delivery_address_text') || '';
+    if (!text) {
+      return 'Select address';
+    }
+    const first = text.split(',')[0]?.trim() || text;
+    return first.length > 28 ? `${first.slice(0, 26)}…` : first;
+  }
+
+  goSelectAddress(): void {
+    this.closeCartModal.emit(this.cartDataList.length);
+    this.router.navigate(['/delivery/addresses']);
+  }
+
+  addMoreItems(): void {
+    this.closeCartModal.emit(this.cartDataList.length);
+    this.sharedService.setShowMenuFlag(true);
+    this.router.navigate(['/menu'], { fragment: 'menu' });
+  }
+
   orderSummery(cartItem: any) {
     this.orderAmount = 0;
 
     cartItem.forEach((item: CartItemDto) => {
       this.orderAmount = this.orderAmount + item.totalCartCost
     })
-    this.additionAmount =  (this.orderAmount * 5) / 100;;
-    this.totalAmount = this.orderAmount +  this.additionAmount 
+    const isDelivery = sessionStorage.getItem('order_mode') === 'delivery';
+    if (isDelivery) {
+      this.additionAmount = Number(DELIVERY_FEE) || 0;
+    } else {
+      this.additionAmount = (this.orderAmount * 5) / 100;
+    }
+    this.totalAmount = this.orderAmount + this.additionAmount
     if (this.totalAmount > 0) {
       this.orderButtonDisabled = false;
     } else {
@@ -124,8 +177,8 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
     }
   }
   removeItem(cartItem: any) {
-    cartItem.quantity = 0;
-    this.sharedService.setItemToCartData(cartItem!);
+    const delta = Object.assign(new CartItemDto(), cartItem, { quantity: 0 });
+    this.sharedService.setItemToCartData(delta);
   }
   previousUrl: any;
   navigateToMenu(nav: any) {
@@ -172,43 +225,108 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
     }
   }
 
+  get isDeliveryMode(): boolean {
+    return sessionStorage.getItem('order_mode') === 'delivery';
+  }
+
+  onOrderClick() {
+    if (this.isDeliveryMode) {
+      if (sessionStorage.getItem('is_login') !== 'true') {
+        alert('Please login to place a delivery order.');
+        return;
+      }
+      if (!sessionStorage.getItem('delivery_address_id')) {
+        alert('Please select a delivery address first.');
+        this.router.navigate(['/delivery/addresses']);
+        this.closeCartModal.emit(this.cartDataList.length);
+        return;
+      }
+      this.closeCartModal.emit(this.cartDataList.length);
+      this.router.navigate(['/delivery/checkout']);
+      return;
+    }
+    this.sentOrder();
+  }
+
   sentOrder() {
-    let employee_Name = this.getEmployeeName();
-    if (!employee_Name) {
+    const isDelivery = sessionStorage.getItem('order_mode') === 'delivery';
+    let employee_Name = isDelivery ? 'ONLINE' : this.getEmployeeName();
+
+    if (!isDelivery && !employee_Name) {
       alert('Please login as captain/waiter before placing an order. Waiter name is required.');
       this.orderProcessingStatus.emit('error');
       return;
     }
 
+    if (isDelivery) {
+      if (sessionStorage.getItem('is_login') !== 'true') {
+        alert('Please login to place a delivery order.');
+        this.orderProcessingStatus.emit('error');
+        return;
+      }
+      if (!sessionStorage.getItem('delivery_address_id') || !sessionStorage.getItem('delivery_address_text')) {
+        alert('Please select a delivery address first (Online Delivery → Addresses).');
+        this.orderProcessingStatus.emit('error');
+        this.router.navigate(['/delivery/addresses']);
+        return;
+      }
+      const dist = parseFloat(sessionStorage.getItem('delivery_distance_km') || '');
+      if (!isNaN(dist) && dist > DELIVERY_RADIUS_KM) {
+        alert(`We only deliver within ${DELIVERY_RADIUS_KM} km.`);
+        this.orderProcessingStatus.emit('error');
+        return;
+      }
+      const lat = parseFloat(sessionStorage.getItem('delivery_lat') || '');
+      const lng = parseFloat(sessionStorage.getItem('delivery_lng') || '');
+      if (!isNaN(lat) && !isNaN(lng)) {
+        const km = this.sharedService.distanceKm(RESTAURANT_LAT, RESTAURANT_LNG, lat, lng);
+        if (km > DELIVERY_RADIUS_KM) {
+          alert(`We only deliver within ${DELIVERY_RADIUS_KM} km.`);
+          this.orderProcessingStatus.emit('error');
+          return;
+        }
+        sessionStorage.setItem('delivery_distance_km', km.toFixed(3));
+      }
+      this.UserMobileNumber = sessionStorage.getItem('customer_number') || this.UserMobileNumber || '';
+      if (!this.UserMobileNumber) {
+        alert('Customer mobile number missing. Please login again.');
+        this.orderProcessingStatus.emit('error');
+        return;
+      }
+    }
+
     let dataList:any = [];
     let rdm_order_ref_id = this.sharedService.generateRandomNumberWithDateTime();
-    let data = {
-      data:dataList
-    }
-  
+    // Café DB table_no is INTEGER; D-… label is only for delivery map / customer display
+    const deliveryTableNoDisplay = isDelivery ? deliveryDisplayTableNo(rdm_order_ref_id) : null;
+    const deliveryTableNo = isDelivery
+      ? deliveryOrderTableNoInt(rdm_order_ref_id)
+      : sessionStorage.getItem('table');
+
     let orderTableData = {
       order_status: 'approval_waiting',
-      table_no: sessionStorage.getItem('table'),
-      table_place: sessionStorage.getItem('tablePlace'),
+      table_no: deliveryTableNo,
+      table_place: isDelivery ? DELIVERY_TABLE_PLACE : sessionStorage.getItem('tablePlace'),
       order_ref_id: rdm_order_ref_id,
       order_summary_amount: this.orderAmount,
       order_additional_service_amount: this.additionAmount,
       order_total_amount: this.totalAmount,
-      order_items: data,
-      employee:employee_Name,
-      comments:this.commentText,
-      customer_number:this.UserMobileNumber
-
+      order_items: { data: dataList },
+      employee: employee_Name,
+      comments: isDelivery
+        ? `${this.commentText || ''}\n[DELIVERY] ${deliveryTableNoDisplay}\n${sessionStorage.getItem('delivery_address_text') || ''}`.trim()
+        : this.commentText,
+      customer_number: this.UserMobileNumber
     }
 
     let csvOrderTableData = {
       order_ref_id: rdm_order_ref_id,
-      table_no: sessionStorage.getItem('table'),
+      table_no: isDelivery ? deliveryTableNoDisplay : deliveryTableNo,
       order_summary_amount: this.orderAmount,
       order_additional_service_amount: this.additionAmount,
       order_total_amount: this.totalAmount,
-      table_place: sessionStorage.getItem('tablePlace'),
-      customer_number:this.UserMobileNumber
+      table_place: isDelivery ? DELIVERY_TABLE_PLACE : sessionStorage.getItem('tablePlace'),
+      customer_number: this.UserMobileNumber
     }
 
    let csvOrderItemsTableData = dataList;
@@ -233,13 +351,13 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
   }
   this.orderResponseSubscription = this.sharedService.getOrderProcessingResponseObservable().subscribe((data) => {
     this.responseDto = data;
-    this.sentOrderStatus(csvOrderTableData, csvOrderItemsTableData);
+    this.sentOrderStatus(csvOrderTableData, csvOrderItemsTableData, isDelivery);
   });
   
   //this.generateAndUploadCSV(csvOrderTableData, csvOrderItemsTableData)
   }
 
-  sentOrderStatus(csvOrderTableData: any, csvOrderItemsTableData:any) {
+  sentOrderStatus(csvOrderTableData: any, csvOrderItemsTableData:any, isDelivery = false) {
     if(this.responseDto.status == "success")
     {
       this.orderProcessingStatus.emit('success')
@@ -248,12 +366,101 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
       sessionStorage.removeItem("cartDataList");
       this.responseDto.message = "approval"
       console.log("data 2 - ", JSON.stringify(this.responseDto))
-      this.generateAndUploadToApprovalWaiting(csvOrderTableData, csvOrderItemsTableData,this.responseDto.data.data.insert_kubera_order_one.id,this.responseDto.data.data.insert_kubera_order_one.order_ref_id)
+      const inserted = this.responseDto?.data?.data?.insert_kubera_order_one;
+      if (inserted) {
+        this.generateAndUploadToApprovalWaiting(
+          csvOrderTableData,
+          csvOrderItemsTableData,
+          inserted.id,
+          inserted.order_ref_id
+        );
+      }
+      try {
+        this.webSocketService.send('approval');
+      } catch (e) {
+        console.warn('WS approval notify failed', e);
+      }
+      if (isDelivery && inserted) {
+        this.afterDeliveryOrderPlaced(inserted, csvOrderTableData, csvOrderItemsTableData);
+      }
   
     }else if(this.responseDto.status == "error")
     {
       this.orderProcessingStatus.emit('error')
     }
+  }
+
+  private afterDeliveryOrderPlaced(inserted: any, csvOrder: any, items: any[]): void {
+    let customerDetailsId = 0;
+    let customerName = '';
+    try {
+      const raw = sessionStorage.getItem('customer_Details');
+      if (raw) {
+        const d = JSON.parse(raw);
+        customerDetailsId = d?.customer_detail?.id || 0;
+        customerName = d?.customer_detail?.name || '';
+      }
+    } catch { /* ignore */ }
+
+    const addressText = sessionStorage.getItem('delivery_address_text') || '';
+    const mapObj: Record<string, unknown> = {
+      customer_details_id: customerDetailsId,
+      customer_number: String(csvOrder.customer_number || ''),
+      order_id: inserted.id,
+      order_ref_id: String(inserted.order_ref_id),
+      table_no: String(csvOrder.table_no),
+      table_place: DELIVERY_TABLE_PLACE,
+      order_status: 'approval_waiting',
+      order_summary_amount: csvOrder.order_summary_amount,
+      order_additional_service_amount: csvOrder.order_additional_service_amount,
+      order_total_amount: csvOrder.order_total_amount,
+      delivery_fee: csvOrder.order_additional_service_amount,
+      delivery_distance_km: parseFloat(sessionStorage.getItem('delivery_distance_km') || '0') || null,
+      delivery_address_id: parseInt(sessionStorage.getItem('delivery_address_id') || '', 10) || null,
+      delivery_address_text: addressText,
+      delivery_lat: parseFloat(sessionStorage.getItem('delivery_lat') || '') || null,
+      delivery_lng: parseFloat(sessionStorage.getItem('delivery_lng') || '') || null,
+      comments: inserted.comments || null,
+      items_summary: (items || []).map((i: any) => ({
+        name: i.item_name,
+        qty: i.item_quantity,
+        cost: i.item_cost
+      }))
+    };
+
+    this.deliveryHistoryService.insertOrderMap(mapObj).subscribe({
+      next: (res) => {
+        const mapId = res?.data?.insert_kubera_delivery_kubera_customer_order_map_one?.id;
+        if (mapId) {
+          this.deliveryHistoryService.insertStatusEvent({
+            order_map_id: mapId,
+            order_id: inserted.id,
+            order_ref_id: String(inserted.order_ref_id),
+            status: 'approval_waiting',
+            message: 'Order placed — waiting for restaurant'
+          }).subscribe({ error: (e) => console.warn('status event failed', e) });
+        }
+      },
+      error: (e) => console.warn('delivery order map insert failed', e)
+    });
+
+    this.whatsappNotifyService.sendDeliveryOrderAlert({
+      tableNo: String(csvOrder.table_no),
+      orderRefId: String(inserted.order_ref_id),
+      customerNumber: String(csvOrder.customer_number || ''),
+      customerName,
+      addressText,
+      totalAmount: Number(csvOrder.order_total_amount) || 0,
+      items: (items || []).map((i: any) => ({
+        name: i.item_name,
+        quantity: i.item_quantity,
+        cost: i.item_cost
+      }))
+    }).subscribe((r) => {
+      if (!r.sent) {
+        console.warn('WhatsApp not sent:', r.reason);
+      }
+    });
   }
   objectsToCsv(objects: any[]): string {
     const csv = Papa.unparse(objects);

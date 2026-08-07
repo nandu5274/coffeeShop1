@@ -244,6 +244,16 @@
                   </div>
                 </div>
 
+                <!-- Card: Delivery Sale -->
+                <div class="metric-card delivery-card">
+                  <div class="metric-icon">🛵</div>
+                  <div class="metric-details">
+                    <span class="metric-label">Delivery Sale</span>
+                    <span class="metric-value">₹{{TotalDeliveryAmount | number:'1.2-2'}}</span>
+                    <span class="metric-sub">{{TotalDeliveryOrders}} order{{TotalDeliveryOrders === 1 ? '' : 's'}}</span>
+                  </div>
+                </div>
+
                 <!-- Card: Paid Amount -->
                 <div class="metric-card paid-card-summary">
                   <div class="metric-icon">💰</div>
@@ -282,13 +292,17 @@
         <div  data-aos="fade-up" data-aos-delay="100">
           <div class="col-lg-12 d-flex justify-content-center">
             <div class="card-container paid-container">
-              <div class="paid-card compact-card" *ngFor="let waitingApprovalOrder of paidOrderList">
+              <div
+                class="paid-card compact-card"
+                [class.delivery-paid]="isDeliveryPaidCard(waitingApprovalOrder)"
+                *ngFor="let waitingApprovalOrder of paidOrderList"
+              >
                 <!-- Card Header -->
                 <div class="card-header-row">
-                  <span class="table-badge">
-                    📍 Table {{waitingApprovalOrder.order[0].table_no}}
+                  <span class="table-badge" [class.delivery]="isDeliveryPaidCard(waitingApprovalOrder)">
+                    {{ paidCardTableLabel(waitingApprovalOrder) }}
                   </span>
-                  <div class="paid-badge-compact">
+                  <div class="paid-badge-compact" [class.delivery]="isDeliveryPaidCard(waitingApprovalOrder)">
                     ✓ PAID
                   </div>
                 </div>
@@ -307,7 +321,7 @@
                 <div class="card-meta-row" style="margin-bottom: 0;">
                   <span class="meta-time" style="font-size: 0.78rem;">🕒 {{waitingApprovalOrder.paidDetails[0].period}}</span>
                   <span class="meta-mode" [ngClass]="waitingApprovalOrder.paidDetails[0].mode">
-                    {{waitingApprovalOrder.paidDetails[0].mode === 'cash' ? '💵 Cash' : '💳 Online'}}
+                    {{ paidCardModeLabel(waitingApprovalOrder) }}
                   </span>
                 </div>
 

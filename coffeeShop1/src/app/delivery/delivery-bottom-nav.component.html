@@ -1,0 +1,23 @@
+<nav class="delivery-bottom-nav" *ngIf="showNav" aria-label="Delivery navigation">
+  <button type="button" class="nav-item" [class.active]="active === 'home'" (click)="go('home')">
+    <i class="bi bi-house-door" aria-hidden="true"></i>
+    <span>Home</span>
+  </button>
+  <button type="button" class="nav-item" [class.active]="active === 'menu'" (click)="go('menu')">
+    <i class="bi bi-grid" aria-hidden="true"></i>
+    <span>Menu</span>
+  </button>
+  <button type="button" class="nav-item" [class.active]="active === 'address'" (click)="go('address')">
+    <i class="bi bi-geo-alt" aria-hidden="true"></i>
+    <span>Address</span>
+  </button>
+  <button type="button" class="nav-item" [class.active]="active === 'orders'" (click)="go('orders')">
+    <i class="bi bi-receipt" aria-hidden="true"></i>
+    <span>Orders</span>
+  </button>
+  <button type="button" class="nav-item" [class.active]="active === 'cart'" (click)="go('cart')">
+    <i class="bi bi-bag" aria-hidden="true"></i>
+    <span>Cart</span>
+    <em class="cart-count-badge" *ngIf="cartCount > 0">{{ cartCount }}</em>
+  </button>
+</nav>

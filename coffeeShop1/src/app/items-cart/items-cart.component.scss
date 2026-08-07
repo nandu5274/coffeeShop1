@@ -559,3 +559,334 @@
   }
 }
 
+
+/* ---- Swiggy-style cart sheet ---- */
+.swiggy-cart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 100%;
+  padding-bottom: 5.5rem;
+}
+
+.addr-chip {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  color: #f6f1e8;
+  cursor: pointer;
+  text-align: left;
+}
+
+.addr-chip .bi-house-door-fill {
+  color: #cda45e;
+  font-size: 1.05rem;
+}
+
+.addr-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  line-height: 1.15;
+}
+
+.addr-text em {
+  font-style: normal;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #cda45e;
+  font-weight: 600;
+}
+
+.addr-text strong {
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cart-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cart-toolbar h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #fffef8;
+  font-weight: 700;
+}
+
+.clear-link {
+  appearance: none;
+  border: none;
+  background: none;
+  color: #f0a0a0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cart-items-panel {
+  height: auto !important;
+  max-height: none;
+  padding: 0.35rem 0.85rem 0.85rem !important;
+}
+
+.cart-line {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cart-line:last-of-type {
+  border-bottom: none;
+}
+
+.line-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.line-info h1 {
+  margin: 0 0 0.2rem !important;
+  font-size: 0.95rem !important;
+  color: #fffef8 !important;
+  font-family: "Poppins", sans-serif !important;
+  font-weight: 600 !important;
+}
+
+.line-info p {
+  margin: 0;
+  font-size: 0.72rem;
+  color: rgba(246, 241, 232, 0.55);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-remove {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: rgba(246, 241, 232, 0.45);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.15rem;
+}
+
+.line-meta {
+  margin-top: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(205, 164, 94, 0.55);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(205, 164, 94, 0.08);
+}
+
+.qty-stepper .step {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: #cda45e;
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.qty-stepper .qty {
+  min-width: 1.6rem;
+  text-align: center;
+  font-weight: 700;
+  color: #fffef8;
+  font-size: 0.88rem;
+}
+
+.line-price {
+  font-weight: 700;
+  color: #cda45e;
+  font-size: 0.95rem;
+}
+
+.add-more {
+  appearance: none;
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.7rem 0.5rem;
+  border: 1px dashed rgba(205, 164, 94, 0.4);
+  border-radius: 12px;
+  background: transparent;
+  color: #cda45e;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.add-more.subtle {
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(246, 241, 232, 0.75);
+  margin-top: 0.45rem;
+}
+
+.empty-panel {
+  height: auto !important;
+  text-align: center;
+  padding: 2rem 1rem !important;
+}
+
+.empty-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fffef8;
+  margin-bottom: 0.35rem;
+}
+
+.empty-sub {
+  opacity: 0.6;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.bill-card {
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.bill-card h3 {
+  margin: 0 0 0.65rem;
+  font-size: 0.92rem;
+  color: #fffef8;
+}
+
+.bill-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: rgba(246, 241, 232, 0.75);
+  padding: 0.28rem 0;
+}
+
+.bill-row.total {
+  margin-top: 0.35rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fffef8;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+
+.note-chip {
+  font-size: 0.78rem;
+  color: rgba(246, 241, 232, 0.8);
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(53, 162, 235, 0.12);
+  border: 1px solid rgba(53, 162, 235, 0.25);
+}
+
+.note-chip span {
+  font-weight: 700;
+  color: #35a2eb;
+}
+
+.cart-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  margin-top: auto;
+  padding: 0.75rem 0 0.15rem;
+  background: linear-gradient(180deg, transparent, rgba(12, 11, 9, 0.96) 28%);
+}
+
+.footer-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.45rem;
+  padding: 0 0.15rem;
+}
+
+.footer-total strong {
+  font-size: 1.2rem;
+  color: #fffef8;
+}
+
+.footer-total .linkish {
+  appearance: none;
+  border: none;
+  background: none;
+  color: #cda45e;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.footer-actions {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 0.45rem;
+}
+
+.footer-actions.delivery {
+  grid-template-columns: 1fr;
+}
+
+.ghost-btn {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  color: #f6f1e8;
+  border-radius: 999px;
+  min-height: 46px;
+  padding: 0 0.9rem;
+  font-weight: 600;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.pay-btn {
+  appearance: none;
+  border: none;
+  border-radius: 14px;
+  min-height: 50px;
+  padding: 0 1.1rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, #1faa59 0%, #148f45 100%);
+  box-shadow: 0 8px 22px rgba(20, 143, 69, 0.35);
+}
+
+.pay-btn:active {
+  transform: scale(0.98);
+}

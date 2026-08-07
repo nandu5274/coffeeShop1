@@ -1,0 +1,33 @@
+<section class="orders-page delivery-shell">
+  <div class="inner">
+    <div class="header">
+      <button type="button" class="linkish" (click)="goHome()">← Delivery home</button>
+      <h1>My orders</h1>
+      <p>Track delivery orders placed with this account.</p>
+    </div>
+
+    <p class="state" *ngIf="loading">Loading your orders…</p>
+    <div class="banner error" *ngIf="!loading && errorMsg">{{ errorMsg }}</div>
+    <p class="state" *ngIf="!loading && !errorMsg && !orders.length">No delivery orders yet.</p>
+
+    <div class="list" *ngIf="!loading && orders.length">
+      <button type="button" class="order-row" *ngFor="let o of orders" (click)="openTrack(o)">
+        <div class="top">
+          <strong>{{ o.table_no || o.order_ref_id }}</strong>
+          <span class="status-pill">{{ statusLabel(o.order_status) }}</span>
+        </div>
+        <div class="meta">
+          <span>{{ o.placed_at | date:'medium' }}</span>
+          <span class="amount">₹{{ (o.amount_to_pay ?? o.order_total_amount) | number:'1.0-0' }}</span>
+        </div>
+        <div class="addr" *ngIf="o.delivery_address_text">
+          <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+          <span>{{ o.delivery_address_text }}</span>
+        </div>
+        <span class="track-hint">Track order <i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+      </button>
+    </div>
+
+    <button type="button" class="secondary" (click)="goHome()">Back to delivery</button>
+  </div>
+</section>

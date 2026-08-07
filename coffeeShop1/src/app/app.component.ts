@@ -1,26 +1,28 @@
 import { trigger, transition, style, animate } from '@angular/animations';
 
-import { Component, ElementRef, HostListener, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { Howl } from 'howler';
-import { VERSION } from './common/constanst';
+import { Subscription, filter } from 'rxjs';
+import { isCustomerDeliveryUrl, isStaffShellUrl, VERSION } from './common/constanst';
 import { HasuraApiService } from './service/hasura.api.service';
 import { WebSocketService } from './service/WebSocket.service';
 import { SharedService } from './service/shared-service';
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
-  animations: [
-    trigger('slideInOut', [
-      transition(':enter', [
-        style({ transform: 'translateX(100%)' }),
-        animate('300ms ease-in', style({ transform: 'translateX(0%)' }))
-      ]),
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss'],
+    animations: [
+        trigger('slideInOut', [
+            transition(':enter', [
+                style({ transform: 'translateX(100%)' }),
+                animate('300ms ease-in', style({ transform: 'translateX(0%)' }))
+            ]),
 
-    ])
-  ]
+        ])
+    ]
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   title = 'cofeeshop1';
   version: any = VERSION;
   private sound: Howl;
@@ -29,6 +31,10 @@ export class AppComponent implements OnInit {
   tableNumber = undefined;
   message = '';
   floors = ['Ground Floor', '1st Floor', 'out door'];
+  hideCallWaiter = false;
+  /** Hide Cafe Kubera marketing nav/footer on staff pages like delivery-agent */
+  hideMarketingShell = false;
+  private routerSub?: Subscription;
 
   public loadScript(url: string) {
     let node = document.createElement('script');
@@ -40,12 +46,16 @@ export class AppComponent implements OnInit {
   hearts: { left: number, duration: number }[] = [];
   @ViewChild('container') container!: ElementRef;
 
-  constructor(private renderer: Renderer2, private dataService: HasuraApiService,
-    private webSocketService: WebSocketService, private sharedService: SharedService) {
+  constructor(
+    private renderer: Renderer2,
+    private dataService: HasuraApiService,
+    private webSocketService: WebSocketService,
+    private sharedService: SharedService,
+    private router: Router
+  ) {
     this.sound = new Howl({
       src: ['assets/audio/ipl.mp3'],
     });
-
   }
 
 
@@ -67,7 +77,29 @@ export class AppComponent implements OnInit {
 
     //this.playSound();
     this.updateImageBasedOnScreenSize();
-    //above code is for popups 
+    //above code is for popups
+    this.refreshShellVisibility();
+    this.routerSub = this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe(() => this.refreshShellVisibility());
+  }
+
+  ngOnDestroy(): void {
+    this.routerSub?.unsubscribe();
+  }
+
+  refreshShellVisibility(): void {
+    const url = this.router.url || '';
+    const deliveryMode = sessionStorage.getItem('order_mode') === 'delivery';
+    this.hideMarketingShell = isStaffShellUrl(url);
+    this.hideCallWaiter =
+      this.hideMarketingShell ||
+      isCustomerDeliveryUrl(url) ||
+      (deliveryMode && (url.includes('/menu') || url.includes('/items-cart')));
+    if (this.hideCallWaiter) {
+      this.isPopupOpen = false;
+    }
+    document.body.classList.toggle('staff-shell', this.hideMarketingShell);
   }
 
   ngAfterViewInit(): void {

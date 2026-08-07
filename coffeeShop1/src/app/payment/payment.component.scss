@@ -855,6 +855,35 @@ input:checked + .slider:before {
     }
   }
 
+  &.delivery-paid {
+    background: linear-gradient(
+      145deg,
+      rgba(16, 40, 72, 0.94) 0%,
+      rgba(12, 28, 56, 0.97) 45%,
+      rgba(10, 22, 44, 0.99) 100%
+    ) !important;
+    border: 1px solid rgba(80, 150, 230, 0.5) !important;
+    border-top-color: rgba(140, 200, 255, 0.5) !important;
+    border-left-color: rgba(90, 160, 240, 0.35) !important;
+    box-shadow:
+      0 12px 32px rgba(0, 0, 0, 0.5),
+      0 0 24px rgba(50, 130, 220, 0.22),
+      inset 0 1px 0 rgba(180, 220, 255, 0.14) !important;
+
+    &:hover {
+      border-color: rgba(110, 180, 255, 0.7) !important;
+      border-top-color: rgba(170, 220, 255, 0.55) !important;
+      box-shadow:
+        0 16px 40px rgba(0, 0, 0, 0.55),
+        0 0 30px rgba(50, 130, 220, 0.32),
+        inset 0 1px 0 rgba(200, 230, 255, 0.18) !important;
+    }
+
+    .meta-amount {
+      color: #9ecbff !important;
+    }
+  }
+
   .card-header-row {
     display: flex;
     justify-content: space-between;
@@ -872,6 +901,12 @@ input:checked + .slider:before {
     color: #e8c97a;
   }
 
+  .table-badge.delivery {
+    color: #9ecbff;
+    background: rgba(50, 130, 220, 0.18);
+    border-color: rgba(80, 150, 230, 0.45);
+  }
+
   .paid-badge-compact {
     background: rgba(40, 167, 69, 0.15);
     border: 1px solid #28a745;
@@ -881,6 +916,12 @@ input:checked + .slider:before {
     font-size: 0.75rem;
     font-weight: bold;
     letter-spacing: 0.5px;
+  }
+
+  .paid-badge-compact.delivery {
+    background: rgba(50, 130, 220, 0.18);
+    border-color: rgba(80, 150, 230, 0.55);
+    color: #9ecbff;
   }
 
   .card-meta-row {
@@ -1421,6 +1462,13 @@ input:checked + .slider:before {
     gap: 2px;
     overflow: hidden;
     
+    .metric-sub {
+      color: rgba(158, 203, 255, 0.85);
+      font-size: 0.68rem;
+      font-weight: 600;
+      margin-top: 1px;
+    }
+
     .metric-label {
       color: rgba(255, 255, 255, 0.5);
       font-size: 0.72rem;
@@ -1444,6 +1492,25 @@ input:checked + .slider:before {
       @media (max-width: 480px) {
         font-size: 0.95rem;
       }
+    }
+  }
+
+  &.delivery-card {
+    border-color: rgba(80, 150, 230, 0.35);
+    background: rgba(50, 130, 220, 0.08);
+
+    .metric-icon {
+      background: rgba(50, 130, 220, 0.18);
+      color: #9ecbff;
+    }
+
+    .metric-value {
+      color: #9ecbff;
+    }
+
+    &:hover {
+      border-color: rgba(110, 180, 255, 0.5);
+      box-shadow: 0 4px 15px rgba(50, 130, 220, 0.15);
     }
   }
 

@@ -848,4 +848,54 @@ query get_payment_mode_summary {
     });
   }
 
+  /** Live ONLINE_DELIVERY orders for delivery-agent (merge with delivery map). */
+  getActiveOnlineDeliveryOrders(statuses: string[], startDate: string): Observable<any> {
+    const query = gql`
+      query GetActiveOnlineDeliveryOrders($statuses: [String!]!, $startDate: timestamptz!, $place: String!) {
+        kubera_order(
+          where: {
+            order_status: { _in: $statuses }
+            table_place: { _eq: $place }
+            created_at: { _gte: $startDate }
+          }
+          order_by: { created_at: desc }
+        ) {
+          id
+          order_ref_id
+          table_no
+          table_place
+          order_status
+          customer_number
+          comments
+          order_summary_amount
+          order_additional_service_amount
+          order_total_amount
+          created_at
+          order_items {
+            item_name
+            item_quantity
+            item_cost
+            item_description
+            status
+          }
+        }
+      }
+    `;
+
+    return this.apollo.query({
+      query,
+      fetchPolicy: 'network-only',
+      variables: {
+        statuses,
+        startDate,
+        place: 'ONLINE_DELIVERY'
+      },
+      context: {
+        headers: {
+          'x-hasura-access-key': GRAPHQL_KEY
+        }
+      }
+    });
+  }
+
 }

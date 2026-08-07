@@ -436,23 +436,40 @@ font-family: open-sans, Arial, Helvetica, sans-serif;
 }
 
 .cust-login{
-  border: 12px solid #1a1814;
-  border-radius: 42px;
-  background: #1a1814;
-  width: fit-content;
-  align-self: center;
-}
+    border: 1px solid rgba(205, 164, 94, 0.35);
+    border-radius: 24px;
+    background: linear-gradient(
+      160deg,
+      rgba(18, 14, 10, 0.55) 0%,
+      rgba(0, 0, 0, 0.45) 100%
+    );
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.55),
+      inset 0 1px 0 rgba(255, 240, 200, 0.12);
+    width: fit-content;
+    max-width: min(92vw, 420px);
+    align-self: center;
+    overflow: hidden;
+  }
 
 @media only screen and (max-width: 991px) {
 
-.cust-login{
-  border: 12px solid #1a1814;
-  border-radius: 42px;
-  background: #1a1814;
-  max-width: fit-content;
-  width: 90%;
-  align-self: center;
-}
+  .cust-login{
+    border: 1px solid rgba(205, 164, 94, 0.35);
+    border-radius: 22px;
+    background: linear-gradient(
+      160deg,
+      rgba(18, 14, 10, 0.55) 0%,
+      rgba(0, 0, 0, 0.45) 100%
+    );
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    max-width: min(92vw, 420px);
+    width: 92%;
+    align-self: center;
+  }
 }
 
 

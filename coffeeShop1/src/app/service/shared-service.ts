@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Observable, Subject } from "rxjs";
+import { BehaviorSubject, Observable, Subject } from "rxjs";
 import { CartItemDto } from "../dtos/CartItemDto";
 import * as Papa from 'papaparse';
 import { ResponseDto } from "../dtos/responseDto";
@@ -21,10 +21,13 @@ export class SharedService {
     private isLoginFlag: any = false;
     private isLoginFlagSubject = new Subject<any>();
 
+    private openCustomerLoginSubject = new Subject<void>();
+    private openCartSubject = new Subject<void>();
+    private cartCountSubject = new BehaviorSubject<number>(this.readCartQtyFromSession());
 
     private orderProcessingResponse: ResponseDto = new ResponseDto;
     private orderProcessingResponseSubject = new Subject<ResponseDto>();
-  
+
     setItemToCartData(data: CartItemDto) {
       if (data) {
         delete (data as any).isProcessedInCart;
@@ -40,6 +43,41 @@ export class SharedService {
       return this.sendItemToCartSubject.asObservable();
     }
 
+    /** Total item quantity badge (sum of line quantities) */
+    setCartCount(count: number) {
+      this.cartCountSubject.next(Math.max(0, Number(count) || 0));
+    }
+
+    getCartCountObservable(): Observable<number> {
+      return this.cartCountSubject.asObservable();
+    }
+
+    /** Ask nav-bar to open the cart drawer */
+    requestOpenCart() {
+      this.openCartSubject.next();
+    }
+
+    getOpenCartObservable(): Observable<void> {
+      return this.openCartSubject.asObservable();
+    }
+
+    /** Read current cart total qty from sessionStorage */
+    readCartQtyFromSession(): number {
+      try {
+        const raw = sessionStorage.getItem('cartDataList');
+        if (!raw) {
+          return 0;
+        }
+        const list = JSON.parse(atob(raw));
+        if (!Array.isArray(list)) {
+          return 0;
+        }
+        return list.reduce((sum: number, item: any) => sum + (Number(item?.quantity) || 0), 0);
+      } catch {
+        return 0;
+      }
+    }
+
     setShowMenuFlag(data: any) {
       this.showMenu = data;
       this.showMenuSubject.next(data);
@@ -47,6 +85,28 @@ export class SharedService {
     setIsLoginFlag(data: any) {
       this.isLoginFlag = data;
       this.isLoginFlagSubject.next(data);
+    }
+
+    /** Ask nav-bar to open the existing customer login modal */
+    requestCustomerLogin() {
+      this.openCustomerLoginSubject.next();
+    }
+
+    getOpenCustomerLoginObservable(): Observable<void> {
+      return this.openCustomerLoginSubject.asObservable();
+    }
+
+    /** Haversine distance in km between two WGS84 points */
+    distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+      const toRad = (d: number) => (d * Math.PI) / 180;
+      const R = 6371;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
     getIsLoginFlag() {
     

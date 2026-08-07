@@ -1,0 +1,74 @@
+<div #printableRoot class="delivery-kot-printable printable-content">
+  <div class="ticket">
+    <div class="ticket-head">
+      <p class="centered title">DELIVERY KOT</p>
+      <p class="centered order-no">#{{ ticket.orderNo }}</p>
+    </div>
+
+    <hr class="hr" />
+
+    <div class="meta">
+      <div class="meta-line">
+        <span class="meta-date">{{ ticket.date }}</span>
+        <span class="meta-delivery">{{ ticket.deliveryNo }}</span>
+      </div>
+      <div *ngIf="ticket.customerNumber" class="meta-sub">
+        Mobile: {{ ticket.customerNumber }}
+      </div>
+      <div *ngIf="ticket.paymentMethod" class="meta-sub">
+        Pay: {{ ticket.paymentMethod === 'cod' ? 'Cash on delivery' : (ticket.paymentMethod === 'upi_qr' ? 'UPI QR' : ticket.paymentMethod) }}
+      </div>
+    </div>
+
+    <hr class="hr" />
+
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th class="description">Item</th>
+          <th class="quantity">Qty</th>
+          <th class="price">Amt</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of ticket.items">
+          <td class="description">{{ item.item_name }}</td>
+          <td class="quantity">{{ item.item_quantity }}</td>
+          <td class="price">{{ formatMoney(item.line_total) }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr class="hr" />
+
+    <div class="totals">
+      <div class="kot-line">
+        <span>Item total</span>
+        <span>₹{{ formatMoney(ticket.itemTotal) }}</span>
+      </div>
+      <div class="kot-line" *ngIf="ticket.deliveryFee > 0">
+        <span>Delivery fee</span>
+        <span>₹{{ formatMoney(ticket.deliveryFee) }}</span>
+      </div>
+      <div class="kot-line" *ngIf="ticket.discountAmount > 0">
+        <span>Discount{{ ticket.couponCode ? ' (' + ticket.couponCode + ')' : '' }}</span>
+        <span>−₹{{ formatMoney(ticket.discountAmount) }}</span>
+      </div>
+      <div class="kot-line total">
+        <span>To pay</span>
+        <span>₹{{ formatMoney(ticket.totalAmount) }}</span>
+      </div>
+    </div>
+
+    <hr class="hr" />
+
+    <div *ngIf="ticket.comments" class="note">
+      <span class="note-label">Note:</span> {{ ticket.comments }}
+    </div>
+    <hr class="hr" *ngIf="ticket.comments" />
+  </div>
+</div>
+
+<div class="kot-actions hidden-print">
+  <button type="button" (click)="printPage()" class="btn-print">Print</button>
+</div>

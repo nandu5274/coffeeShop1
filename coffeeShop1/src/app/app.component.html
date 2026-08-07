@@ -54,9 +54,9 @@
 
 
 
-  <app-nav-bar></app-nav-bar>
+  <app-nav-bar *ngIf="!hideMarketingShell"></app-nav-bar>
   <!-- floating-bell.component.html -->
-  <div class="floating-bell" (click)="openFloatingBellPopup()">
+  <div class="floating-bell" *ngIf="!hideCallWaiter" (click)="openFloatingBellPopup()">
     <i class="fas fa-concierge-bell"></i>
     <span class="call-waiter-box">
       Call Waiter
@@ -65,7 +65,7 @@
 
 
   <!-- Popup Content -->
-  <div class="notification-popup" *ngIf="isPopupOpen">
+  <div class="notification-popup" *ngIf="isPopupOpen && !hideCallWaiter">
     <div class="popup-container">
       <h3>Choose Floor & Table to Call Waiter</h3>
 
@@ -93,7 +93,9 @@
   </div>
   <router-outlet></router-outlet>
 
-  <app-footer></app-footer>
+  <app-delivery-bottom-nav *ngIf="!hideMarketingShell"></app-delivery-bottom-nav>
+
+  <app-footer *ngIf="!hideMarketingShell"></app-footer>
 
 
 

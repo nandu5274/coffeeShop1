@@ -8,7 +8,13 @@ import { SingleFileOrderDto } from '../dtos/singleFileOrderDto';
 import Papa from 'papaparse';
 import { PaidFileOrderDto } from '../dtos/paidFileOrderDto';
 import { DataService } from '../service/data.service';
-import { BELL_MSG_TIME_OUT, KUBERA_PAYMENT_EDIT_LOGIN_PASSWORD, USE_DATABASE } from '../common/constanst';
+import {
+  BELL_MSG_TIME_OUT,
+  DELIVERY_TABLE_PLACE,
+  KUBERA_PAYMENT_EDIT_LOGIN_PASSWORD,
+  USE_DATABASE,
+  deliveryDisplayTableNo
+} from '../common/constanst';
 import { HasuraApiService } from '../service/hasura.api.service';
 import { GraphqlService } from '../service/graphql.service';
 import { CustomerService } from '../service/customer.service';
@@ -32,6 +38,8 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
   TotalPaidAmount: any = 0;
   TotalCashAmount: any = 0;
   TotalOnlineAMpunt: any = 0;
+  TotalDeliveryAmount: any = 0;
+  TotalDeliveryOrders: number = 0;
   TotalActualAmount: any = 0;
   showBellmsgAlert = false;
   isConnected = false;
@@ -398,10 +406,7 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
 
     if (this.lastFetchedDate !== this.selectedDateFilter) {
       this.paidOrderList = [];
-      this.TotalPaidAmount = 0;
-      this.TotalActualAmount = 0;
-      this.TotalCashAmount = 0;
-      this.TotalOnlineAMpunt = 0;
+      this.resetSaleTotals();
       this.lastFetchedDate = this.selectedDateFilter;
     }
 
@@ -424,10 +429,7 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
       });
 
       if (existingOrderIds.size === 0) {
-        this.TotalPaidAmount = 0;
-        this.TotalActualAmount = 0;
-        this.TotalCashAmount = 0;
-        this.TotalOnlineAMpunt = 0;
+        this.resetSaleTotals();
       }
 
       let formattedDate = '';
@@ -539,18 +541,11 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
             }).filter((dto: any) => dto !== null) as PaidFileOrderDto[];
 
             // Compute overall totals from the complete payments list for the day
-            this.TotalPaidAmount = 0;
-            this.TotalActualAmount = 0;
-            this.TotalCashAmount = 0;
-            this.TotalOnlineAMpunt = 0;
+            this.resetSaleTotals();
             payments.forEach((pay: any) => {
               this.TotalPaidAmount += parseFloat(pay.paid_amount || '0');
               this.TotalActualAmount += parseFloat(pay.actual_amount || '0');
-              if (pay.payment_mode === "cash") {
-                this.TotalCashAmount += parseFloat(pay.paid_amount || '0');
-              } else {
-                this.TotalOnlineAMpunt += parseFloat(pay.paid_amount || '0');
-              }
+              this.addSaleByMode(pay.payment_mode, pay.paid_amount);
             });
 
             const uniquePaidOrdersMap = new Map<string, PaidFileOrderDto>();
@@ -580,6 +575,8 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
               const dateB = b.order && b.order[0] && b.order[0].created_at ? new Date(b.order[0].created_at).getTime() : 0;
               return dateB - dateA;
             });
+            // Prefer order.table_place when splitting cash / online / delivery
+            this.recomputeDeliveryTotalsFromPaidList();
             this.showPaidSpinner = false;
             if (USE_DATABASE) {
               this.saleDate = displayDate;
@@ -621,10 +618,7 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
     } else {
       try {
         this.paidOrderList = [];
-        this.TotalPaidAmount = 0;
-        this.TotalActualAmount = 0;
-        this.TotalCashAmount = 0;
-        this.TotalOnlineAMpunt = 0;
+        this.resetSaleTotals();
 
         const folderPath = '/orders/paid_orders/';
         this.paidFiles = await this.dropboxService.getFilesInFolder(folderPath);
@@ -642,12 +636,11 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
           console.log("respo - ", (await respo).headers1)
           this.TotalPaidAmount = this.TotalPaidAmount + parseFloat(order.paidDetails[0].paid_amount);
           this.TotalActualAmount = this.TotalActualAmount + parseFloat(order.paidDetails[0].actual_amount);
-
-          if (order.paidDetails[0].mode == "cash") {
-            this.TotalCashAmount = this.TotalCashAmount + parseFloat(order.paidDetails[0].paid_amount);
-          } else {
-            this.TotalOnlineAMpunt = this.TotalOnlineAMpunt + parseFloat(order.paidDetails[0].paid_amount);
-          }
+          this.addSaleByMode(
+            order.paidDetails[0].mode,
+            order.paidDetails[0].paid_amount,
+            this.isDeliveryPaidCard(order)
+          );
         }
         this.paidOrderList.sort((a, b) => a.order.id - b.order.id);
         this.paidOrderList.reverse()
@@ -795,11 +788,11 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
         console.log("respo - ", (await respo).headers1)
         this.TotalPaidAmount = this.TotalPaidAmount + parseFloat(order.paidDetails[0].paid_amount);
         this.TotalActualAmount = this.TotalActualAmount + parseFloat(order.paidDetails[0].actual_amount);
-        if (order.paidDetails[0].mode == "cash") {
-          this.TotalCashAmount = this.TotalCashAmount + parseFloat(order.paidDetails[0].paid_amount);
-        } else {
-          this.TotalOnlineAMpunt = this.TotalOnlineAMpunt + parseFloat(order.paidDetails[0].paid_amount);
-        }
+        this.addSaleByMode(
+          order.paidDetails[0].mode,
+          order.paidDetails[0].paid_amount,
+          this.isDeliveryPaidCard(order)
+        );
       }
       addedNewFiles.forEach(value => this.paidFiles.push(value))
       removeOldFiles.forEach(value => this.removePaidItem(value))
@@ -982,6 +975,77 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
       });
     });
     return flatIds.join(', ');
+  }
+
+  isDeliveryPaidCard(card: any): boolean {
+    const order = Array.isArray(card?.order) ? card.order[0] : card?.order;
+    const place = String(order?.table_place || '');
+    const mode = String(card?.paidDetails?.[0]?.mode || card?.paidDetails?.[0]?.payment_mode || '');
+    return place === DELIVERY_TABLE_PLACE || mode === 'delivery';
+  }
+
+  private resetSaleTotals(): void {
+    this.TotalPaidAmount = 0;
+    this.TotalActualAmount = 0;
+    this.TotalCashAmount = 0;
+    this.TotalOnlineAMpunt = 0;
+    this.TotalDeliveryAmount = 0;
+    this.TotalDeliveryOrders = 0;
+  }
+
+  private addSaleByMode(mode: string, paidAmount: number, isDeliveryOrder = false): void {
+    const amt = parseFloat(String(paidAmount || '0')) || 0;
+    const m = String(mode || '').toLowerCase();
+    if (m === 'delivery' || isDeliveryOrder) {
+      this.TotalDeliveryAmount += amt;
+      this.TotalDeliveryOrders += 1;
+      return;
+    }
+    if (m === 'cash') {
+      this.TotalCashAmount += amt;
+      return;
+    }
+    this.TotalOnlineAMpunt += amt;
+  }
+
+  private recomputeDeliveryTotalsFromPaidList(): void {
+    this.TotalDeliveryAmount = 0;
+    this.TotalDeliveryOrders = 0;
+    let online = 0;
+    let cash = 0;
+    for (const card of this.paidOrderList || []) {
+      const mode = String(card?.paidDetails?.[0]?.mode || '');
+      const amt = parseFloat(String(card?.paidDetails?.[0]?.paid_amount || '0')) || 0;
+      if (this.isDeliveryPaidCard(card) || mode === 'delivery') {
+        this.TotalDeliveryAmount += amt;
+        this.TotalDeliveryOrders += 1;
+      } else if (mode === 'cash') {
+        cash += amt;
+      } else {
+        online += amt;
+      }
+    }
+    // Keep cash/online in sync when list is the source of truth (DB path already set paid/actual)
+    if ((this.paidOrderList || []).length) {
+      this.TotalCashAmount = cash;
+      this.TotalOnlineAMpunt = online;
+    }
+  }
+
+  paidCardTableLabel(card: any): string {
+    const order = Array.isArray(card?.order) ? card.order[0] : card?.order;
+    if (!order) return 'Order';
+    if (this.isDeliveryPaidCard(card)) {
+      return `🛵 ${deliveryDisplayTableNo(order.order_ref_id || order.id)}`;
+    }
+    return `📍 Table ${order.table_no ?? ''}`;
+  }
+
+  paidCardModeLabel(card: any): string {
+    const mode = String(card?.paidDetails?.[0]?.mode || '');
+    if (this.isDeliveryPaidCard(card) || mode === 'delivery') return '🛵 Delivery';
+    if (mode === 'cash') return '💵 Cash';
+    return '💳 Online';
   }
 
   getCardIdsString(orderList: any): string {

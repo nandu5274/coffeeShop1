@@ -1,0 +1,50 @@
+<section class="delivery-home delivery-shell">
+  <div class="atmosphere" aria-hidden="true">
+    <div class="gold-wash"></div>
+    <div class="vignette"></div>
+    <div class="particles">
+      <span *ngFor="let p of particles" class="particle" [style.--x]="p.x" [style.--y]="p.y" [style.--d]="p.d" [style.--s]="p.s" [style.--delay]="p.delay"></span>
+    </div>
+  </div>
+
+  <div class="stage">
+    <header class="brand-block">
+      <div class="kubera-stage">
+        <img
+          class="kubera-avatar"
+          src="assets/img/kubera-delivery.png"
+          alt="Cafe Kubera"
+        />
+      </div>
+
+      <p class="eyebrow">Cafe Kubera</p>
+      <h1>Online <span class="gold-gradient">Delivery</span></h1>
+      <p class="lede">Fresh from our kitchen to your door — within 5 km of the café.</p>
+    </header>
+
+    <div class="cta-zone" *ngIf="!isLoggedIn">
+      <button type="button" class="primary cta" (click)="openLogin()">Login / Sign up</button>
+      <p class="cta-lead">Sign in with your Cafe Kubera account to save addresses and place orders.</p>
+      <p class="foot-note">Café calls to confirm · Rider updates on your order page</p>
+    </div>
+
+    <div class="cta-zone" *ngIf="isLoggedIn">
+      <button type="button" class="primary cta order-now" (click)="continueToMenu()">Order Now</button>
+    </div>
+
+    <ul class="feature-row">
+      <li class="feature-chip">
+        <span class="chip-dot" aria-hidden="true"></span>
+        <span>5 km radius</span>
+      </li>
+      <li class="feature-chip">
+        <span class="chip-dot" aria-hidden="true"></span>
+        <span>Free delivery</span>
+      </li>
+      <li class="feature-chip">
+        <span class="chip-dot" aria-hidden="true"></span>
+        <span>Live tracking</span>
+      </li>
+    </ul>
+  </div>
+</section>

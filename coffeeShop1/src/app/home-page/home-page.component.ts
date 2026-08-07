@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { SharedService } from '../service/shared-service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../service/data.service';
 import { HasuraApiService } from '../service/hasura.api.service';
 import { BookingForm } from '../dtos/bookingForm';
@@ -14,7 +14,12 @@ import { BookingForm } from '../dtos/bookingForm';
 export class HomePageComponent implements OnInit, AfterViewInit {
 
   private hasReloaded = false;
-  constructor(private location: Location, private sharedService: SharedService,  private dataService: HasuraApiService) { }
+  constructor(
+    private location: Location,
+    private sharedService: SharedService,
+    private dataService: HasuraApiService,
+    private router: Router
+  ) { }
 
   showMenu:any = this.sharedService.getShowMenuFlagData();
   showSpinner:any = true;
@@ -40,6 +45,11 @@ export class HomePageComponent implements OnInit, AfterViewInit {
 
   navigateToMenu(menu: any) {
     this.sharedService.navigateToMenu(menu);
+  }
+
+  navigateToDelivery() {
+    sessionStorage.setItem('order_mode', 'delivery');
+    this.router.navigate(['/delivery']);
   }
 
 

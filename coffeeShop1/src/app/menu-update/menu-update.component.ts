@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { GraphqlService } from '../service/graphql.service';
 import { 
   KUBERA_PUBLIC_PROFILE_LOGIN_USER_NAME, 
@@ -73,6 +75,11 @@ export class MenuUpdateComponent implements OnInit {
   selectedCourseFilter = 'all';
   categoriesList: string[] = [];
   categoryToCourseIdMap: { [key: string]: number } = {};
+
+  // Swiggy PDF hike popup
+  showSwiggyPdfModal = false;
+  swiggyHikePercent: number = 20;
+  swiggyPdfError = '';
 
   // Edit Modal State
   showEditModal = false;
@@ -513,6 +520,211 @@ export class MenuUpdateComponent implements OnInit {
 
   getKeys(obj: any): string[] {
     return obj ? Object.keys(obj) : [];
+  }
+
+  /** Cafe menu PDF at current prices. */
+  downloadMenuPdf(): void {
+    this.generateMenuPdf({
+      title: 'Cafe Kubera — Menu',
+      filePrefix: 'cafe-kubera-menu',
+      hikePercent: 0,
+      showOriginalPrice: false
+    });
+  }
+
+  openSwiggyPdfModal(): void {
+    if (!(this.filteredMenuItemsList || []).length) {
+      alert('No menu items to export. Adjust filters or refresh the menu.');
+      return;
+    }
+    this.swiggyHikePercent = this.swiggyHikePercent > 0 ? this.swiggyHikePercent : 20;
+    this.swiggyPdfError = '';
+    this.showSwiggyPdfModal = true;
+  }
+
+  closeSwiggyPdfModal(): void {
+    this.showSwiggyPdfModal = false;
+    this.swiggyPdfError = '';
+  }
+
+  confirmSwiggyPdf(): void {
+    const hike = Number(this.swiggyHikePercent);
+    if (!Number.isFinite(hike) || hike < 0 || hike > 500) {
+      this.swiggyPdfError = 'Enter a hike % between 0 and 500.';
+      return;
+    }
+    this.swiggyPdfError = '';
+    this.generateMenuPdf({
+      title: 'Cafe Kubera — Swiggy Menu',
+      filePrefix: 'cafe-kubera-swiggy-menu',
+      hikePercent: hike,
+      showOriginalPrice: true
+    });
+    this.closeSwiggyPdfModal();
+  }
+
+  swiggyPreviewPrice(baseCost: number): number {
+    const hike = Number(this.swiggyHikePercent) || 0;
+    return Math.round((Number(baseCost) || 0) * (1 + hike / 100));
+  }
+
+  /**
+   * Export currently filtered menu items as PDF (grouped by category).
+   * Optional price hike is applied only in the PDF — menu DB prices are unchanged.
+   */
+  private generateMenuPdf(opts: {
+    title: string;
+    filePrefix: string;
+    hikePercent: number;
+    showOriginalPrice: boolean;
+  }): void {
+    const items = [...(this.filteredMenuItemsList || [])];
+    if (!items.length) {
+      alert('No menu items to export. Adjust filters or refresh the menu.');
+      return;
+    }
+
+    const hike = Number(opts.hikePercent) || 0;
+    const byCategory = new Map<string, MenuItem[]>();
+    for (const item of items) {
+      const cat = item.category || 'Other';
+      if (!byCategory.has(cat)) byCategory.set(cat, []);
+      byCategory.get(cat)!.push(item);
+    }
+
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const now = new Date();
+    const stamp = now.toLocaleString('en-IN', { hour12: true });
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(16);
+    pdf.text(opts.title, 14, 16);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    pdf.setTextColor(90);
+    pdf.text(`Generated: ${stamp}`, pageWidth - 14, 16, { align: 'right' });
+
+    let metaY = 22;
+    pdf.text(`Items: ${items.length}`, 14, metaY);
+    if (hike > 0) {
+      metaY += 5;
+      pdf.setTextColor(180, 80, 40);
+      pdf.text(`Price hike applied: +${hike}% (PDF only — café prices unchanged)`, 14, metaY);
+      pdf.setTextColor(90);
+    }
+    if (this.searchTerm || this.selectedStatusFilter !== 'all' || this.selectedCourseFilter !== 'all') {
+      metaY += 5;
+      const filters = [
+        this.searchTerm ? `Search: "${this.searchTerm}"` : '',
+        this.selectedStatusFilter !== 'all' ? `Status: ${this.selectedStatusFilter}` : '',
+        this.selectedCourseFilter !== 'all' ? `Course: ${this.selectedCourseFilter}` : ''
+      ]
+        .filter(Boolean)
+        .join(' · ');
+      pdf.text(filters, 14, metaY);
+    }
+    pdf.setTextColor(0);
+    pdf.setDrawColor(200);
+    const lineY = metaY + 3;
+    pdf.line(14, lineY, pageWidth - 14, lineY);
+
+    let startY = lineY + 4;
+    const categories = Array.from(byCategory.keys()).sort((a, b) => a.localeCompare(b));
+    const head = opts.showOriginalPrice
+      ? [['#', 'Item', 'Type', 'Cafe ₹', `Swiggy ₹ (+${hike}%)`, 'Status']]
+      : [['#', 'Item', 'Type', 'Price', 'Status', 'Description']];
+
+    for (const category of categories) {
+      const rows = (byCategory.get(category) || []).map((item, idx) => {
+        const status =
+          (item.available || 'y').toLowerCase() === 'y'
+            ? 'Active'
+            : (item.available || '').toLowerCase() === 'd'
+              ? 'Deleted'
+              : 'Inactive';
+        const type =
+          (item.type || '').toLowerCase() === 'nv' || (item.type || '').toLowerCase() === 'non-veg'
+            ? 'Non-veg'
+            : 'Veg';
+        const base = Number(item.cost) || 0;
+        const hiked = Math.round(base * (1 + hike / 100));
+        if (opts.showOriginalPrice) {
+          return [
+            String(idx + 1),
+            item.name || '',
+            type,
+            `₹${base.toFixed(0)}`,
+            `₹${hiked.toFixed(0)}`,
+            status
+          ];
+        }
+        return [
+          String(idx + 1),
+          item.name || '',
+          type,
+          `₹${base.toFixed(0)}`,
+          status,
+          (item.description || '').slice(0, 80)
+        ];
+      });
+
+      if (startY > 250) {
+        pdf.addPage();
+        startY = 16;
+      }
+
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.setTextColor(26, 24, 20);
+      pdf.text(category, 14, startY);
+      startY += 3;
+
+      autoTable(pdf, {
+        startY,
+        head,
+        body: rows,
+        styles: {
+          fontSize: 8,
+          cellPadding: 2,
+          overflow: 'linebreak'
+        },
+        headStyles: {
+          fillColor: hike > 0 ? [252, 128, 25] : [205, 164, 94],
+          textColor: hike > 0 ? [255, 255, 255] : [26, 24, 20],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: hike > 0 ? [255, 246, 238] : [248, 245, 238]
+        },
+        columnStyles: opts.showOriginalPrice
+          ? {
+              0: { cellWidth: 10 },
+              1: { cellWidth: 60 },
+              2: { cellWidth: 22 },
+              3: { cellWidth: 22 },
+              4: { cellWidth: 32 },
+              5: { cellWidth: 'auto' }
+            }
+          : {
+              0: { cellWidth: 10 },
+              1: { cellWidth: 50 },
+              2: { cellWidth: 20 },
+              3: { cellWidth: 18 },
+              4: { cellWidth: 20 },
+              5: { cellWidth: 'auto' }
+            },
+        margin: { left: 14, right: 14 }
+      });
+
+      startY = ((pdf as any).lastAutoTable?.finalY || startY) + 10;
+    }
+
+    const dd = String(now.getDate()).padStart(2, '0');
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const yyyy = now.getFullYear();
+    const hikeTag = hike > 0 ? `-hike${hike}pct` : '';
+    pdf.save(`${opts.filePrefix}${hikeTag}-${yyyy}-${mm}-${dd}.pdf`);
   }
 
   openEditModal(item: MenuItem): void {

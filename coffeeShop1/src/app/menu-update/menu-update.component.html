@@ -142,6 +142,16 @@
           <button (click)="fetchMenuDetails()" class="btn-refresh" [disabled]="loading">
             <i class="fa" [ngClass]="loading ? 'fa-spinner fa-spin' : 'fa-refresh'"></i> Refresh
           </button>
+          <button (click)="downloadMenuPdf()" class="btn-pdf" [disabled]="loading || !filteredMenuItemsList.length">
+            <i class="fa fa-file-pdf-o"></i> Download PDF
+          </button>
+          <button
+            (click)="openSwiggyPdfModal()"
+            class="btn-swiggy-pdf"
+            [disabled]="loading || !filteredMenuItemsList.length"
+          >
+            <i class="fa fa-motorcycle"></i> Swiggy PDF
+          </button>
           <button (click)="openAddModal()" class="btn-add-item">
             <i class="fa fa-plus"></i> Add Item
           </button>
@@ -380,6 +390,52 @@
                 Next <i class="fa fa-chevron-right"></i>
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Swiggy PDF hike popup -->
+    <div *ngIf="showSwiggyPdfModal" class="modal-backdrop-custom" (click)="closeSwiggyPdfModal()">
+      <div class="modal-content-custom swiggy-pdf-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header-custom">
+          <h3>
+            <i class="fa fa-motorcycle gold-icon"></i>
+            Swiggy menu PDF
+          </h3>
+          <button type="button" class="modal-close-btn" (click)="closeSwiggyPdfModal()">&times;</button>
+        </div>
+        <div class="modal-form-custom">
+          <p class="swiggy-help">
+            Enter a price hike %. PDF prices are updated for Swiggy only — café menu prices are not changed.
+          </p>
+          <div class="form-group-custom">
+            <label for="swiggyHike">Price hike (%)</label>
+            <input
+              type="number"
+              id="swiggyHike"
+              name="swiggyHike"
+              [(ngModel)]="swiggyHikePercent"
+              min="0"
+              max="500"
+              step="1"
+              class="form-control-custom"
+            />
+          </div>
+          <p class="swiggy-preview" *ngIf="filteredMenuItemsList[0] as sample">
+            Example:
+            <strong>{{ sample.name }}</strong>
+            ₹{{ sample.cost | number:'1.0-0' }}
+            →
+            <strong>₹{{ swiggyPreviewPrice(sample.cost) | number:'1.0-0' }}</strong>
+            (+{{ swiggyHikePercent || 0 }}%)
+          </p>
+          <p class="swiggy-error" *ngIf="swiggyPdfError">{{ swiggyPdfError }}</p>
+          <div class="modal-actions-row">
+            <button type="button" class="btn-cancel-modal" (click)="closeSwiggyPdfModal()">Cancel</button>
+            <button type="button" class="btn-save-modal btn-swiggy-confirm" (click)="confirmSwiggyPdf()">
+              Generate Swiggy PDF
+            </button>
           </div>
         </div>
       </div>

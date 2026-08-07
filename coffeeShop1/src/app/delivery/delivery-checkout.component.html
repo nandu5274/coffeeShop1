@@ -1,0 +1,123 @@
+<section class="checkout delivery-shell">
+  <div *ngIf="showSpinner" class="spinner-overlay"><div class="spinner"></div></div>
+
+  <div class="inner">
+    <div class="header">
+      <button type="button" class="linkish" (click)="backToMenu()">← Menu</button>
+      <h1>Checkout</h1>
+      <p>Review your order, redeem a coupon, and place delivery.</p>
+    </div>
+
+    <div class="banner error" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+    <div class="panel addr-panel">
+      <div class="panel-head">
+        <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+        <h2>Deliver to</h2>
+      </div>
+      <p class="addr-text">{{ addressText }}</p>
+      <button type="button" class="secondary" (click)="changeAddress()">Change address</button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <i class="bi bi-bag-fill" aria-hidden="true"></i>
+        <h2>Your items</h2>
+      </div>
+      <div class="item-line" *ngFor="let i of cartItems">
+        <span class="item-name">{{ i.name }} <em>× {{ i.quantity }}</em></span>
+        <span>₹{{ i.totalCartCost | number:'1.0-0' }}</span>
+      </div>
+      <div class="bill-block">
+        <div class="line muted"><span>Item total</span><span>₹{{ orderAmount | number:'1.0-0' }}</span></div>
+        <div class="line muted"><span>Delivery fee</span><span>₹{{ deliveryFee | number:'1.0-0' }}</span></div>
+        <div class="line save" *ngIf="discountAmount > 0">
+          <span>Coupon {{ couponAppliedCode ? '(' + couponAppliedCode + ')' : '' }}</span>
+          <span>−₹{{ discountAmount | number:'1.0-0' }}</span>
+        </div>
+        <div class="line total"><span>To pay</span><span>₹{{ amountToPay | number:'1.0-0' }}</span></div>
+      </div>
+    </div>
+
+    <div class="panel offers-panel">
+      <div class="panel-head">
+        <i class="bi bi-percent" aria-hidden="true"></i>
+        <h2>Offers &amp; Benefits</h2>
+      </div>
+
+      <div class="offer-applied" *ngIf="couponAppliedCode; else couponEntry">
+        <div class="offer-copy">
+          <strong>{{ couponAppliedCode }}</strong>
+          <span>You saved ₹{{ discountAmount | number:'1.0-0' }}</span>
+        </div>
+        <button type="button" class="linkish danger-link" (click)="clearCoupon()">Remove</button>
+      </div>
+
+      <ng-template #couponEntry>
+        <div class="coupon-row">
+          <input
+            [(ngModel)]="couponInput"
+            name="coupon"
+            placeholder="Enter coupon code"
+            autocomplete="off"
+            (keyup.enter)="applyCoupon()"
+          />
+          <button type="button" class="secondary apply-btn" (click)="applyCoupon()">Apply</button>
+        </div>
+      </ng-template>
+
+      <p class="coupon-msg" *ngIf="couponMessage" [class.ok]="couponOk" [class.bad]="!couponOk">{{ couponMessage }}</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <i class="bi bi-wallet2" aria-hidden="true"></i>
+        <h2>Payment</h2>
+      </div>
+      <label class="pay-tile" [class.active]="paymentMethod === 'upi_qr'">
+        <input type="radio" name="pay" value="upi_qr" [(ngModel)]="paymentMethod" />
+        <span class="pay-copy">
+          <strong>UPI QR</strong>
+          <em>Scan &amp; pay at the café UPI</em>
+        </span>
+      </label>
+      <label class="pay-tile" [class.active]="paymentMethod === 'cod'">
+        <input type="radio" name="pay" value="cod" [(ngModel)]="paymentMethod" />
+        <span class="pay-copy">
+          <strong>Cash on delivery</strong>
+          <em>Pay when your order arrives</em>
+        </span>
+      </label>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <i class="bi bi-chat-left-text" aria-hidden="true"></i>
+        <h2>Note</h2>
+      </div>
+      <textarea
+        [(ngModel)]="commentText"
+        name="note"
+        rows="2"
+        maxlength="80"
+        placeholder="Any cooking or delivery instructions…"
+      ></textarea>
+    </div>
+
+    <div class="checkout-footer">
+      <div class="footer-total">
+        <span>To pay</span>
+        <strong>₹{{ amountToPay | number:'1.0-0' }}</strong>
+      </div>
+      <button
+        type="button"
+        class="pay-btn"
+        (click)="placeOrder()"
+        [disabled]="!!errorMsg || showSpinner"
+      >
+        Place order
+      </button>
+    </div>
+    <p class="hint">Café will get an alert and WhatsApp, then call you to confirm.</p>
+  </div>
+</section>

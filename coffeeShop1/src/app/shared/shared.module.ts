@@ -7,6 +7,7 @@ import { ItemsCartComponent } from '../items-cart/items-cart.component';
 import { BookingOrderComponent } from '../booking-order/booking-order.component';
 import { MembershipCreateComponent } from '../membership-create/membership-create.component';
 import { PosKotComponent } from '../pos-kot/pos-kot.component';
+import { PosDeliveryKotComponent } from '../pos-delivery-kot/pos-delivery-kot.component';
 import { PaymentLoginComponent } from '../payment-login/payment-login.component';
 import { ItemsMenuComponent } from '../items-menu/items-menu.component';
 import { CustomerAvailableCheckerComponent } from '../customer-available-checker/customer-available-checker.component';
@@ -21,6 +22,7 @@ import { CustomerAvailableCheckerComponent } from '../customer-available-checker
     BookingOrderComponent,
     MembershipCreateComponent,
     PosKotComponent,
+    PosDeliveryKotComponent,
     PaymentLoginComponent,
     ItemsMenuComponent,
     CustomerAvailableCheckerComponent
@@ -36,6 +38,7 @@ import { CustomerAvailableCheckerComponent } from '../customer-available-checker
     BookingOrderComponent,
     MembershipCreateComponent,
     PosKotComponent,
+    PosDeliveryKotComponent,
     PaymentLoginComponent,
     ItemsMenuComponent,
     CustomerAvailableCheckerComponent

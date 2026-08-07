@@ -276,6 +276,109 @@ th {
     inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
 }
 
+.waiting-order-card {
+  width: min(300px, 92vw);
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.waiting-order-card .content {
+  width: 100%;
+  min-width: 0;
+}
+
+.waiting-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+
+.waiting-loc {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.loc-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #cda45e;
+  background: rgba(205, 164, 94, 0.14);
+  border: 1px solid rgba(205, 164, 94, 0.35);
+}
+
+.loc-badge.delivery {
+  color: #8fdf9a;
+  background: rgba(31, 170, 89, 0.14);
+  border-color: rgba(31, 170, 89, 0.4);
+}
+
+.loc-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fffef8;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.order-ref {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #cda45e;
+  padding-top: 0.15rem;
+}
+
+.waiting-card-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  margin-bottom: 0.35rem;
+}
+
+.waiting-card-meta .meta-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #cda45e;
+}
+
+.waiting-card-meta .meta-time {
+  font-size: 0.78rem;
+  color: #ffc107;
+}
+
+.waiting-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.waiting-item-row .item-name {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+  line-height: 1.3;
+}
+
+.waiting-item-row .item-qty {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: #cda45e;
+}
+
 .accepted-order-card {
   font-family: "Poppins", sans-serif;
   /* Translucent gold-coffee gradient backplate for a premium liquid glass feel */
@@ -317,6 +420,83 @@ th {
       0 0 25px rgba(205, 164, 94, 0.18),
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
+}
+
+/* Online delivery cards — teal/green so they stand out from dine-in gold cards */
+.accepted-order-card.delivery-card,
+.waiting-order-card.delivery-card {
+  background: linear-gradient(
+    145deg,
+    rgba(18, 48, 38, 0.92) 0%,
+    rgba(12, 28, 24, 0.96) 45%,
+    rgba(10, 22, 20, 0.98) 100%
+  ) !important;
+  border: 1px solid rgba(46, 180, 110, 0.45) !important;
+  border-top-color: rgba(120, 220, 160, 0.45) !important;
+  border-left-color: rgba(80, 200, 140, 0.3) !important;
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.5),
+    0 0 22px rgba(31, 170, 89, 0.18),
+    inset 0 1px 0 rgba(160, 255, 200, 0.12) !important;
+}
+
+.accepted-order-card.delivery-card:hover {
+  border-color: rgba(80, 210, 140, 0.65) !important;
+  border-top-color: rgba(160, 255, 200, 0.5) !important;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.55),
+    0 0 28px rgba(31, 170, 89, 0.28),
+    inset 0 1px 0 rgba(180, 255, 210, 0.16) !important;
+}
+
+.accepted-order-card.delivery-card .order-id {
+  color: #9eefc0 !important;
+}
+
+.accepted-order-card.delivery-card .card-footer-amounts .grand-total,
+.accepted-order-card.delivery-card .meta-time {
+  color: rgba(180, 240, 200, 0.85);
+}
+
+/* Paid delivery — blue so it differs from unpaid teal delivery cards */
+.accepted-order-card.delivery-card.delivery-paid {
+  background: linear-gradient(
+    145deg,
+    rgba(16, 40, 72, 0.94) 0%,
+    rgba(12, 28, 56, 0.97) 45%,
+    rgba(10, 22, 44, 0.99) 100%
+  ) !important;
+  border: 1px solid rgba(80, 150, 230, 0.5) !important;
+  border-top-color: rgba(140, 200, 255, 0.5) !important;
+  border-left-color: rgba(90, 160, 240, 0.35) !important;
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.5),
+    0 0 24px rgba(50, 130, 220, 0.22),
+    inset 0 1px 0 rgba(180, 220, 255, 0.14) !important;
+}
+
+.accepted-order-card.delivery-card.delivery-paid:hover {
+  border-color: rgba(110, 180, 255, 0.7) !important;
+  border-top-color: rgba(170, 220, 255, 0.55) !important;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.55),
+    0 0 30px rgba(50, 130, 220, 0.32),
+    inset 0 1px 0 rgba(200, 230, 255, 0.18) !important;
+}
+
+.accepted-order-card.delivery-card.delivery-paid .order-id {
+  color: #9ecbff !important;
+}
+
+.accepted-order-card.delivery-card.delivery-paid .card-footer-amounts .grand-total,
+.accepted-order-card.delivery-card.delivery-paid .meta-time {
+  color: rgba(180, 215, 255, 0.88);
+}
+
+.table-badge.delivery.paid {
+  color: #9ecbff;
+  background: rgba(50, 130, 220, 0.18);
+  border-color: rgba(80, 150, 230, 0.45);
 }
 
 .card-header-row {
@@ -416,12 +596,22 @@ th {
   border: 1px solid rgba(205, 164, 94, 0.25);
   padding: 3px 10px;
   border-radius: 20px;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: #e8c97a;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
+  max-width: 58%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table-badge.delivery {
+  color: #8fdf9a;
+  background: rgba(31, 170, 89, 0.12);
+  border-color: rgba(31, 170, 89, 0.35);
 }
 
 .card-meta-row {
@@ -541,6 +731,60 @@ th {
   }
 }
 
+.delivery-pay-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.delivery-pay-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.delivery-pay-badge.paid {
+  color: #0d3b24;
+  background: #7ed99a;
+}
+
+.delivery-pay-badge.unpaid {
+  color: #3b2208;
+  background: #f0b35a;
+}
+
+.btn-card-pay {
+  appearance: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid rgba(126, 217, 154, 0.55);
+  background: rgba(126, 217, 154, 0.2);
+  color: #7ed99a;
+}
+
+.btn-card-pay.unpaid {
+  border-color: rgba(240, 179, 90, 0.55);
+  background: rgba(240, 179, 90, 0.18);
+  color: #f0b35a;
+}
+
+.btn-card-pay:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
 .card-actions-row {
   display: flex;
   gap: 10px;
@@ -576,6 +820,18 @@ th {
     border-color: #b58d4c !important;
     color: #ffffff !important;
     box-shadow: 0 6px 16px rgba(205, 164, 94, 0.4) !important;
+  }
+}
+
+.btn-card-print {
+  background: rgba(53, 162, 235, 0.85) !important;
+  border-color: rgba(53, 162, 235, 0.95) !important;
+  box-shadow: 0 4px 12px rgba(53, 162, 235, 0.3) !important;
+
+  &:hover {
+    background: #2b8fd4 !important;
+    border-color: #2b8fd4 !important;
+    box-shadow: 0 6px 16px rgba(53, 162, 235, 0.45) !important;
   }
 }
 
@@ -862,6 +1118,17 @@ ul li {
   text-align: center;
 }
 
+.delivery-kot-popup {
+  min-width: 300px;
+  max-width: 340px;
+}
+
+.delivery-kot-popup-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
 
 .custom-input {
   padding: 5px;
@@ -1078,21 +1345,38 @@ ul li {
 
 
 .cust-login {
-  border: 12px solid #1a1814;
-  border-radius: 42px;
-  background: #1a1814;
+  border: 1px solid rgba(205, 164, 94, 0.35);
+  border-radius: 24px;
+  background: linear-gradient(
+    160deg,
+    rgba(18, 14, 10, 0.55) 0%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 240, 200, 0.12);
   width: fit-content;
+  max-width: min(92vw, 420px);
   align-self: center;
+  overflow: hidden;
 }
 
 @media only screen and (max-width: 991px) {
 
   .cust-login {
-    border: 12px solid #1a1814;
-    border-radius: 42px;
-    background: #1a1814;
-    max-width: fit-content;
-    width: 90%;
+    border: 1px solid rgba(205, 164, 94, 0.35);
+    border-radius: 22px;
+    background: linear-gradient(
+      160deg,
+      rgba(18, 14, 10, 0.55) 0%,
+      rgba(0, 0, 0, 0.45) 100%
+    );
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    max-width: min(92vw, 420px);
+    width: 92%;
     align-self: center;
   }
 }

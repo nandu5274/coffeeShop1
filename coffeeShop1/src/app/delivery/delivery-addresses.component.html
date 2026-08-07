@@ -1,0 +1,173 @@
+<section class="delivery-addresses delivery-shell">
+  <div *ngIf="showSpinner" class="spinner-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="inner">
+    <div class="header">
+      <button type="button" class="linkish" (click)="onBack()">
+        ← {{ showEditor ? 'Saved addresses' : 'Back' }}
+      </button>
+      <h1>{{ showEditor ? (editingId ? 'Edit address' : 'Add address') : 'Delivery addresses' }}</h1>
+      <p *ngIf="!showEditor">Choose a saved address or add a new one.</p>
+      <p *ngIf="showEditor">Drop the pin within {{ radiusKm }} km of Cafe Kubera (gold circle).</p>
+    </div>
+
+    <div class="banner error" *ngIf="errorMsg">{{ errorMsg }}</div>
+    <div class="banner ok" *ngIf="successMsg">{{ successMsg }}</div>
+
+    <!-- List first -->
+    <div class="list" *ngIf="!showEditor">
+      <div class="list-toolbar">
+        <h2>Saved addresses</h2>
+        <button type="button" class="primary add-btn" (click)="openAdd()">+ Add</button>
+      </div>
+
+      <p *ngIf="!addresses.length" class="empty">No addresses yet. Tap Add to save one.</p>
+
+      <article class="card selected-card" *ngIf="selectedAddress as sel">
+        <div class="selected-banner">
+          <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+          <span>Delivering here</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">
+            <strong>{{ sel.full_name }}</strong>
+            <span class="badge" *ngIf="sel.is_default">Default</span>
+          </div>
+          <p>{{ formatAddress(sel) }}</p>
+        </div>
+        <div class="card-actions">
+          <button type="button" class="secondary" (click)="openEdit(sel)">Edit</button>
+        </div>
+      </article>
+
+      <article *ngFor="let a of otherAddresses" class="card">
+        <div class="card-body">
+          <div class="card-title">
+            <strong>{{ a.full_name }}</strong>
+            <span class="badge" *ngIf="a.is_default">Default</span>
+          </div>
+          <p>{{ formatAddress(a) }}</p>
+          <p class="tiny" *ngIf="a.lat != null">{{ a.lat }}, {{ a.lng }}</p>
+        </div>
+        <div class="card-actions">
+          <button type="button" class="primary" (click)="selectForDelivery(a)">Use for delivery</button>
+          <button type="button" class="secondary" (click)="openEdit(a)">Edit</button>
+          <button type="button" class="danger" (click)="deleteAddress(a.id!)">Delete</button>
+        </div>
+      </article>
+    </div>
+
+    <!-- Add / Edit form -->
+    <div class="layout" *ngIf="showEditor">
+      <div class="map-col">
+        <div class="map-wrap">
+          <div class="loc-search">
+            <div class="loc-search-row">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input
+                type="search"
+                name="location_search"
+                [(ngModel)]="searchQuery"
+                [ngModelOptions]="{standalone: true}"
+                (ngModelChange)="onSearchInput()"
+                (keydown.enter)="$event.preventDefault(); runLocationSearch()"
+                placeholder="Search place or paste Google Maps link…"
+                autocomplete="off"
+                [attr.aria-expanded]="searchOpen"
+              />
+              <button
+                type="button"
+                class="search-go"
+                (click)="runLocationSearch()"
+                [disabled]="searchLoading || searchQuery.trim().length < 2"
+              >
+                {{ searchLoading ? '…' : 'Go' }}
+              </button>
+              <button
+                type="button"
+                class="search-clear"
+                *ngIf="searchQuery"
+                (click)="clearSearch()"
+                aria-label="Clear search"
+              >
+                ×
+              </button>
+            </div>
+            <ul class="loc-search-results" *ngIf="searchOpen && (searchResults.length || searchLoading)">
+              <li *ngIf="searchLoading" class="search-status">Searching…</li>
+              <li
+                *ngFor="let hit of searchResults"
+                (click)="pickSearchResult(hit)"
+                (keydown.enter)="pickSearchResult(hit)"
+                tabindex="0"
+              >
+                {{ hit.display_name }}
+              </li>
+            </ul>
+          </div>
+
+          <div #mapHost class="map-host" aria-label="Delivery map"></div>
+          <div class="map-tools">
+            <button type="button" class="secondary loc-btn" (click)="useMyLocation()">Use my location</button>
+            <span class="dist" [class.ok]="withinRadius" [class.bad]="!withinRadius">
+              <ng-container *ngIf="distanceKm != null">
+                {{ distanceKm | number:'1.1-1' }} km
+                {{ withinRadius ? '— within range' : '— outside 5 km' }}
+              </ng-container>
+            </span>
+          </div>
+          <p class="map-hint">
+            Search a place, paste a Google Maps link, tap the map, or drag the pin.
+            Gold circle = delivery area.
+          </p>
+        </div>
+      </div>
+
+      <div class="form-col">
+        <form class="form" (ngSubmit)="saveAddress()">
+          <label>Full name
+            <input [(ngModel)]="form.full_name" name="full_name" required autocomplete="name" />
+          </label>
+          <label>Phone
+            <input [(ngModel)]="form.phone" name="phone" type="tel" required autocomplete="tel" />
+          </label>
+          <label>Address line
+            <input [(ngModel)]="form.line1" name="line1" required autocomplete="street-address" />
+          </label>
+          <label>Line 2
+            <input [(ngModel)]="form.line2" name="line2" />
+          </label>
+          <label>Landmark
+            <input [(ngModel)]="form.landmark" name="landmark" />
+          </label>
+          <div class="row">
+            <label>City
+              <input [(ngModel)]="form.city" name="city" autocomplete="address-level2" />
+            </label>
+            <label>Pincode
+              <input [(ngModel)]="form.pincode" name="pincode" inputmode="numeric" autocomplete="postal-code" />
+            </label>
+          </div>
+          <div class="row muted">
+            <label>Lat
+              <input [(ngModel)]="form.lat" name="lat" readonly />
+            </label>
+            <label>Lng
+              <input [(ngModel)]="form.lng" name="lng" readonly />
+            </label>
+          </div>
+          <label class="check">
+            <input type="checkbox" [(ngModel)]="form.is_default" name="is_default" />
+            Default address
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="primary" [disabled]="!withinRadius">Save address</button>
+            <button type="button" class="secondary" (click)="closeEditor()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

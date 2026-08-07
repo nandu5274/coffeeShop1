@@ -33,6 +33,7 @@
               "src/manifest.webmanifest"
             ],
             "styles": [
+              "node_modules/leaflet/dist/leaflet.css",
               "src/styles.scss"
             ],
             "scripts": [],
@@ -99,9 +100,10 @@
               "src/manifest.webmanifest"
             ],
             "styles": [
+              "node_modules/leaflet/dist/leaflet.css",
               "src/styles.scss",
               "node_modules/ag-grid-community/styles/ag-grid.css",
-  "node_modules/ag-grid-community/styles/ag-theme-alpine.css"
+              "node_modules/ag-grid-community/styles/ag-theme-alpine.css"
             ],
             "scripts": []
           }

@@ -1,0 +1,93 @@
+.delivery-bottom-nav {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  z-index: 1200;
+  width: min(100%, 32rem);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  padding: 0.28rem 0.25rem calc(0.28rem + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(
+    180deg,
+    rgba(22, 18, 14, 0.82) 0%,
+    rgba(8, 7, 6, 0.94) 100%
+  );
+  border-top: 1px solid rgba(205, 164, 94, 0.35);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  box-shadow:
+    0 -8px 22px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 240, 200, 0.08);
+}
+
+.nav-item {
+  position: relative;
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: rgba(243, 239, 230, 0.55);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  min-height: 2.55rem;
+  padding: 0.12rem 0.1rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.nav-item i {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.nav-item span {
+  font-size: 0.55rem;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+  text-transform: none;
+}
+
+.nav-item.active {
+  color: #cda45e;
+}
+
+.nav-item.active i {
+  transform: translateY(-1px);
+  filter: drop-shadow(0 0 8px rgba(205, 164, 94, 0.45));
+}
+
+.nav-item:active {
+  transform: scale(0.96);
+}
+
+.cart-count-badge {
+  position: absolute;
+  top: 0.05rem;
+  right: calc(50% - 1.05rem);
+  min-width: 1.05rem;
+  height: 1.05rem;
+  padding: 0 0.28rem;
+  border-radius: 999px;
+  background: #cda45e;
+  color: #1a1814;
+  font-style: normal;
+  font-size: 0.58rem;
+  font-weight: 800;
+  line-height: 1.05rem;
+  text-align: center;
+  box-shadow: 0 0 8px rgba(205, 164, 94, 0.55);
+}
+
+@media (min-width: 768px) {
+  .delivery-bottom-nav {
+    border-radius: 14px 14px 0 0;
+    bottom: 0.3rem;
+    width: min(100% - 1.5rem, 34rem);
+    padding-bottom: 0.4rem;
+  }
+}

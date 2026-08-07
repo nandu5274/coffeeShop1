@@ -14,6 +14,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { CustomerLoginComponent } from './customer-login/customer-login.component';
+import { DeliveryBottomNavComponent } from './delivery/delivery-bottom-nav.component';
 
 @NgModule({
   declarations: [
@@ -21,7 +22,8 @@ import { CustomerLoginComponent } from './customer-login/customer-login.componen
     HomePageComponent,
     NavBarComponent,
     FooterComponent,
-    CustomerLoginComponent
+    CustomerLoginComponent,
+    DeliveryBottomNavComponent
   ],
   imports: [
     BrowserModule,

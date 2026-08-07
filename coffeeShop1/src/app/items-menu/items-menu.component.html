@@ -182,7 +182,7 @@
     </div>
 
     <!-- Add to Bowl -->
-    <button *ngIf="isCap === 'true'" class="add-bowl-v2" (click)="sendDataToParent(quantity)">
+    <button *ngIf="canAddToCart" class="add-bowl-v2" (click)="sendDataToParent(quantity)">
       Add to Bowl
     </button>
 

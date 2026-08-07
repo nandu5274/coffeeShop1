@@ -10,9 +10,17 @@ import { SharedService } from '../service/shared-service';
 import { SingleFileOrderDto } from '../dtos/singleFileOrderDto';
 import { GraphqlService } from '../service/graphql.service';
 import { TimerService } from '../service/timer.service';
-import { BELL_MSG_TIME_OUT, USE_DATABASE } from '../common/constanst';
+import {
+  BELL_MSG_TIME_OUT,
+  DELIVERY_TABLE_PLACE,
+  USE_DATABASE,
+  deliveryDisplayTableNo
+} from '../common/constanst';
 import { CustomerService } from '../service/customer.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { DeliveryHistoryService } from '../service/delivery-history.service';
+import { WhatsappNotifyService } from '../service/whatsapp-notify.service';
+import { firstValueFrom } from 'rxjs';
 
 
 
@@ -47,7 +55,8 @@ export class CaptainPageComponent implements AfterViewInit {
   bell_msg = "";
   constructor(private webSocketService: WebSocketService, private datePipe: DatePipe, private timerService: TimerService,
     private dropboxService: DropboxService, private graphqlService: GraphqlService,private customerService: CustomerService, 
-    private sharedService: SharedService, private router: Router,  private route: ActivatedRoute, private cdr: ChangeDetectorRef) {
+    private sharedService: SharedService, private router: Router,  private route: ActivatedRoute, private cdr: ChangeDetectorRef,
+    private deliveryHistory: DeliveryHistoryService, private whatsappNotify: WhatsappNotifyService) {
     this.initializePushNotifications();
     this.sound = new Howl({
       src: ['assets/audio/order_waiting.mp3'],
@@ -308,7 +317,9 @@ export class CaptainPageComponent implements AfterViewInit {
     const startDate = today.toISOString();
 
     const currentTab = this.selectedTab;
-    const targetStatuses = currentTab === 'waiting_order' ? ['approval_waiting'] : ['Approved', 'print'];
+    const targetStatuses = currentTab === 'waiting_order'
+      ? ['approval_waiting']
+      : ['Approved', 'print', 'out_for_delivery'];
 
     this.graphqlService.getActiveOrdersBasic(targetStatuses, startDate).subscribe(
       (result: any) => {
@@ -351,7 +362,7 @@ export class CaptainPageComponent implements AfterViewInit {
               if (!item || !item.order) return false;
               const id = Number(item.order.id);
               const dbStatus = dbStatusMap.get(id);
-              return dbStatus === 'Approved' || dbStatus === 'print';
+              return dbStatus === 'Approved' || dbStatus === 'print' || dbStatus === 'out_for_delivery';
             });
           }
 
@@ -391,7 +402,11 @@ export class CaptainPageComponent implements AfterViewInit {
                     if (dbOrder.order_status === 'approval_waiting') {
                       this.ApprovalOrderList = this.ApprovalOrderList.filter(o => o?.order && Number(o.order.id) !== dbOrder.id);
                       this.ApprovalOrderList.push(order);
-                    } else if (dbOrder.order_status === 'Approved' || dbOrder.order_status === 'print') {
+                    } else if (
+                      dbOrder.order_status === 'Approved' ||
+                      dbOrder.order_status === 'print' ||
+                      dbOrder.order_status === 'out_for_delivery'
+                    ) {
                       this.ApprovedOrderList = this.ApprovedOrderList.filter(o => o?.order && Number(o.order.id) !== dbOrder.id);
                       this.ApprovedOrderList.push(order);
                     }
@@ -569,8 +584,9 @@ export class CaptainPageComponent implements AfterViewInit {
 
     if (USE_DATABASE) {
       this.graphqlService.updateOrderStatus(Number(id), 'Approved').subscribe(
-        (dbRes: any) => {
+        async (dbRes: any) => {
           console.log('DB updateOrderStatus response:', dbRes);
+          await this.syncDeliverySideEffects(Number(id), 'Approved', 'Café confirmed — preparing your order');
           this.sendMessageToWebSocket('kitchen');
           setTimeout(() => {
             this.loadingOrderId = null;
@@ -758,12 +774,7 @@ export class CaptainPageComponent implements AfterViewInit {
   converteLIstTomap(ApprovedOrderList: any) {
     const yourMap: Map<string, SingleFileOrderDto[]> = (ApprovedOrderList || []).reduce((map: any, obj: SingleFileOrderDto) => {
       if (!obj || !obj.order) return map;
-      let key = '';
-      if (obj.order.table_place) {
-        key = String(obj.order.table_place) + String(obj.order.table_no);
-      } else {
-        key = String(obj.order.table_no);
-      }
+      const key = this.orderGroupKey(obj.order);
 
       if (!map.has(key)) {
         map.set(key, []);
@@ -838,10 +849,18 @@ export class CaptainPageComponent implements AfterViewInit {
       const service_charge = orders.reduce((sum, o) => sum + (o.order?.order_additional_service_amount || 0), 0);
       const total_amount = orders.reduce((sum, o) => sum + (o.order?.order_total_amount || 0), 0);
 
+      const statuses = orders.map((o) => o?.order?.order_status).filter(Boolean);
+      const order_status = statuses.includes('out_for_delivery')
+        ? 'out_for_delivery'
+        : firstOrder.order_status || '';
+
       combined.push({
         tableKey: tableKey,
         table_place: firstOrder.table_place || '',
         table_no: firstOrder.table_no || '',
+        tableLabel: this.orderTableLabel(firstOrder),
+        isDelivery: this.isOnlineDeliveryOrder(firstOrder),
+        order_status: order_status,
         orderIds: orderIds,
         displayedOrderIds: displayedOrderIds,
         hasMoreOrderIds: hasMoreOrderIds,
@@ -859,6 +878,7 @@ export class CaptainPageComponent implements AfterViewInit {
     });
 
     this.CombinedApprovedOrders = combined;
+    void this.refreshDeliveryPaymentStatuses(combined);
   }
   refreshOrderStatus() {
     this.showSpinner = true
@@ -885,12 +905,7 @@ export class CaptainPageComponent implements AfterViewInit {
   async moveOrderToCheckOut() {
     let data = this.entry;
     if (data && data.length > 0 && data[0] && data[0].order) {
-      const firstOrder = data[0].order;
-      if (firstOrder.table_place) {
-        this.loadingCheckoutTable = String(firstOrder.table_place) + String(firstOrder.table_no);
-      } else {
-        this.loadingCheckoutTable = String(firstOrder.table_no);
-      }
+      this.loadingCheckoutTable = this.orderGroupKey(data[0].order);
     }
     // Close the checkout modal popup immediately
     this.showCheckOutModal = false;
@@ -1108,6 +1123,9 @@ export class CaptainPageComponent implements AfterViewInit {
   }
 
   printValue: any
+  deliveryKotPrintValue: any
+  isDeliveryKotPopupOpen = false
+
   showInvoice(invoiceData: any) {
     this.openPopup();
     this.printValue = invoiceData
@@ -1116,6 +1134,77 @@ export class CaptainPageComponent implements AfterViewInit {
 
   closePopup(): void {
     this.iskotPopupOpen = false;
+  }
+
+  closeDeliveryKotPopup(): void {
+    this.isDeliveryKotPopupOpen = false;
+  }
+
+  /** Delivery approved card: open delivery KOT (exact order totals, no GST recalc) */
+  printDeliveryInvoice(tableOrder: any): void {
+    const rawOrders: SingleFileOrderDto[] = tableOrder?.rawOrders || [];
+    const first = rawOrders[0]?.order;
+    if (!first?.id) {
+      return;
+    }
+
+    const orderItems = rawOrders.flatMap((o) =>
+      (o.orderItems || []).map((item: any) => ({
+        item_name: item.item_name,
+        item_description: item.item_description,
+        item_quantity: Number(item.item_quantity) || 0,
+        item_cost: Number(item.item_cost) || 0,
+        status: item.status
+      }))
+    );
+
+    const itemTotal = Number(first.order_summary_amount) || 0;
+    const deliveryFee = Number(first.order_additional_service_amount) || 0;
+    const totalAmount = Number(first.order_total_amount) || 0;
+    const discountAmount = Math.max(
+      0,
+      Math.round((itemTotal + deliveryFee - totalAmount) * 100) / 100
+    );
+
+    const comments = String(first.comments || '');
+    const couponMatch = comments.match(/Coupon:\s*([A-Za-z0-9_-]+)/i);
+    const payMatch = comments.match(/Pay:\s*(Cash on delivery|UPI QR)/i);
+    const paymentMethod =
+      payMatch?.[1]?.toLowerCase().includes('cash') ? 'cod' : payMatch ? 'upi_qr' : '';
+
+    const tableLabel = tableOrder.tableLabel || this.orderTableLabel(first);
+    this.deliveryKotPrintValue = {
+      id: first.id,
+      table_no: tableLabel,
+      created_at: first.order_created_time,
+      customer_number: first.customer_number || '',
+      comments,
+      order_status: first.order_status,
+      order_items: orderItems,
+      order_summary_amount: itemTotal,
+      order_additional_service_amount: deliveryFee,
+      order_total_amount: totalAmount,
+      discount_amount: discountAmount,
+      coupon_code: couponMatch?.[1] || '',
+      payment_method: paymentMethod
+    };
+
+    this.isDeliveryKotPopupOpen = true;
+  }
+
+  onDeliveryKotPrinted(event: any): void {
+    if (event !== 'kot' || !this.deliveryKotPrintValue?.id) {
+      return;
+    }
+    const id = Number(this.deliveryKotPrintValue.id);
+    const status = String(this.deliveryKotPrintValue.order_status || '');
+    if (status === 'Approved' || status === 'print') {
+      this.updateOrderStatuskot(id, 'print');
+      void this.syncDeliverySideEffects(id, 'print', 'Delivery KOT printed — preparing for dispatch');
+      this.deliveryKotPrintValue.order_status = 'print';
+      // Refresh accepted list so card reflects print status
+      this.refreshApprovedOrder();
+    }
   }
 
   getOrderItemStatus(apporvedList: any) {
@@ -1352,10 +1441,365 @@ export class CaptainPageComponent implements AfterViewInit {
   }
 
   entry:any;
+  checkoutModalMode: 'checkout' | 'out_for_delivery' | 'delivery_completed' = 'checkout';
+
+  isOnlineDeliveryOrder(tableOrder: any): boolean {
+    return String(tableOrder?.table_place || '') === DELIVERY_TABLE_PLACE;
+  }
+
+  /** Compact label for waiting / accepted cards (never concat ONLINE_DELIVERY + int). */
+  orderTableLabel(order: any): string {
+    if (!order) {
+      return '';
+    }
+    if (this.isOnlineDeliveryOrder(order)) {
+      return deliveryDisplayTableNo(order.order_ref_id || order.id);
+    }
+    const place = order.table_place ? `${order.table_place} ` : '';
+    return `${place}${order.table_no ?? ''}`.trim();
+  }
+
+  orderGroupKey(order: any): string {
+    if (!order) {
+      return '';
+    }
+    // Each delivery order is its own card (numeric table_no is not a physical table)
+    if (this.isOnlineDeliveryOrder(order)) {
+      return `${DELIVERY_TABLE_PLACE}#${order.id}`;
+    }
+    if (order.table_place) {
+      return `${order.table_place}${order.table_no}`;
+    }
+    return String(order.table_no ?? '');
+  }
+
+  isOutForDeliveryStatus(tableOrder: any): boolean {
+    return String(tableOrder?.order_status || '') === 'out_for_delivery';
+  }
+
+  /** order_id → delivery payment row (status / method) for approved delivery cards */
+  deliveryPayByOrderId: Record<number, { status: string; payment_method: string }> = {};
+  deliveryPayBusyId: number | null = null;
+
+  primaryDeliveryOrderId(tableOrder: any): number {
+    const fromRaw = Number(tableOrder?.rawOrders?.[0]?.order?.id);
+    if (fromRaw > 0) return fromRaw;
+    const fromCsv = Number(String(tableOrder?.orderIds || '').split(',')[0]);
+    return fromCsv > 0 ? fromCsv : 0;
+  }
+
+  deliveryPaymentStatus(tableOrder: any): string {
+    const id = this.primaryDeliveryOrderId(tableOrder);
+    return String(this.deliveryPayByOrderId[id]?.status || '');
+  }
+
+  isDeliveryPaymentPaid(tableOrder: any): boolean {
+    const s = this.deliveryPaymentStatus(tableOrder).toLowerCase();
+    return s === 'paid' || s === 'confirmed';
+  }
+
+  deliveryPaymentBadge(tableOrder: any): string {
+    if (!this.isOnlineDeliveryOrder(tableOrder)) return '';
+    if (this.isDeliveryPaymentPaid(tableOrder)) return 'Paid';
+    const method = String(this.deliveryPayByOrderId[this.primaryDeliveryOrderId(tableOrder)]?.payment_method || '');
+    if (method === 'cod') return 'Collect COD';
+    if (method === 'upi_qr') return 'UPI pending';
+    const s = this.deliveryPaymentStatus(tableOrder);
+    if (s === 'cod_pending') return 'Collect COD';
+    if (s === 'awaiting_payment') return 'UPI pending';
+    return s ? s : 'Payment ?';
+  }
+
+  private async refreshDeliveryPaymentStatuses(combined: any[]): Promise<void> {
+    const ids = (combined || [])
+      .filter((t) => this.isOnlineDeliveryOrder(t))
+      .map((t) => this.primaryDeliveryOrderId(t))
+      .filter((id) => id > 0);
+    if (!ids.length) {
+      this.deliveryPayByOrderId = {};
+      return;
+    }
+    try {
+      const rows = await firstValueFrom(this.deliveryHistory.getDeliveryPaymentsByOrderIds(ids));
+      const next: Record<number, { status: string; payment_method: string }> = {};
+      for (const p of rows || []) {
+        const oid = Number(p?.order_id);
+        if (!oid || next[oid]) continue;
+        next[oid] = {
+          status: String(p?.status || ''),
+          payment_method: String(p?.payment_method || '')
+        };
+      }
+      this.deliveryPayByOrderId = next;
+    } catch (e) {
+      console.warn('refreshDeliveryPaymentStatuses failed', e);
+    }
+  }
+
+  async markDeliveryPaymentPaid(tableOrder: any): Promise<void> {
+    const id = this.primaryDeliveryOrderId(tableOrder);
+    if (!id || this.deliveryPayBusyId != null) return;
+    this.deliveryPayBusyId = id;
+    try {
+      await firstValueFrom(this.deliveryHistory.updateDeliveryPaymentStatusByOrderId(id, 'paid'));
+      const prev = this.deliveryPayByOrderId[id] || { status: '', payment_method: '' };
+      this.deliveryPayByOrderId = {
+        ...this.deliveryPayByOrderId,
+        [id]: { ...prev, status: 'paid' }
+      };
+      this.showBellMessage(`Payment marked PAID for order ${id}`);
+    } catch (e) {
+      console.error('markDeliveryPaymentPaid failed', e);
+      this.showBellMessage('Failed to mark payment paid');
+    } finally {
+      this.deliveryPayBusyId = null;
+    }
+  }
+
+  async markDeliveryPaymentUnpaid(tableOrder: any): Promise<void> {
+    const id = this.primaryDeliveryOrderId(tableOrder);
+    if (!id || this.deliveryPayBusyId != null) return;
+    this.deliveryPayBusyId = id;
+    try {
+      const method = String(
+        this.deliveryPayByOrderId[id]?.payment_method ||
+          (String(tableOrder?.comments || '').match(/Pay:\s*Cash on delivery/i) ? 'cod' : 'upi_qr')
+      );
+      const unpaidStatus = method === 'cod' ? 'cod_pending' : 'awaiting_payment';
+      await firstValueFrom(this.deliveryHistory.updateDeliveryPaymentStatusByOrderId(id, unpaidStatus));
+      const prev = this.deliveryPayByOrderId[id] || { status: '', payment_method: method };
+      this.deliveryPayByOrderId = {
+        ...this.deliveryPayByOrderId,
+        [id]: { ...prev, payment_method: prev.payment_method || method, status: unpaidStatus }
+      };
+      this.showBellMessage(`Payment marked NOT PAID for order ${id}`);
+    } catch (e) {
+      console.error('markDeliveryPaymentUnpaid failed', e);
+      this.showBellMessage('Failed to update payment status');
+    } finally {
+      this.deliveryPayBusyId = null;
+    }
+  }
+
   showCheckOutConfirmationModal(entry:any) {
-  this.showCheckOutModal = true;
-  this.entry = entry;
-}
+    this.checkoutModalMode = 'checkout';
+    this.showCheckOutModal = true;
+    this.entry = entry;
+  }
+
+  showOutForDeliveryModal(entry: any) {
+    this.checkoutModalMode = 'out_for_delivery';
+    this.showCheckOutModal = true;
+    this.entry = entry;
+  }
+
+  showDeliveryCompletedModal(entry: any) {
+    this.checkoutModalMode = 'delivery_completed';
+    this.showCheckOutModal = true;
+    this.entry = entry;
+  }
+
+  confirmCheckoutModalAction() {
+    if (this.checkoutModalMode === 'out_for_delivery') {
+      this.markOrdersOutForDelivery();
+      return;
+    }
+    if (this.checkoutModalMode === 'delivery_completed') {
+      this.completeDeliveryOrders();
+      return;
+    }
+    this.moveOrderToCheckOut();
+  }
+
+  private setLoadingFromEntry(data: any[]) {
+    if (data && data.length > 0 && data[0] && data[0].order) {
+      this.loadingCheckoutTable = this.orderGroupKey(data[0].order);
+    }
+  }
+
+  private async syncDeliverySideEffects(
+    orderId: number,
+    status: string,
+    message: string,
+    extra: Record<string, unknown> = {}
+  ): Promise<void> {
+    try {
+      const mapRes = await firstValueFrom(
+        this.deliveryHistory.updateOrderMapStatusByOrderId(orderId, status, extra)
+      );
+      const mapRow = mapRes?.data?.update_kubera_delivery_kubera_customer_order_map?.returning?.[0];
+      if (mapRow?.id) {
+        await firstValueFrom(
+          this.deliveryHistory.insertStatusEvent({
+            order_map_id: mapRow.id,
+            order_id: orderId,
+            order_ref_id: String(mapRow.order_ref_id || ''),
+            status,
+            message
+          })
+        );
+      }
+      if (status === 'delivered' || status === 'paid') {
+        await firstValueFrom(this.deliveryHistory.updateDeliveryPaymentStatusByOrderId(orderId, 'paid'));
+      }
+    } catch (e) {
+      console.warn('delivery side-effect sync failed', e);
+    }
+  }
+
+  private notifyDeliveryStatus(data: any[], statusLabel: string) {
+    try {
+      const first = data?.[0]?.order;
+      if (!first) return;
+      const items = (data || [])
+        .flatMap((o) => o?.orderItems || [])
+        .map((i: any) => `- ${i.item_name} x${i.item_quantity}`)
+        .join('\n');
+      const text = [
+        `Cafe Kubera — DELIVERY ${statusLabel}`,
+        `Order: ${first.table_no}`,
+        `Customer: ${first.customer_number || ''}`,
+        items ? `Items:\n${items}` : '',
+        `Total: ₹${Number(first.order_total_amount || 0).toFixed(2)}`
+      ]
+        .filter(Boolean)
+        .join('\n');
+      this.whatsappNotify.sendPlainAlert(text).subscribe();
+    } catch (e) {
+      console.warn('delivery status notify failed', e);
+    }
+  }
+
+  async markOrdersOutForDelivery() {
+    const data = this.entry;
+    this.setLoadingFromEntry(data);
+    this.showCheckOutModal = false;
+
+    const clearSpinnerAndClose = () => {
+      this.loadingCheckoutTable = '';
+      this.showCheckOutModal = false;
+      this.refreshApprovedOrder();
+    };
+
+    if (!this.USE_DATABASE || !data?.length) {
+      clearSpinnerAndClose();
+      return;
+    }
+
+    try {
+      let completed = 0;
+      const total = data.filter((f: any) => f?.order?.id).length || data.length;
+      data.forEach((field: any) => {
+        if (!field?.order?.id) {
+          completed++;
+          if (completed >= total) clearSpinnerAndClose();
+          return;
+        }
+        const id = Number(field.order.id);
+        this.graphqlService.updateOrderStatus(id, 'out_for_delivery').subscribe(
+          async () => {
+            await this.syncDeliverySideEffects(id, 'out_for_delivery', 'Rider left — out for delivery');
+            completed++;
+            if (completed >= total) {
+              this.notifyDeliveryStatus(data, 'OUT FOR DELIVERY');
+              this.sendMessageToWebSocket('approval');
+              clearSpinnerAndClose();
+            }
+          },
+          (err: any) => {
+            console.error('out_for_delivery update failed', err);
+            completed++;
+            if (completed >= total) clearSpinnerAndClose();
+          }
+        );
+      });
+    } catch (e) {
+      console.error(e);
+      clearSpinnerAndClose();
+    }
+  }
+
+  async completeDeliveryOrders() {
+    const data = this.entry;
+    this.setLoadingFromEntry(data);
+    this.showCheckOutModal = false;
+
+    const clearSpinnerAndClose = () => {
+      this.loadingCheckoutTable = '';
+      this.showCheckOutModal = false;
+      this.refreshApprovedOrder();
+    };
+
+    if (!this.USE_DATABASE || !data?.length) {
+      clearSpinnerAndClose();
+      return;
+    }
+
+    try {
+      const orderIds = data
+        .map((f: any) => Number(f?.order?.id))
+        .filter((id: number) => !isNaN(id) && id > 0);
+      if (!orderIds.length) {
+        clearSpinnerAndClose();
+        return;
+      }
+
+      const idsStr = orderIds.join(',');
+      const totalAmount = data.reduce(
+        (sum: number, f: any) => sum + (Number(f?.order?.order_total_amount) || 0),
+        0
+      );
+      let paidAmount = totalAmount;
+      try {
+        const mapRow = await firstValueFrom(this.deliveryHistory.getOrderMapByOrderId(orderIds[0]));
+        if (mapRow?.amount_to_pay != null) {
+          paidAmount = Number(mapRow.amount_to_pay);
+        }
+      } catch {
+        /* keep totalAmount */
+      }
+
+      const billNo =
+        'DEL_' + new Date().getTime().toString() + '_' + Math.floor(Math.random() * 1000).toString();
+      const paymentPayload = {
+        actual_amount: totalAmount,
+        paid_amount: paidAmount,
+        order_id: idsStr,
+        payment_mode: 'delivery',
+        bill_no: billNo,
+        created_time: this.sharedService.updateCurrentDateTimeInIST(),
+        created_at: this.sharedService.updateCurrentDateInIST()
+      };
+
+      await firstValueFrom(this.graphqlService.insertPaymentDetails(paymentPayload));
+
+      let completed = 0;
+      orderIds.forEach((id: number) => {
+        this.graphqlService.updateOrderStatus(id, 'paid').subscribe(
+          async () => {
+            await this.syncDeliverySideEffects(id, 'delivered', 'Delivery completed', {
+              delivered_at: new Date().toISOString()
+            });
+            completed++;
+            if (completed >= orderIds.length) {
+              this.notifyDeliveryStatus(data, 'COMPLETED');
+              this.sendMessageToWebSocket('payment');
+              clearSpinnerAndClose();
+            }
+          },
+          (err: any) => {
+            console.error('delivery completed paid update failed', err);
+            completed++;
+            if (completed >= orderIds.length) clearSpinnerAndClose();
+          }
+        );
+      });
+    } catch (e) {
+      console.error('completeDeliveryOrders failed', e);
+      clearSpinnerAndClose();
+    }
+  }
+
 closeCheckOutModal(){
   this.showCheckOutModal = false;
 

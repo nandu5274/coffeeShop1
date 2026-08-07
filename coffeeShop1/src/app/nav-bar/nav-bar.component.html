@@ -66,11 +66,11 @@
       </nav><!-- .navbar -->
    
      
-      <div class="d-flex "  *ngIf="showMenu" > 
+      <div class="d-flex cart-trigger-wrap" *ngIf="showMenu || showCartIcon"> 
   
-          <a (click)="toggleModal(); $event.stopPropagation()">
-            <img src="assets/img/cart.png" class="cart"  alt="" *ngIf="cartCount > 0">
-              <span class="iconClass"  *ngIf="cartCount > 0">{{cartCount}}</span>
+          <a class="cart-trigger" (click)="toggleModal(); $event.stopPropagation()" aria-label="Open cart">
+            <i class="bi bi-bag-fill cart-bag" aria-hidden="true"></i>
+            <span class="iconClass cart-badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
           </a>
       
         <!-- <img src="assets/img/cart.png" class="cart"  alt="">  -->
@@ -80,20 +80,17 @@
 
 
 
-     <div class="d-flex align-items-center" *ngIf="!diable_login_btn">
-      <!-- Displayed when user is not logged in -->
+     <div class="d-flex align-items-center header-right-actions" *ngIf="!diable_login_btn && !showDeliverySubheader">
       <a *ngIf="!isLoggedIn" (click)="openCustomerLoginModal()" class="book-a-table-btn">
         Login
       </a>
     
-      <!-- Displayed when user is logged in -->
       <div *ngIf="isLoggedIn" class="user-dropdown">
         <div class="user-initial" (click)="toggleDropdown()">
           {{ userInitial }}
         </div>
-        <div *ngIf="isDropdownOpen" class="customer-dropdown-menu">
-         
-          <a style="    font-weight: bold;">{{customerName}}</a>
+        <div *ngIf="isDropdownOpen" class="customer-dropdown-menu glass-panel">
+          <div class="dropdown-name">{{ customerName }}</div>
           <hr class="dropdown-divider">
           <a (click)="navigateToProfile()">Profile</a>
           <a (click)="onSignOut()">Sign Out</a>
@@ -101,8 +98,8 @@
       </div>
       </div>
 
-      <!-- Settings Floating Dropdown -->
-      <div class="settings-dropdown floating-settings">
+      <!-- Settings Floating Dropdown (hidden on delivery flow — overlaps glass cards) -->
+      <div class="settings-dropdown floating-settings" *ngIf="!showDeliverySubheader">
         <button class="settings-btn" (click)="toggleSettingsDropdown($event)" aria-label="Settings">
           <i class="bi bi-gear-fill"></i>
         </button>
@@ -148,15 +145,48 @@
     
     <div [class.show]="showModal" class="right-modal">
       <div class="cart-header">
-        <a class = "cart-header-title">Cart</a>
-        <a (click)="toggleModal(); $event.stopPropagation()" class="prepare-btn cart-close-btn" > X </a>
+        <a class="cart-header-title">Your cart</a>
+        <button type="button" (click)="toggleModal(); $event.stopPropagation()" class="cart-close-btn" aria-label="Close cart">×</button>
       </div>
     
-        <app-items-cart (cartDataListCount)="updateCartCount($event)" (closeCartModal)="toggleModal()" (orderProcessingStatus) = "captureOrderProcessingStatus($event)" (orderingResponse) = "captureOrderProcessingResponse($event)"> </app-items-cart>
+        <div class="cart-body">
+          <app-items-cart (cartDataListCount)="updateCartCount($event)" (closeCartModal)="toggleModal()" (orderProcessingStatus) = "captureOrderProcessingStatus($event)" (orderingResponse) = "captureOrderProcessingResponse($event)"> </app-items-cart>
+        </div>
     </div>
 
     <app-booking-order  [orderProcessingStatus]="orderProcessingStatus" [response] = "response"></app-booking-order>
   </header><!-- End Header -->
+
+  <!-- Delivery sub-header: address + profile -->
+  <div class="delivery-subheader" *ngIf="showDeliverySubheader" [class.subheader-scrolled]="subheaderScrolled">
+    <div class="delivery-subheader-inner">
+      <button
+        type="button"
+        class="delivery-loc-chip"
+        (click)="goDeliveryAddresses()"
+        [title]="deliveryAddressText"
+      >
+        <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+        <span class="loc-text">
+          <em>Deliver to</em>
+          <strong>{{ deliveryAddressShort || 'Select address' }}</strong>
+        </span>
+        <i class="bi bi-chevron-down chev" aria-hidden="true"></i>
+      </button>
+
+      <div class="user-dropdown subheader-profile">
+        <div class="user-initial" (click)="toggleDropdown()">
+          {{ userInitial }}
+        </div>
+        <div *ngIf="isDropdownOpen" class="customer-dropdown-menu glass-panel">
+          <div class="dropdown-name">{{ customerName }}</div>
+          <hr class="dropdown-divider">
+          <a (click)="navigateToProfile()">Profile</a>
+          <a (click)="onSignOut()">Sign Out</a>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Info Alert Message -->
   <div *ngIf="infoMessage" >
@@ -170,16 +200,13 @@
 
 
 
-  <div  *ngIf="showCustomerLoginModal" class="modal">
+  <div  *ngIf="showCustomerLoginModal" class="modal login-modal-glass">
     <div class="modal-content">
     
 <div class="cust-login">
   <app-customer-login (loginStatus)="onCustomerLogin($event)" ></app-customer-login>
-  <div style="   text-align: center; background: #1a1814;">
-    <span>
-  <button (click) = "closeModal()" style="width: 9em;
-  align-self: center;  " class=" pop-up-btm">close</button>
-  </span>
+  <div class="login-close-row">
+    <button type="button" (click)="closeModal()" class="pop-up-btm">Close</button>
   </div>
 </div>
 

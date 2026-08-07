@@ -63,6 +63,15 @@ const routes: Routes = [
     path: 'profile',
     loadChildren: () =>
       import('./customer-profile/customer-profile.module').then((m) => m.CustomerProfileModule)
+  },
+  {
+    path: 'delivery',
+    loadChildren: () => import('./delivery/delivery.module').then((m) => m.DeliveryModule)
+  },
+  {
+    path: 'delivery-agent',
+    loadChildren: () =>
+      import('./delivery-agent/delivery-agent.module').then((m) => m.DeliveryAgentModule)
   }
 ];
 

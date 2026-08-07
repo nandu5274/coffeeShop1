@@ -1,0 +1,33 @@
+<section class="confirm delivery-shell" *ngIf="order">
+  <p class="eyebrow">Cafe Kubera</p>
+  <h1>Order placed</h1>
+  <p class="lede">We’ll call you shortly to confirm. Captain has been alerted.</p>
+
+  <div class="panel">
+    <div class="detail-row"><span>Order</span><strong>{{ order.tableNo }}</strong></div>
+    <div class="detail-row"><span>Ref</span><strong>{{ order.orderRefId }}</strong></div>
+    <div class="detail-row"><span>Pay</span><strong>{{ order.paymentMethod === 'cod' ? 'Cash on delivery' : 'UPI QR' }}</strong></div>
+    <div class="detail-row" *ngIf="order.couponCode">
+      <span>Coupon</span><strong>{{ order.couponCode }} (−₹{{ order.discountAmount | number:'1.2-2' }})</strong>
+    </div>
+    <div class="detail-row total"><span>Amount to pay</span><strong>₹{{ order.amountToPay | number:'1.2-2' }}</strong></div>
+    <p class="addr">{{ order.addressText }}</p>
+  </div>
+
+  <div class="panel qr" *ngIf="order.paymentMethod === 'upi_qr'">
+    <h2>Scan &amp; pay</h2>
+    <p>Pay <strong>₹{{ order.amountToPay | number:'1.2-2' }}</strong> to {{ upiId }}</p>
+    <img *ngIf="qrDataUrl" [src]="qrDataUrl" alt="UPI QR code" />
+    <p class="tiny">After paying, keep the UPI reference ready when we call.</p>
+  </div>
+
+  <div class="panel" *ngIf="order.paymentMethod === 'cod'">
+    <h2>Cash on delivery</h2>
+    <p>Please keep <strong>₹{{ order.amountToPay | number:'1.2-2' }}</strong> ready.</p>
+  </div>
+
+  <button type="button" class="primary" (click)="goTrack()" *ngIf="order.mapId">Track this order</button>
+  <button type="button" class="secondary" (click)="goOrders()">My orders</button>
+  <button type="button" class="secondary" (click)="goHome()">Back to delivery</button>
+  <button type="button" class="secondary" (click)="goMenu()">Order more</button>
+</section>

@@ -70,41 +70,42 @@
               <div class="card-container">
 
 
-                <div class="card" *ngFor="let waitingApprovalOrder of ApprovalOrderList" style="position: relative;">
+                <div
+                  class="card waiting-order-card"
+                  [class.delivery-card]="isOnlineDeliveryOrder(waitingApprovalOrder?.order)"
+                  *ngFor="let waitingApprovalOrder of ApprovalOrderList"
+                  style="position: relative;"
+                >
                   <!-- Per-card loading overlay -->
                   <div *ngIf="waitingApprovalOrder?.order && loadingOrderId === waitingApprovalOrder.order.id" class="card-loading-overlay">
                     <div class="card-spinner"></div>
                   </div>
                   <div class="content">
-                    <div class="table">
-                      <a style=" font-family: sans-serif !important; font-size: x-large; ">T:
-                        {{waitingApprovalOrder?.order?.table_place}}{{waitingApprovalOrder?.order?.table_no}}</a>
-                      <a style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e;">
-                        {{waitingApprovalOrder?.order?.id}}</a>
-
+                    <div class="waiting-card-header">
+                      <div class="waiting-loc">
+                        <span
+                          class="loc-badge"
+                          [class.delivery]="isOnlineDeliveryOrder(waitingApprovalOrder?.order)"
+                        >
+                          {{ isOnlineDeliveryOrder(waitingApprovalOrder?.order) ? 'Delivery' : 'Table' }}
+                        </span>
+                        <strong class="loc-label">{{ orderTableLabel(waitingApprovalOrder?.order) }}</strong>
+                      </div>
+                      <span class="order-ref">#{{ waitingApprovalOrder?.order?.id }}</span>
                     </div>
 
-
-                    <div style="text-align: center;">
-                      <a style=" font-family: sans-serif !important; font-size: x-large; color: #cda45e; ">Items</a>
-
-                    </div>
-
-                    <div style="text-align: center;">
-                      <a
-                        style=" font-family: sans-serif !important; font-size: medium; color: #ffc107; ">{{waitingApprovalOrder?.order?.order_created_time}}</a>
+                    <div class="waiting-card-meta">
+                      <span class="meta-title">Items</span>
+                      <span class="meta-time">{{ waitingApprovalOrder?.order?.order_created_time }}</span>
                     </div>
 
                     <hr>
                     <ul class="item-list">
                       <li *ngFor="let waitingApprovalOrderItem of waitingApprovalOrder.orderItems">
-                        <div style="display: flex;
-                      place-content: space-between;">
-                          <a> {{waitingApprovalOrderItem.item_name}} </a>
-
-                          <a> {{waitingApprovalOrderItem.item_quantity }} </a>
+                        <div class="waiting-item-row">
+                          <span class="item-name">{{ waitingApprovalOrderItem.item_name }}</span>
+                          <span class="item-qty">{{ waitingApprovalOrderItem.item_quantity }}</span>
                         </div>
-
                       </li>
                     </ul>
                     <hr>
@@ -157,7 +158,13 @@
 
           <div data-aos="fade-up" data-aos-delay="100">
             <div class="card-container">
-              <div class="accepted-order-card" *ngFor="let tableOrder of CombinedApprovedOrders" style="position: relative;">
+              <div
+                class="accepted-order-card"
+                [class.delivery-card]="tableOrder.isDelivery"
+                [class.delivery-paid]="tableOrder.isDelivery && isDeliveryPaymentPaid(tableOrder)"
+                *ngFor="let tableOrder of CombinedApprovedOrders"
+                style="position: relative;"
+              >
                 <!-- Per-card loading overlay -->
                 <div *ngIf="loadingCheckoutTable && loadingCheckoutTable === tableOrder.tableKey" class="card-loading-overlay">
                   <div class="card-spinner"></div>
@@ -173,8 +180,8 @@
                       {{tableOrder.orderIds}}
                     </div>
                   </div>
-                  <span class="table-badge">
-                    📍 {{tableOrder.table_place}} {{tableOrder.table_no}}
+                  <span class="table-badge" [class.delivery]="tableOrder.isDelivery" [class.paid]="tableOrder.isDelivery && isDeliveryPaymentPaid(tableOrder)">
+                    {{ tableOrder.isDelivery ? '🛵' : '📍' }} {{ tableOrder.tableLabel || (tableOrder.table_place + ' ' + tableOrder.table_no) }}
                   </span>
                 </div>
 
@@ -252,11 +259,48 @@
                   </div>
                 </div>
 
+                <div class="delivery-pay-row" *ngIf="isOnlineDeliveryOrder(tableOrder)">
+                  <span
+                    class="delivery-pay-badge"
+                    [class.paid]="isDeliveryPaymentPaid(tableOrder)"
+                    [class.unpaid]="!isDeliveryPaymentPaid(tableOrder)"
+                  >{{ deliveryPaymentBadge(tableOrder) }}</span>
+                  <button
+                    type="button"
+                    class="btn-card-pay"
+                    *ngIf="!isDeliveryPaymentPaid(tableOrder)"
+                    [disabled]="deliveryPayBusyId === primaryDeliveryOrderId(tableOrder)"
+                    (click)="markDeliveryPaymentPaid(tableOrder)"
+                  >Mark paid</button>
+                  <button
+                    type="button"
+                    class="btn-card-pay unpaid"
+                    *ngIf="isDeliveryPaymentPaid(tableOrder)"
+                    [disabled]="deliveryPayBusyId === primaryDeliveryOrderId(tableOrder)"
+                    (click)="markDeliveryPaymentUnpaid(tableOrder)"
+                  >Mark not paid</button>
+                </div>
+
                 <!-- Action Buttons on the card -->
                 <div class="card-actions-row">
-                  <button class="btn-card-more" (click)="openExistingMenuPage(tableOrder.rawOrders)">Add Items</button>
-                  <button class="btn-card-checkout"
+                  <button
+                    *ngIf="!isOnlineDeliveryOrder(tableOrder)"
+                    class="btn-card-more"
+                    (click)="openExistingMenuPage(tableOrder.rawOrders)"
+                  >Add Items</button>
+                  <button
+                    *ngIf="isOnlineDeliveryOrder(tableOrder)"
+                    class="btn-card-more btn-card-print"
+                    (click)="printDeliveryInvoice(tableOrder)"
+                  >Print</button>
+                  <button *ngIf="!isOnlineDeliveryOrder(tableOrder)" class="btn-card-checkout"
                     (click)="showCheckOutConfirmationModal(tableOrder.rawOrders)">Checkout</button>
+                  <button *ngIf="isOnlineDeliveryOrder(tableOrder) && !isOutForDeliveryStatus(tableOrder)"
+                    class="btn-card-checkout"
+                    (click)="showOutForDeliveryModal(tableOrder.rawOrders)">Out for delivery</button>
+                  <button *ngIf="isOnlineDeliveryOrder(tableOrder) && isOutForDeliveryStatus(tableOrder)"
+                    class="btn-card-checkout"
+                    (click)="showDeliveryCompletedModal(tableOrder.rawOrders)">Delivery completed</button>
                 </div>
               </div>
             </div>
@@ -294,7 +338,13 @@
 
           <div data-aos="fade-up" data-aos-delay="100">
             <div class="card-container">
-              <div class="accepted-order-card" *ngFor="let tableOrder of CombinedApprovedOrders" style="position: relative;">
+              <div
+                class="accepted-order-card"
+                [class.delivery-card]="tableOrder.isDelivery"
+                [class.delivery-paid]="tableOrder.isDelivery && isDeliveryPaymentPaid(tableOrder)"
+                *ngFor="let tableOrder of CombinedApprovedOrders"
+                style="position: relative;"
+              >
                 <!-- Per-card loading overlay -->
                 <div *ngIf="loadingCheckoutTable && loadingCheckoutTable === tableOrder.tableKey" class="card-loading-overlay">
                   <div class="card-spinner"></div>
@@ -310,8 +360,8 @@
                       {{tableOrder.orderIds}}
                     </div>
                   </div>
-                  <span class="table-badge">
-                    📍 {{tableOrder.table_place}} {{tableOrder.table_no}}
+                  <span class="table-badge" [class.delivery]="tableOrder.isDelivery" [class.paid]="tableOrder.isDelivery && isDeliveryPaymentPaid(tableOrder)">
+                    {{ tableOrder.isDelivery ? '🛵' : '📍' }} {{ tableOrder.tableLabel || (tableOrder.table_place + ' ' + tableOrder.table_no) }}
                   </span>
                 </div>
 
@@ -389,11 +439,48 @@
                   </div>
                 </div>
 
+                <div class="delivery-pay-row" *ngIf="isOnlineDeliveryOrder(tableOrder)">
+                  <span
+                    class="delivery-pay-badge"
+                    [class.paid]="isDeliveryPaymentPaid(tableOrder)"
+                    [class.unpaid]="!isDeliveryPaymentPaid(tableOrder)"
+                  >{{ deliveryPaymentBadge(tableOrder) }}</span>
+                  <button
+                    type="button"
+                    class="btn-card-pay"
+                    *ngIf="!isDeliveryPaymentPaid(tableOrder)"
+                    [disabled]="deliveryPayBusyId === primaryDeliveryOrderId(tableOrder)"
+                    (click)="markDeliveryPaymentPaid(tableOrder)"
+                  >Mark paid</button>
+                  <button
+                    type="button"
+                    class="btn-card-pay unpaid"
+                    *ngIf="isDeliveryPaymentPaid(tableOrder)"
+                    [disabled]="deliveryPayBusyId === primaryDeliveryOrderId(tableOrder)"
+                    (click)="markDeliveryPaymentUnpaid(tableOrder)"
+                  >Mark not paid</button>
+                </div>
+
                 <!-- Action Buttons on the card -->
                 <div class="card-actions-row">
-                  <button class="btn-card-more" (click)="openExistingMenuPage(tableOrder.rawOrders)">Add Items</button>
-                  <button class="btn-card-checkout"
+                  <button
+                    *ngIf="!isOnlineDeliveryOrder(tableOrder)"
+                    class="btn-card-more"
+                    (click)="openExistingMenuPage(tableOrder.rawOrders)"
+                  >Add Items</button>
+                  <button
+                    *ngIf="isOnlineDeliveryOrder(tableOrder)"
+                    class="btn-card-more btn-card-print"
+                    (click)="printDeliveryInvoice(tableOrder)"
+                  >Print</button>
+                  <button *ngIf="!isOnlineDeliveryOrder(tableOrder)" class="btn-card-checkout"
                     (click)="showCheckOutConfirmationModal(tableOrder.rawOrders)">Checkout</button>
+                  <button *ngIf="isOnlineDeliveryOrder(tableOrder) && !isOutForDeliveryStatus(tableOrder)"
+                    class="btn-card-checkout"
+                    (click)="showOutForDeliveryModal(tableOrder.rawOrders)">Out for delivery</button>
+                  <button *ngIf="isOnlineDeliveryOrder(tableOrder) && isOutForDeliveryStatus(tableOrder)"
+                    class="btn-card-checkout"
+                    (click)="showDeliveryCompletedModal(tableOrder.rawOrders)">Delivery completed</button>
                 </div>
               </div>
             </div>
@@ -468,11 +555,17 @@
 <div *ngIf="showCheckOutModal" class="menu-popup-overlay">
   <div class="menu-popup-container"
     style="width: 400px; max-width: 90%; height: auto; min-height: 250px; padding: 1.5em; justify-content: center; text-align: center;">
-    <h2 style="font-family: 'Playfair Display', serif; color: #cda45e; margin-bottom: 1em;">Check Out Confirmation</h2>
-    <p style="color: #eee; font-size: 1.1rem; margin-bottom: 2em;">Are you sure to Checkout ?</p>
+    <h2 style="font-family: 'Playfair Display', serif; color: #cda45e; margin-bottom: 1em;">
+      {{ checkoutModalMode === 'out_for_delivery' ? 'Out for delivery' : (checkoutModalMode === 'delivery_completed' ? 'Delivery completed' : 'Check Out Confirmation') }}
+    </h2>
+    <p style="color: #eee; font-size: 1.1rem; margin-bottom: 2em;">
+      {{ checkoutModalMode === 'out_for_delivery' ? 'Mark this order as out for delivery?' : (checkoutModalMode === 'delivery_completed' ? 'Confirm delivery completed and record payment?' : 'Are you sure to Checkout ?') }}
+    </p>
 
     <div style="display: flex; justify-content: center; gap: 1rem;">
-      <button class="btn-glass-success" style="padding: 10px 24px;" (click)="moveOrderToCheckOut()">Check out</button>
+      <button class="btn-glass-success" style="padding: 10px 24px;" (click)="confirmCheckoutModalAction()">
+        {{ checkoutModalMode === 'out_for_delivery' ? 'Confirm' : (checkoutModalMode === 'delivery_completed' ? 'Complete' : 'Check out') }}
+      </button>
       <button class="btn-glass-danger" style="padding: 10px 24px;" (click)="closeCheckOutModal()">Close</button>
     </div>
   </div>
@@ -623,6 +716,18 @@
     <app-pos-kot [printData]="printValue" (messageEvent)="updateOrderStatus($event, printValue)"></app-pos-kot>
 
     <button class="btn-glass-danger" (click)="closePopup()">Close</button>
+  </div>
+</div>
+
+<div class="popup-overlay" *ngIf="isDeliveryKotPopupOpen" (click)="closeDeliveryKotPopup()">
+  <div class="popup-content delivery-kot-popup" (click)="$event.stopPropagation()">
+    <app-pos-delivery-kot
+      [printData]="deliveryKotPrintValue"
+      (messageEvent)="onDeliveryKotPrinted($event)"
+    ></app-pos-delivery-kot>
+    <div class="delivery-kot-popup-actions">
+      <button class="btn-glass-danger" type="button" (click)="closeDeliveryKotPopup()">Close</button>
+    </div>
   </div>
 </div>
 

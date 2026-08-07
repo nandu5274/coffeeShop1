@@ -1,6 +1,9 @@
-import { Component, HostListener, OnInit, ChangeDetectorRef } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { Subscription, filter } from 'rxjs';
 import { ResponseDto } from '../dtos/responseDto';
+import { isCustomerDeliveryUrl } from '../common/constanst';
+import { DeliveryLocationService } from '../service/delivery-location.service';
 import { SharedService } from '../service/shared-service';
 import { WebSocketService } from '../service/WebSocket.service';
 
@@ -9,7 +12,7 @@ import { WebSocketService } from '../service/WebSocket.service';
   templateUrl: './nav-bar.component.html',
   styleUrls: ['./nav-bar.component.scss']
 })
-export class NavBarComponent implements OnInit  {
+export class NavBarComponent implements OnInit, OnDestroy  {
 
 
   public loadScript(url: string) {
@@ -18,11 +21,18 @@ export class NavBarComponent implements OnInit  {
     node.type = 'text/javascript';
     document.getElementsByTagName('head')[0].appendChild(node);
 }
-constructor(private router: Router,  private route: ActivatedRoute, private sharedService:SharedService, private webSocketService: WebSocketService, private cdr: ChangeDetectorRef) {}
+constructor(
+  private router: Router,
+  private route: ActivatedRoute,
+  private sharedService: SharedService,
+  private deliveryLocation: DeliveryLocationService,
+  private webSocketService: WebSocketService,
+  private cdr: ChangeDetectorRef
+) {}
 
 
 isMenuActive: boolean = false; // Set it to true to make it initially active
-cartCount:any;
+cartCount: number = 0;
 isOtherItemsActive:boolean = false; 
 orderProcessingStatus:any='';
 response!:ResponseDto;
@@ -32,10 +42,18 @@ showSpinner:Boolean = false
 showMenu:boolean = false
 showCustomerLoginModal:boolean=false;
 diable_login_btn:boolean=false;
+showCartIcon = false;
 
 isSettingsOpen: boolean = false;
 fontSizePercent: number = 100;
 themeMode: string = 'dark';
+
+showDeliveryLoc = false;
+showDeliverySubheader = false;
+subheaderScrolled = false;
+deliveryAddressShort = '';
+deliveryAddressText = '';
+private subs: Subscription[] = [];
 
 ngOnInit(){
   const savedFontSize = localStorage.getItem('app-font-size-percent');
@@ -58,9 +76,9 @@ ngOnInit(){
   const sessionCartDataList = sessionStorage.getItem('cartDataList');
 
   if (sessionCartDataList) {
-    let cartDataList = JSON.parse(atob(sessionStorage.getItem("cartDataList")!));
-      this.cartCount =  cartDataList.length;
+      this.cartCount = this.sharedService.readCartQtyFromSession();
   }
+  this.refreshCartIconVisibility();
   this.previousUrl = sessionStorage.getItem("previousUrl");
  // this.loadScript("assets/js/main.js");
 
@@ -95,6 +113,7 @@ ngOnInit(){
     sessionStorage.removeItem('table');
     this.showMenu = false;
   }
+  this.refreshCartIconVisibility();
   this.showSpinner = false
 });
 
@@ -130,6 +149,76 @@ if (localStorageData) {
 }
 }
 
+this.sharedService.getOpenCustomerLoginObservable().subscribe(() => {
+  this.openCustomerLoginModal();
+});
+
+this.subs.push(
+  this.sharedService.getOpenCartObservable().subscribe(() => {
+    if (!this.showModal) {
+      this.toggleModal();
+    }
+  }),
+  this.sharedService.getCartCountObservable().subscribe((count) => {
+    this.cartCount = count;
+    this.refreshCartIconVisibility();
+    this.cdr.markForCheck();
+  }),
+  this.sharedService.getShowMenuFlagDataObservable().subscribe((flag) => {
+    this.showMenu = !!flag;
+    this.refreshCartIconVisibility();
+  })
+);
+
+this.refreshDeliveryLocChip();
+this.subs.push(
+  this.deliveryLocation.selected$.subscribe(() => this.refreshDeliveryLocChip()),
+  this.sharedService.getIsLoginFlag().subscribe(() => this.refreshDeliveryLocChip()),
+  this.router.events
+    .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+    .subscribe(() => {
+      this.refreshDeliveryLocChip();
+      this.refreshCartIconVisibility();
+    })
+);
+
+}
+
+ngOnDestroy(): void {
+  this.subs.forEach((s) => s.unsubscribe());
+  document.body.classList.remove('has-delivery-subheader');
+}
+
+refreshCartIconVisibility(): void {
+  const deliveryMode = sessionStorage.getItem('order_mode') === 'delivery';
+  const onDeliveryFlow =
+    deliveryMode ||
+    isCustomerDeliveryUrl(this.router.url) ||
+    this.router.url.includes('/menu');
+  this.showCartIcon = !!(this.cartCount > 0 && (this.showMenu || onDeliveryFlow));
+}
+
+refreshDeliveryLocChip(): void {
+  const deliveryMode = sessionStorage.getItem('order_mode') === 'delivery';
+  const onDeliveryFlow =
+    deliveryMode ||
+    isCustomerDeliveryUrl(this.router.url) ||
+    (this.router.url.includes('/menu') && deliveryMode);
+  const loggedIn = sessionStorage.getItem('is_login') === 'true';
+  const sel = this.deliveryLocation.getSelected();
+  this.showDeliveryLoc = !!(loggedIn && onDeliveryFlow);
+  this.showDeliverySubheader = this.showDeliveryLoc;
+  this.deliveryAddressText = sel?.text || '';
+  this.deliveryAddressShort = sel
+    ? this.deliveryLocation.shortLabel(sel.label || sel.text)
+    : 'Select address';
+  document.body.classList.toggle('has-delivery-subheader', this.showDeliverySubheader);
+  this.cdr.markForCheck();
+}
+
+goDeliveryAddresses(): void {
+  sessionStorage.setItem('order_mode', 'delivery');
+  this.router.navigate(['/delivery/addresses']);
 }
 
 
@@ -203,7 +292,8 @@ private toggleBodyScroll(shouldEnable: boolean): void {
 
 updateCartCount(cartCount:any)
 {
-  this.cartCount = cartCount;
+  this.cartCount = Number(cartCount) || 0;
+  this.refreshCartIconVisibility();
 }
 
 
@@ -265,7 +355,10 @@ pageType:any = "cap"
     this.userInitial = '';
     sessionStorage.removeItem('customer_Details')
     sessionStorage.removeItem('is_login')
+    sessionStorage.removeItem('customer_number')
+    this.deliveryLocation.clear();
     this.sharedService.setIsLoginFlag(false);
+    this.refreshDeliveryLocChip();
   }
   isDropdownOpen: boolean = false;
 
@@ -279,7 +372,15 @@ onCustomerLogin(login_status: any) {
   let customer_details = JSON.parse(sessionStorage.getItem("customer_Details")!);
 
   this.onLoginSuccess(customer_details.customer_detail.name);
-  // Handle the login event (e.g., update UI, make an API call, etc.)
+  const customerId = customer_details?.customer_detail?.id;
+  if (
+    customerId &&
+    sessionStorage.getItem('order_mode') === 'delivery' &&
+    !this.deliveryLocation.getSelected()
+  ) {
+    this.deliveryLocation.autoSelectNearest(customerId);
+  }
+  this.refreshDeliveryLocChip();
 }
 
 
@@ -335,5 +436,13 @@ onDocumentClick(event: MouseEvent) {
   if (this.isSettingsOpen && !target.closest('.settings-dropdown')) {
     this.isSettingsOpen = false;
   }
+  if (this.isDropdownOpen && !target.closest('.user-dropdown')) {
+    this.isDropdownOpen = false;
+  }
+}
+
+@HostListener('window:scroll')
+onWindowScroll(): void {
+  this.subheaderScrolled = window.scrollY > 8;
 }
 }

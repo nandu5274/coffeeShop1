@@ -1,0 +1,216 @@
+<div class="da-root">
+  <header class="da-top">
+    <div class="da-brand">
+      <span class="da-brand-mark">CK</span>
+      <div class="da-brand-text">
+        <strong>Delivery Agent</strong>
+        <span>Cafe Kubera</span>
+      </div>
+    </div>
+    <button type="button" class="da-icon-btn" (click)="refreshNow()" [disabled]="loading" aria-label="Refresh">
+      <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i>
+    </button>
+  </header>
+
+  <nav class="da-tabs" aria-label="Order lists">
+    <button
+      type="button"
+      class="da-tab"
+      [class.is-active]="activeTab === 'ready'"
+      (click)="setTab('ready')"
+    >
+      Ready
+      <em>{{ readyOrders().length }}</em>
+    </button>
+    <button
+      type="button"
+      class="da-tab"
+      [class.is-active]="activeTab === 'way'"
+      (click)="setTab('way')"
+    >
+      On the way
+      <em>{{ onTheWayOrders().length }}</em>
+    </button>
+  </nav>
+
+  <div class="da-alert" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+  <main class="da-list">
+    <p class="da-loading" *ngIf="loading && !orders.length">Loading orders…</p>
+
+    <!-- Ready -->
+    <ng-container *ngIf="activeTab === 'ready'">
+      <p class="da-empty" *ngIf="!loading && !readyOrders().length">
+        No orders waiting for pickup.
+      </p>
+      <article class="da-job" *ngFor="let o of readyOrders()">
+        <div class="da-job-head">
+          <h2>{{ o.table_no || ('#' + o.order_id) }}</h2>
+          <span class="da-tag">Ready</span>
+        </div>
+
+        <a class="da-phone" *ngIf="o.customer_number" [href]="'tel:' + o.customer_number">
+          <i class="bi bi-telephone-fill" aria-hidden="true"></i>
+          {{ o.customer_number }}
+        </a>
+
+        <p class="da-addr" *ngIf="o.delivery_address_text">
+          <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+          <span>{{ o.delivery_address_text }}</span>
+        </p>
+
+        <div class="da-pay">
+          <span>{{ payLabel(o.payment_method) }}</span>
+          <strong>₹{{ amountToCollect(o) | number:'1.0-0' }}</strong>
+        </div>
+        <div class="da-pay-badge" [attr.data-kind]="paymentBadge(o).kind">
+          {{ paymentBadge(o).label }}
+        </div>
+
+        <ul class="da-items" *ngIf="items(o).length">
+          <li *ngFor="let it of items(o)">
+            <span>{{ it.name || it.item_name }}</span>
+            <span>×{{ it.qty || it.quantity || it.item_quantity }}</span>
+          </li>
+        </ul>
+
+        <div class="da-actions">
+          <button type="button" class="da-cta da-cta-pay" (click)="checkPayment(o)">
+            Check payment
+          </button>
+          <button
+            type="button"
+            class="da-cta da-cta-go"
+            (click)="askOutForDelivery(o)"
+            [disabled]="busyId === o.order_id"
+          >
+            Start delivery
+          </button>
+        </div>
+      </article>
+    </ng-container>
+
+    <!-- On the way -->
+    <ng-container *ngIf="activeTab === 'way'">
+      <p class="da-empty" *ngIf="!loading && !onTheWayOrders().length">
+        No active deliveries right now.
+      </p>
+      <article class="da-job da-job-live" *ngFor="let o of onTheWayOrders()">
+        <div class="da-job-head">
+          <h2>{{ o.table_no || ('#' + o.order_id) }}</h2>
+          <span class="da-tag da-tag-live">On the way</span>
+        </div>
+
+        <a class="da-phone" *ngIf="o.customer_number" [href]="'tel:' + o.customer_number">
+          <i class="bi bi-telephone-fill" aria-hidden="true"></i>
+          {{ o.customer_number }}
+        </a>
+
+        <p class="da-addr" *ngIf="o.delivery_address_text">
+          <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+          <span>{{ o.delivery_address_text }}</span>
+        </p>
+
+        <div class="da-pay">
+          <span>{{ payLabel(o.payment_method) }}</span>
+          <strong>
+            {{ isPaymentPaid(o) ? 'Paid' : 'Collect' }}
+            ₹{{ amountToCollect(o) | number:'1.0-0' }}
+          </strong>
+        </div>
+        <div class="da-pay-badge" [attr.data-kind]="paymentBadge(o).kind">
+          {{ paymentBadge(o).label }}
+        </div>
+
+        <ul class="da-items" *ngIf="items(o).length">
+          <li *ngFor="let it of items(o)">
+            <span>{{ it.name || it.item_name }}</span>
+            <span>×{{ it.qty || it.quantity || it.item_quantity }}</span>
+          </li>
+        </ul>
+
+        <div class="da-actions">
+          <button type="button" class="da-cta da-cta-pay" (click)="checkPayment(o)">
+            Check payment
+          </button>
+          <a
+            *ngIf="canNavigate(o)"
+            class="da-cta da-cta-maps"
+            [href]="mapsNavigateUrl(o)"
+            target="_blank"
+            rel="noopener"
+          >
+            <i class="bi bi-navigation-fill" aria-hidden="true"></i>
+            Navigate in Maps
+          </a>
+          <button
+            type="button"
+            class="da-cta da-cta-done"
+            (click)="askComplete(o)"
+            [disabled]="busyId === o.order_id"
+          >
+            Mark delivered
+          </button>
+        </div>
+      </article>
+    </ng-container>
+  </main>
+</div>
+
+<div class="da-sheet" *ngIf="confirmOpen" (click)="closeConfirm()">
+  <div class="da-sheet-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <h3>
+      {{ confirmAction === 'out_for_delivery' ? 'Start this delivery?' : 'Mark as delivered?' }}
+    </h3>
+    <p class="da-sheet-order" *ngIf="confirmOrder">
+      {{ confirmOrder.table_no }}
+      <ng-container *ngIf="confirmOrder.customer_number"> · {{ confirmOrder.customer_number }}</ng-container>
+    </p>
+    <p class="da-sheet-amt" *ngIf="confirmOrder && confirmAction === 'delivery_completed'">
+      <ng-container *ngIf="isPaymentPaid(confirmOrder)">Already paid · ₹{{ amountToCollect(confirmOrder) | number:'1.0-0' }}</ng-container>
+      <ng-container *ngIf="!isPaymentPaid(confirmOrder)">
+        Collect ₹{{ amountToCollect(confirmOrder) | number:'1.0-0' }}
+        · {{ payLabel(confirmOrder.payment_method) }}
+      </ng-container>
+    </p>
+    <div class="da-sheet-actions">
+      <button type="button" class="da-cta da-cta-muted" (click)="closeConfirm()" [disabled]="busyId != null">
+        Cancel
+      </button>
+      <button
+        type="button"
+        class="da-cta"
+        [class.da-cta-go]="confirmAction === 'out_for_delivery'"
+        [class.da-cta-done]="confirmAction === 'delivery_completed'"
+        (click)="confirmYes()"
+        [disabled]="busyId != null"
+      >
+        {{ busyId != null ? 'Please wait…' : 'Confirm' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="da-sheet" *ngIf="paymentCheckOpen" (click)="closePaymentCheck()">
+  <div class="da-sheet-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <p class="da-sheet-order" *ngIf="paymentCheckOrder">
+      {{ paymentCheckOrder.table_no }}
+    </p>
+    <ng-container *ngIf="paymentCheckBusy">
+      <h3>Checking payment…</h3>
+    </ng-container>
+    <ng-container *ngIf="!paymentCheckBusy && paymentCheckResult as r">
+      <div class="da-pay-result" [attr.data-state]="r.state">
+        <h3>{{ r.title }}</h3>
+        <p class="da-sheet-amt">₹{{ r.amount | number:'1.0-0' }}</p>
+        <p>{{ r.detail }}</p>
+        <p class="da-pay-meta">
+          {{ payLabel(r.method) }} · {{ r.status }}
+        </p>
+      </div>
+    </ng-container>
+    <button type="button" class="da-cta da-cta-muted" style="margin-top: 1rem;" (click)="closePaymentCheck()">
+      Close
+    </button>
+  </div>
+</div>

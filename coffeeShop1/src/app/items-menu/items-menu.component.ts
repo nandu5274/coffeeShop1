@@ -125,6 +125,11 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
   section: boolean = true;
   loyalty_point: any;
   is_login: any;
+
+  get canAddToCart(): boolean {
+    return this.isCap === 'true' || this.isCap === true || sessionStorage.getItem('order_mode') === 'delivery';
+  }
+
   ngAfterViewInit() {
     this.isCap = sessionStorage.getItem('isCap');
     this.tableNumber = sessionStorage.getItem('table');

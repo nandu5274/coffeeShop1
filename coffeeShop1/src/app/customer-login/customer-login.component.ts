@@ -539,9 +539,14 @@ this.clearAllBanners()
         {
           this.clearAllBanners()
           
-          result.data.kubera_profile_customer_points[0].customer_detail.password = undefined;
+          const pointsRow = result.data.kubera_profile_customer_points[0];
+          pointsRow.customer_detail.password = undefined;
+          const mobile = pointsRow.customer_detail?.mobile_number;
           sessionStorage.setItem("is_login","true");
-          sessionStorage.setItem("customer_Details",JSON.stringify(result.data.kubera_profile_customer_points[0]));
+          sessionStorage.setItem("customer_Details",JSON.stringify(pointsRow));
+          if (mobile) {
+            sessionStorage.setItem("customer_number", String(mobile));
+          }
           this.sharedService.setIsLoginFlag(true);
           this.loginStatus.emit(true);
           this.showSpinner = false;
