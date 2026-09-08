@@ -61,6 +61,15 @@
           </li> -->
           <li><a class="nav-link scrollto" href="#contact"  [class.active]="isOtherItemsActive"  (click)="navigateToMenu('contact')"  >Contact</a></li>
           <li><a class="nav-link" routerLink="/ar-view" style="color: #cda45e; font-weight: 600;"><i class="fa fa-cube me-1"></i>AR View</a></li>
+          <li *ngIf="!diable_login_btn && !isLoggedIn" class="nav-login-item">
+            <a class="nav-link nav-login-link" (click)="openCustomerLoginModal(); $event.preventDefault()">Login</a>
+          </li>
+          <li *ngIf="!diable_login_btn && isLoggedIn" class="nav-login-item">
+            <a class="nav-link" (click)="navigateToProfile(); $event.preventDefault()">Profile</a>
+          </li>
+          <li *ngIf="!diable_login_btn && isLoggedIn" class="nav-login-item">
+            <a class="nav-link" (click)="onSignOut(); $event.preventDefault()">Sign Out</a>
+          </li>
         </ul>
         <i class="bi bi-list mobile-nav-toggle"></i>
       </nav><!-- .navbar -->
@@ -76,26 +85,19 @@
         <!-- <img src="assets/img/cart.png" class="cart"  alt="">  -->
       </div>
 
-     <!-- <a (click)="openCustomerLoginModal()" class="book-a-table-btn "> Login</a> -->
-
-
-
-     <div class="d-flex align-items-center header-right-actions" *ngIf="!diable_login_btn && !showDeliverySubheader">
-      <a *ngIf="!isLoggedIn" (click)="openCustomerLoginModal()" class="book-a-table-btn">
-        Login
-      </a>
-    
-      <div *ngIf="isLoggedIn" class="user-dropdown">
-        <div class="user-initial" (click)="toggleDropdown()">
-          {{ userInitial }}
+      <!-- Logged-in avatar stays in header; Login lives in the sidebar / nav menu -->
+      <div class="d-flex align-items-center header-right-actions" *ngIf="!diable_login_btn && !showDeliverySubheader && isLoggedIn">
+        <div class="user-dropdown">
+          <div class="user-initial" (click)="toggleDropdown()">
+            {{ userInitial }}
+          </div>
+          <div *ngIf="isDropdownOpen" class="customer-dropdown-menu glass-panel">
+            <div class="dropdown-name">{{ customerName }}</div>
+            <hr class="dropdown-divider">
+            <a (click)="navigateToProfile()">Profile</a>
+            <a (click)="onSignOut()">Sign Out</a>
+          </div>
         </div>
-        <div *ngIf="isDropdownOpen" class="customer-dropdown-menu glass-panel">
-          <div class="dropdown-name">{{ customerName }}</div>
-          <hr class="dropdown-divider">
-          <a (click)="navigateToProfile()">Profile</a>
-          <a (click)="onSignOut()">Sign Out</a>
-        </div>
-      </div>
       </div>
 
       <!-- Settings Floating Dropdown (hidden on delivery flow — overlaps glass cards) -->

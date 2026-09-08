@@ -2,7 +2,8 @@ import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
 import { ResponseDto } from '../dtos/responseDto';
-import { isCustomerDeliveryUrl } from '../common/constanst';
+import { SELF_ORDERING_ENABLED } from '../common/constanst';
+import { isCustomerDeliveryUrl } from '../common/delivery.utils';
 import { DeliveryLocationService } from '../service/delivery-location.service';
 import { SharedService } from '../service/shared-service';
 import { WebSocketService } from '../service/WebSocket.service';
@@ -84,7 +85,11 @@ ngOnInit(){
 
  setTimeout(() => {
   sessionStorage.removeItem('table');
+  sessionStorage.removeItem('tablePlace');
   sessionStorage.removeItem('tableSet');
+  if (sessionStorage.getItem('order_mode') === 'self') {
+    sessionStorage.removeItem('order_mode');
+  }
   this.showMenu =false;
   this.sharedService.setShowMenuFlag(false);
   const currentUrl =  this.router.url;
@@ -97,19 +102,42 @@ ngOnInit(){
 
  this.route.queryParams.subscribe((queryParams: any) => {
   this.showSpinner = true
-  // Access arbitrary query parameters from the URL
-  const param1 = queryParams['table'];
+  const tableParam = queryParams['table'] ?? queryParams['table_no'];
+  const placeParam = queryParams['tablePlace'] ?? queryParams['table_place'];
   const tableSet = sessionStorage.getItem('tableSet')
-  // Use the parameters in your component logic
-  if (param1 != undefined) {
-      sessionStorage.setItem('table', param1);
+
+  if (tableParam != undefined && tableParam !== null && String(tableParam).trim() !== '') {
+      sessionStorage.setItem('table', String(tableParam).trim());
+      if (placeParam != undefined && placeParam !== null && String(placeParam).trim() !== '') {
+        sessionStorage.setItem('tablePlace', String(placeParam).trim());
+      }
       sessionStorage.setItem('tableSet', '1');
-      this.navigateToMenu('hero');
-  }else if(tableSet=='1')
-  {
+
+      if (SELF_ORDERING_ENABLED) {
+        sessionStorage.setItem('order_mode', 'self');
+        sessionStorage.removeItem('isCap');
+        sessionStorage.removeItem('hasSeenMenuDemo');
+        this.isCap = null;
+        this.diable_login_btn = false;
+        this.showMenu = true;
+        this.sharedService.setShowMenuFlag(true);
+        this.router.navigate(['/menu'], { fragment: 'menu' });
+      } else {
+        if (sessionStorage.getItem('order_mode') === 'self') {
+          sessionStorage.removeItem('order_mode');
+        }
+        this.showMenu = true;
+        this.sharedService.setShowMenuFlag(true);
+        this.router.navigate(['/menu'], { fragment: 'menu' });
+        alert('Self ordering is turned off. Please ask staff to place your order.');
+      }
+  } else if (tableSet == '1') {
       this.showMenu = true;
       this.sharedService.setShowMenuFlag(true);
-  }else{
+      if (sessionStorage.getItem('order_mode') === 'self' && !SELF_ORDERING_ENABLED) {
+        sessionStorage.removeItem('order_mode');
+      }
+  } else {
     sessionStorage.removeItem('table');
     this.showMenu = false;
   }
@@ -332,7 +360,21 @@ pageType:any = "cap"
   }
   openCustomerLoginModal()
   {
+    this.closeMobileNav();
     this.showCustomerLoginModal=true;
+  }
+
+  /** Close hamburger sidebar if open (so login modal is usable). */
+  private closeMobileNav(): void {
+    const nav = document.getElementById('navbar');
+    const toggle = document.querySelector('.mobile-nav-toggle');
+    if (nav?.classList.contains('navbar-mobile')) {
+      nav.classList.remove('navbar-mobile');
+    }
+    if (toggle?.classList.contains('bi-x')) {
+      toggle.classList.add('bi-list');
+      toggle.classList.remove('bi-x');
+    }
   }
   closeModal()
   {

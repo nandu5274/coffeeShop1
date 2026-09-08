@@ -6,7 +6,7 @@ import { SharedService } from '../service/shared-service';
 import * as menuListJsonData from 'src/app/sampleResponse/menu-list.json';
 import * as menuCourseCuisineListJsonData from 'src/app/sampleResponse/cuisine-list.json';
 import { CustomerService } from '../service/customer.service';
-import { KUBERA_ACCOUNT_MENU_GRAPHQL_QUERY_API, KUBERA_ACCOUNT_MENU_GRAPHQL_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN } from '../common/constanst';
+import { KUBERA_ACCOUNT_MENU_GRAPHQL_QUERY_API, KUBERA_ACCOUNT_MENU_GRAPHQL_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, SELF_ORDERING_ENABLED } from '../common/constanst';
 import { firstValueFrom, Observable, Subject } from 'rxjs';
 
 
@@ -55,6 +55,8 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
     if (this.showChefSplPopup) {
       return;
     }
+    this.tableNumber = sessionStorage.getItem('table');
+    this.tablePlace = sessionStorage.getItem('tablePlace');
     this.showFirstTimeDemo = true;
     this.demoStep = 1;
   }
@@ -86,8 +88,26 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
     this.showFirstTimeDemo = true;
   }
 
+  get demoTotalSteps(): number {
+    return this.isSelfOrderMode ? 3 : 2;
+  }
+
+  get demoStepIndexes(): number[] {
+    return Array.from({ length: this.demoTotalSteps }, (_, i) => i + 1);
+  }
+
+  /** Swipe-categories tip step index (1 when not self-order, 2 when self-order). */
+  get demoSwipeStep(): number {
+    return this.isSelfOrderMode ? 2 : 1;
+  }
+
+  /** Tap-category tip step index. */
+  get demoTapStep(): number {
+    return this.isSelfOrderMode ? 3 : 2;
+  }
+
   nextDemoStep() {
-    if (this.demoStep < 2) {
+    if (this.demoStep < this.demoTotalSteps) {
       this.demoStep++;
     } else {
       this.dismissDemo();
@@ -126,8 +146,20 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
   loyalty_point: any;
   is_login: any;
 
+  get isSelfOrderMode(): boolean {
+    return sessionStorage.getItem('order_mode') === 'self' && SELF_ORDERING_ENABLED;
+  }
+
   get canAddToCart(): boolean {
-    return this.isCap === 'true' || this.isCap === true || sessionStorage.getItem('order_mode') === 'delivery';
+    const mode = sessionStorage.getItem('order_mode');
+    if (this.isCap === 'true' || this.isCap === true || mode === 'delivery') {
+      return true;
+    }
+    return mode === 'self' && SELF_ORDERING_ENABLED;
+  }
+
+  get selfOrderTableLabel(): string {
+    return `${this.tablePlace || ''} ${this.tableNumber || ''}`.trim();
   }
 
   ngAfterViewInit() {

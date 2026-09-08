@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../service/data.service';
 import { HasuraApiService } from '../service/hasura.api.service';
 import { BookingForm } from '../dtos/bookingForm';
+import { DELIVERY_HOME_BUTTON_ENABLED } from '../common/constanst';
 
 @Component({
   selector: 'app-home-page',
@@ -14,6 +15,8 @@ import { BookingForm } from '../dtos/bookingForm';
 export class HomePageComponent implements OnInit, AfterViewInit {
 
   private hasReloaded = false;
+  readonly deliveryHomeButtonEnabled = DELIVERY_HOME_BUTTON_ENABLED;
+
   constructor(
     private location: Location,
     private sharedService: SharedService,

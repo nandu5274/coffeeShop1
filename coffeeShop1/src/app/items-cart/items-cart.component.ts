@@ -16,9 +16,9 @@ import {
   DELIVERY_TABLE_PLACE,
   RESTAURANT_LAT,
   RESTAURANT_LNG,
-  deliveryDisplayTableNo,
-  deliveryOrderTableNoInt
+  SELF_ORDERING_ENABLED
 } from '../common/constanst';
+import { deliveryDisplayTableNo, deliveryOrderTableNoInt } from '../common/delivery.utils';
 import { DeliveryHistoryService } from '../service/delivery-history.service';
 import { WhatsappNotifyService } from '../service/whatsapp-notify.service';
 import { WebSocketService } from '../service/WebSocket.service';
@@ -50,7 +50,8 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
     private webSocketService: WebSocketService) { }
 
   ngOnInit() {
-    this.UserMobileNumber =  sessionStorage.getItem('customer_number' )??''; 
+    this.UserMobileNumber =  sessionStorage.getItem('customer_number' )??'';
+    this.selfOrderCustomerName = sessionStorage.getItem('tableCustomerName') || '';
    let sessionCartDataList = sessionStorage.getItem('cartDataList');
     this.commentText = '';
     if (sessionCartDataList) {
@@ -229,6 +230,16 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
     return sessionStorage.getItem('order_mode') === 'delivery';
   }
 
+  get isSelfOrderMode(): boolean {
+    return sessionStorage.getItem('order_mode') === 'self';
+  }
+
+  get selfOrderTableLabel(): string {
+    const place = sessionStorage.getItem('tablePlace') || '';
+    const table = sessionStorage.getItem('table') || '';
+    return `${place} ${table}`.trim();
+  }
+
   onOrderClick() {
     if (this.isDeliveryMode) {
       if (sessionStorage.getItem('is_login') !== 'true') {
@@ -245,17 +256,45 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
       this.router.navigate(['/delivery/checkout']);
       return;
     }
+    if (this.isSelfOrderMode) {
+      if (!SELF_ORDERING_ENABLED) {
+        alert('Self ordering is turned off. Please ask staff to place your order.');
+        return;
+      }
+      this.openSelfOrderDetailsModal();
+      return;
+    }
     this.sentOrder();
   }
 
   sentOrder() {
     const isDelivery = sessionStorage.getItem('order_mode') === 'delivery';
-    let employee_Name = isDelivery ? 'ONLINE' : this.getEmployeeName();
+    const isSelf = sessionStorage.getItem('order_mode') === 'self';
+    let employee_Name = isDelivery ? 'ONLINE' : isSelf ? 'customer' : this.getEmployeeName();
 
-    if (!isDelivery && !employee_Name) {
+    if (isSelf && !SELF_ORDERING_ENABLED) {
+      alert('Self ordering is turned off. Please ask staff to place your order.');
+      this.orderProcessingStatus.emit('error');
+      return;
+    }
+
+    if (!isDelivery && !isSelf && !employee_Name) {
       alert('Please login as captain/waiter before placing an order. Waiter name is required.');
       this.orderProcessingStatus.emit('error');
       return;
+    }
+
+    if (isSelf) {
+      const name = (this.selfOrderCustomerName || sessionStorage.getItem('tableCustomerName') || '').trim();
+      const mobile = (this.UserMobileNumber || sessionStorage.getItem('customer_number') || '').trim();
+      if (!name || !/^\d{10}$/.test(mobile)) {
+        this.openSelfOrderDetailsModal();
+        return;
+      }
+      this.selfOrderCustomerName = name;
+      this.UserMobileNumber = mobile;
+      sessionStorage.setItem('tableCustomerName', name);
+      sessionStorage.setItem('customer_number', mobile);
     }
 
     if (isDelivery) {
@@ -303,6 +342,11 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
       ? deliveryOrderTableNoInt(rdm_order_ref_id)
       : sessionStorage.getItem('table');
 
+    const selfName = (this.selfOrderCustomerName || sessionStorage.getItem('tableCustomerName') || '').trim();
+    const dineInComments = isSelf
+      ? `Customer: ${selfName}${this.commentText ? `\n${this.commentText}` : ''}`.trim()
+      : this.commentText;
+
     let orderTableData = {
       order_status: 'approval_waiting',
       table_no: deliveryTableNo,
@@ -315,7 +359,7 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
       employee: employee_Name,
       comments: isDelivery
         ? `${this.commentText || ''}\n[DELIVERY] ${deliveryTableNoDisplay}\n${sessionStorage.getItem('delivery_address_text') || ''}`.trim()
-        : this.commentText,
+        : dineInComments,
       customer_number: this.UserMobileNumber
     }
 
@@ -548,6 +592,11 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
   showUserFoundBanner: boolean = false
   showSpinner: boolean = false;
   tempUserMobileNumber: string = ''
+
+  isSelfOrderDetailsModalOpen = false;
+  selfOrderCustomerName = '';
+  selfOrderDetailsError = '';
+
   openUserMobileModal()
   {
     this.showUserFoundBanner=false;
@@ -563,6 +612,44 @@ export class ItemsCartComponent implements OnInit, OnDestroy {
   saveMobileNumberModal()
   {
     this.isUserMobileModalOpen = false
+  }
+
+  openSelfOrderDetailsModal(): void {
+    this.selfOrderCustomerName =
+      this.selfOrderCustomerName ||
+      sessionStorage.getItem('tableCustomerName') ||
+      '';
+    this.UserMobileNumber =
+      this.UserMobileNumber ||
+      sessionStorage.getItem('customer_number') ||
+      '';
+    this.selfOrderDetailsError = '';
+    this.isSelfOrderDetailsModalOpen = true;
+  }
+
+  closeSelfOrderDetailsModal(): void {
+    this.isSelfOrderDetailsModalOpen = false;
+    this.selfOrderDetailsError = '';
+  }
+
+  confirmSelfOrderDetails(): void {
+    const name = (this.selfOrderCustomerName || '').trim();
+    const mobile = (this.UserMobileNumber || '').replace(/\D/g, '');
+    if (!name) {
+      this.selfOrderDetailsError = 'Please enter your name.';
+      return;
+    }
+    if (!/^\d{10}$/.test(mobile)) {
+      this.selfOrderDetailsError = 'Please enter a valid 10-digit mobile number.';
+      return;
+    }
+    this.selfOrderCustomerName = name;
+    this.UserMobileNumber = mobile;
+    sessionStorage.setItem('tableCustomerName', name);
+    sessionStorage.setItem('customer_number', mobile);
+    this.selfOrderDetailsError = '';
+    this.isSelfOrderDetailsModalOpen = false;
+    this.sentOrder();
   }
   clearBanner(){
     this.showUserNotFoundError = false

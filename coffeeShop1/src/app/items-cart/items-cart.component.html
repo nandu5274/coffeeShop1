@@ -73,8 +73,14 @@
   <div *ngIf="commentText" class="note-chip">
     <span>Note:</span> {{ commentText }}
   </div>
+  <div *ngIf="isSelfOrderMode && selfOrderTableLabel" class="note-chip">
+    <span>Table:</span> {{ selfOrderTableLabel }}
+  </div>
   <div *ngIf="UserMobileNumber && !isDeliveryMode" class="note-chip">
     <span>Number:</span> {{ UserMobileNumber }}
+  </div>
+  <div *ngIf="isSelfOrderMode && selfOrderCustomerName" class="note-chip">
+    <span>Name:</span> {{ selfOrderCustomerName }}
   </div>
 
   <!-- Sticky footer -->
@@ -84,9 +90,12 @@
       <button type="button" class="linkish" (click)="openCommentModal()">Add note</button>
     </div>
     <div class="footer-actions" [class.delivery]="isDeliveryMode">
-      <ng-container *ngIf="!isDeliveryMode">
+      <ng-container *ngIf="!isDeliveryMode && !isSelfOrderMode">
         <button type="button" class="ghost-btn" (click)="openCommentModal()">Note</button>
         <button type="button" class="ghost-btn" (click)="openUserMobileModal()">User</button>
+      </ng-container>
+      <ng-container *ngIf="isSelfOrderMode">
+        <button type="button" class="ghost-btn" (click)="openCommentModal()">Note</button>
       </ng-container>
       <button type="button" class="pay-btn" (click)="onOrderClick()">
         {{ isDeliveryMode ? 'Proceed to Pay' : 'Order' }}
@@ -123,6 +132,42 @@
     <div class="buttons-row">
       <button class="btn-glass-success" (click)="saveMobileNumberModal()">Save</button>
       <button class="btn-glass-danger" (click)="closeMobileNumberModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="isSelfOrderDetailsModalOpen" class="comment-modal">
+  <div class="glass-popup-card" style="width: 400px;">
+    <h2>Your details</h2>
+    <p *ngIf="selfOrderTableLabel" style="margin: 0 0 12px; font-size: 14px; opacity: 0.8;">
+      Table: <strong>{{ selfOrderTableLabel }}</strong>
+    </p>
+    <p style="margin: 0 0 12px; font-size: 13px; opacity: 0.7;">
+      Name and mobile are required to place your order.
+    </p>
+    <div style="margin-bottom: 12px;">
+      <input
+        type="text"
+        [(ngModel)]="selfOrderCustomerName"
+        placeholder="Your name"
+        maxlength="60"
+        style="width: 100%; padding: 10px; font-size: 14px; color: #fff; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(205, 164, 94, 0.3); border-radius: 8px; outline: none;"
+      />
+    </div>
+    <div style="margin-bottom: 12px;">
+      <input
+        type="tel"
+        [(ngModel)]="UserMobileNumber"
+        placeholder="10-digit mobile number"
+        maxlength="10"
+        inputmode="numeric"
+        style="width: 100%; padding: 10px; font-size: 14px; color: #fff; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(205, 164, 94, 0.3); border-radius: 8px; outline: none;"
+      />
+    </div>
+    <p *ngIf="selfOrderDetailsError" class="error-banner" style="margin-bottom: 12px;">{{ selfOrderDetailsError }}</p>
+    <div class="buttons-row">
+      <button class="btn-glass-success" (click)="confirmSelfOrderDetails()">Place order</button>
+      <button class="btn-glass-danger" (click)="closeSelfOrderDetailsModal()">Cancel</button>
     </div>
   </div>
 </div>

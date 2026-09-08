@@ -9,8 +9,8 @@
     <div *ngIf="showMenu" class="menu-header-v2">
       <h1 class="menu-heading">Menu</h1>
 
-      <!-- Table info (CAP mode only) -->
-      <div *ngIf="isCap === 'true'" class="table-info-bar">
+      <!-- Table info (CAP or QR self-order) -->
+      <div *ngIf="isCap === 'true' || isSelfOrderMode" class="table-info-bar">
         <img src="assets/img/table.png" class="table-icon" alt="">
         <span>{{tablePlace || ''}} {{tableNumber || ''}}</span>
         <span *ngIf="tableCustomerName && tableCustomerName !== 'undefined'"> · {{tableCustomerName}}</span>
@@ -257,13 +257,30 @@
     <div class="demo-top-v2">
       <div class="demo-badge-v2">
         <span class="badge-dot"></span>
-        Menu Tip &bull; Step {{demoStep}} of 2
+        <span>Menu Tip · {{demoStep}}/{{demoTotalSteps}}</span>
       </div>
-      <button class="modal-close-v2" (click)="dismissDemo()">&times;</button>
+      <button type="button" class="modal-close-v2" (click)="dismissDemo()" aria-label="Close">×</button>
     </div>
 
-    <!-- Step 1: Swipe Categories -->
-    <div *ngIf="demoStep === 1" class="demo-step-v2 fade-in">
+    <!-- Self-order: Step 1 — welcome + how to order -->
+    <div *ngIf="isSelfOrderMode && demoStep === 1" class="demo-step-v2 fade-in">
+      <h3 class="demo-title-v2">Welcome to your table</h3>
+      <p class="self-order-table-chip" *ngIf="selfOrderTableLabel">
+        Table <strong>{{ selfOrderTableLabel }}</strong>
+      </p>
+      <p class="demo-desc-v2">
+        You can place your own order from this menu — no waiter needed to take the order.
+      </p>
+      <ol class="self-order-steps">
+        <li>Browse dishes and tap <strong>Add</strong> to build your cart</li>
+        <li>Open the bag icon in the header when you are ready</li>
+        <li>Tap <strong>Order</strong> and enter your <strong>name</strong> and <strong>mobile number</strong></li>
+        <li>Kitchen receives your order — food will be served at your table</li>
+      </ol>
+    </div>
+
+    <!-- Swipe Categories -->
+    <div *ngIf="demoStep === demoSwipeStep" class="demo-step-v2 fade-in">
       <div class="mockup-bar-container">
         <div class="mockup-category-bar loop-mockup">
           <span class="mockup-chip active">All Dishes</span>
@@ -288,8 +305,8 @@
       <p class="demo-desc-v2">Swipe horizontally left &amp; right on the category bar to explore all Cuisines and Add-ons.</p>
     </div>
 
-    <!-- Step 2: Click Category to View Dishes -->
-    <div *ngIf="demoStep === 2" class="demo-step-v2 fade-in">
+    <!-- Click Category to View Dishes -->
+    <div *ngIf="demoStep === demoTapStep" class="demo-step-v2 fade-in">
       <div class="mockup-bar-container">
         <div class="mockup-category-bar">
           <span class="mockup-chip">All</span>
@@ -311,11 +328,14 @@
     <!-- Footer Navigation -->
     <div class="demo-footer-v2">
       <div class="demo-dots-v2">
-        <span [class.active]="demoStep === 1" (click)="demoStep = 1"></span>
-        <span [class.active]="demoStep === 2" (click)="demoStep = 2"></span>
+        <span
+          *ngFor="let s of demoStepIndexes"
+          [class.active]="demoStep === s"
+          (click)="demoStep = s"
+        ></span>
       </div>
       <button class="demo-btn-v2" (click)="nextDemoStep()">
-        <span>{{ demoStep === 1 ? 'Next Step →' : 'Start Exploring!' }}</span>
+        <span>{{ demoStep < demoTotalSteps ? 'Next Step →' : 'Start Exploring!' }}</span>
       </button>
     </div>
 

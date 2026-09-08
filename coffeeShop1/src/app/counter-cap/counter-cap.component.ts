@@ -451,21 +451,21 @@ export class CounterCapComponent implements AfterViewInit {
       this.graphqlService.updateOrderStatus(Number(id), 'Approved').subscribe(
         (dbRes: any) => {
           console.log('DB updateOrderStatus response:', dbRes);
-          this.sendMessageToWebSocket('kitchen');
+          this.sendMessageToWebSocket(`kitchen:${id}`);
           setTimeout(() => {
             this.refreshOrder();
           }, 1000);
         },
         (error: any) => {
           console.error('Error updating status in DB:', error);
-          this.sendMessageToWebSocket('kitchen');
+          this.sendMessageToWebSocket(`kitchen:${id}`);
           setTimeout(() => {
             this.refreshOrder();
           }, 1000);
         }
       );
     } else {
-      this.sendMessageToWebSocket('kitchen');
+      this.sendMessageToWebSocket(`kitchen:${id}`);
       setTimeout(() => {
         this.refreshOrder();
       }, 1000);
@@ -722,6 +722,9 @@ export class CounterCapComponent implements AfterViewInit {
     sessionStorage.setItem('tableCustomerName', this.tableCustomerName);
     sessionStorage.setItem('tableSet', '1');
     sessionStorage.setItem('isCap', 'true');
+    if (sessionStorage.getItem('order_mode') === 'self') {
+      sessionStorage.removeItem('order_mode');
+    }
     this.sharedService.setShowMenuFlag(1)
     this.sharedService.navigateToMenu('menu');
   }
@@ -738,6 +741,9 @@ export class CounterCapComponent implements AfterViewInit {
     sessionStorage.setItem('customer_number',latestCustomerNumber);
     sessionStorage.setItem('tableSet', '1');
     sessionStorage.setItem('isCap', 'true');
+    if (sessionStorage.getItem('order_mode') === 'self') {
+      sessionStorage.removeItem('order_mode');
+    }
     this.sharedService.setShowMenuFlag(1)
     this.sharedService.navigateToMenu('menu');
   }

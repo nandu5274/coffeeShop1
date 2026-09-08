@@ -4,10 +4,9 @@ import { filter, take, timeout } from 'rxjs/operators';
 import { CartItemDto } from '../dtos/CartItemDto';
 import {
   DELIVERY_FEE,
-  DELIVERY_TABLE_PLACE,
-  deliveryDisplayTableNo,
-  deliveryOrderTableNoInt
+  DELIVERY_TABLE_PLACE
 } from '../common/constanst';
+import { deliveryDisplayTableNo, deliveryOrderTableNoInt } from '../common/delivery.utils';
 import { GraphqlService } from './graphql.service';
 import { SharedService } from './shared-service';
 import { DeliveryHistoryService } from './delivery-history.service';

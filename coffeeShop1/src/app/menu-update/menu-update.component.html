@@ -152,6 +152,17 @@
           >
             <i class="fa fa-motorcycle"></i> Swiggy PDF
           </button>
+          <div
+            class="self-order-status"
+            [class.on]="selfOrderingEnabled"
+            [class.off]="!selfOrderingEnabled"
+            title="Controlled in app constants for now — DB wiring later"
+          >
+            <span class="self-order-label">Self ordering</span>
+            <span class="self-order-pill" aria-disabled="true">
+              {{ selfOrderingEnabled ? 'ON' : 'OFF' }}
+            </span>
+          </div>
           <button (click)="openAddModal()" class="btn-add-item">
             <i class="fa fa-plus"></i> Add Item
           </button>

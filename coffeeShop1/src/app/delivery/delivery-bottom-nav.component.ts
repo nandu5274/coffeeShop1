@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
-import { isCustomerDeliveryUrl } from '../common/constanst';
+import { isCustomerDeliveryUrl } from '../common/delivery.utils';
 import { SharedService } from '../service/shared-service';
 import { Subscription, filter } from 'rxjs';
 
@@ -46,9 +46,10 @@ export class DeliveryBottomNavComponent implements OnInit, OnDestroy {
     this.cartCount = this.sharedService.readCartQtyFromSession();
     const url = this.router.url || '';
     const deliveryMode = sessionStorage.getItem('order_mode') === 'delivery';
-    const onDelivery = isCustomerDeliveryUrl(url);
+    const onUnavailable = url.includes('/delivery/unavailable');
+    const onDelivery = isCustomerDeliveryUrl(url) && !onUnavailable;
     const onMenuFlow = url.includes('/menu') || url.includes('/items-cart');
-    this.showNav = this.isLoggedIn && (onDelivery || (deliveryMode && onMenuFlow));
+    this.showNav = this.isLoggedIn && !onUnavailable && (onDelivery || (deliveryMode && onMenuFlow));
     document.body.classList.toggle('has-delivery-bottom-nav', this.showNav);
   }
 

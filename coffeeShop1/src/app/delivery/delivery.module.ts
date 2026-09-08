@@ -7,14 +7,17 @@ import { DeliveryCheckoutComponent } from './delivery-checkout.component';
 import { DeliveryConfirmationComponent } from './delivery-confirmation.component';
 import { DeliveryOrdersComponent } from './delivery-orders.component';
 import { DeliveryOrderTrackComponent } from './delivery-order-track.component';
+import { DeliveryUnavailableComponent } from './delivery-unavailable.component';
+import { DeliveryEnabledGuard } from './delivery-enabled.guard';
 
 const routes: Routes = [
-  { path: '', component: DeliveryHomeComponent },
-  { path: 'addresses', component: DeliveryAddressesComponent },
-  { path: 'checkout', component: DeliveryCheckoutComponent },
-  { path: 'confirmation', component: DeliveryConfirmationComponent },
-  { path: 'orders', component: DeliveryOrdersComponent },
-  { path: 'orders/:id', component: DeliveryOrderTrackComponent }
+  { path: 'unavailable', component: DeliveryUnavailableComponent },
+  { path: '', component: DeliveryHomeComponent, canActivate: [DeliveryEnabledGuard] },
+  { path: 'addresses', component: DeliveryAddressesComponent, canActivate: [DeliveryEnabledGuard] },
+  { path: 'checkout', component: DeliveryCheckoutComponent, canActivate: [DeliveryEnabledGuard] },
+  { path: 'confirmation', component: DeliveryConfirmationComponent, canActivate: [DeliveryEnabledGuard] },
+  { path: 'orders', component: DeliveryOrdersComponent, canActivate: [DeliveryEnabledGuard] },
+  { path: 'orders/:id', component: DeliveryOrderTrackComponent, canActivate: [DeliveryEnabledGuard] }
 ];
 
 @NgModule({
@@ -24,7 +27,8 @@ const routes: Routes = [
     DeliveryCheckoutComponent,
     DeliveryConfirmationComponent,
     DeliveryOrdersComponent,
-    DeliveryOrderTrackComponent
+    DeliveryOrderTrackComponent,
+    DeliveryUnavailableComponent
   ],
   imports: [SharedModule, RouterModule.forChild(routes)]
 })

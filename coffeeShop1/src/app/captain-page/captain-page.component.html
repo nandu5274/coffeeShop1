@@ -25,6 +25,29 @@
   </div>
 </div>
 
+<!-- Side order notifications (waiting / approved) -->
+<div class="order-side-notify-stack" *ngIf="orderSideNotifications.length">
+  <div
+    class="order-side-notify"
+    *ngFor="let n of orderSideNotifications"
+    [class.waiting]="n.type === 'waiting'"
+    [class.approved]="n.type === 'approved'">
+    <button type="button" class="order-side-notify-close" (click)="dismissOrderSideNotification(n.uid)" aria-label="Close">×</button>
+    <div class="order-side-notify-title">{{ n.title }}</div>
+    <div class="order-side-notify-meta">
+      <span *ngIf="n.tableLabel">{{ n.tableLabel }}</span>
+      <span *ngIf="n.orderId">#{{ n.orderId }}</span>
+    </div>
+    <div class="order-side-notify-time" *ngIf="n.time">Raised: {{ n.time }}</div>
+    <ul class="order-side-notify-items" *ngIf="n.items?.length">
+      <li *ngFor="let item of n.items">
+        <span>{{ item.name }}</span>
+        <span>×{{ item.qty }}</span>
+      </li>
+    </ul>
+  </div>
+</div>
+
 <div *ngIf="loggedIn">
 
 

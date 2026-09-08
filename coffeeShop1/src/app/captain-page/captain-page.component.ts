@@ -13,9 +13,9 @@ import { TimerService } from '../service/timer.service';
 import {
   BELL_MSG_TIME_OUT,
   DELIVERY_TABLE_PLACE,
-  USE_DATABASE,
-  deliveryDisplayTableNo
+  USE_DATABASE
 } from '../common/constanst';
+import { deliveryDisplayTableNo } from '../common/delivery.utils';
 import { CustomerService } from '../service/customer.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DeliveryHistoryService } from '../service/delivery-history.service';
@@ -53,6 +53,18 @@ export class CaptainPageComponent implements AfterViewInit {
   showBellmsgAlert = false;
   isConnected = false;
   bell_msg = "";
+  orderSideNotifications: Array<{
+    uid: string;
+    orderId: string;
+    type: 'waiting' | 'approved';
+    title: string;
+    tableLabel: string;
+    time: string;
+    items: Array<{ name: string; qty: any }>;
+  }> = [];
+  private notifiedWaitingIds = new Set<string>();
+  private notifiedApprovedIds = new Set<string>();
+  private orderNotifyUid = 0;
   constructor(private webSocketService: WebSocketService, private datePipe: DatePipe, private timerService: TimerService,
     private dropboxService: DropboxService, private graphqlService: GraphqlService,private customerService: CustomerService, 
     private sharedService: SharedService, private router: Router,  private route: ActivatedRoute, private cdr: ChangeDetectorRef,
@@ -177,29 +189,152 @@ export class CaptainPageComponent implements AfterViewInit {
     this.sound.play();
   }
 
+  dismissOrderSideNotification(uid: string) {
+    this.orderSideNotifications = this.orderSideNotifications.filter(n => n.uid !== uid);
+  }
+
+  private buildOrderNotifyPayload(orderDto: any, type: 'waiting' | 'approved') {
+    const order = orderDto?.order || {};
+    const items = (orderDto?.orderItems || []).map((item: any) => ({
+      name: item.item_name,
+      qty: item.item_quantity
+    }));
+    return {
+      uid: `${type}-${order.id}-${++this.orderNotifyUid}`,
+      orderId: String(order.id ?? ''),
+      type,
+      title: type === 'waiting' ? 'Order is waiting for approval' : 'New order approved',
+      tableLabel: this.orderTableLabel(order) || `${order.table_place || ''} ${order.table_no || ''}`.trim(),
+      time: order.order_created_time || order.created_at || '',
+      items
+    };
+  }
+
+  pushWaitingOrderNotification(orderDto: any) {
+    const orderId = String(orderDto?.order?.id ?? '');
+    if (!orderId || this.notifiedWaitingIds.has(orderId)) {
+      return;
+    }
+    this.notifiedWaitingIds.add(orderId);
+    this.orderSideNotifications.unshift(this.buildOrderNotifyPayload(orderDto, 'waiting'));
+    this.playSound();
+    try {
+      navigator.vibrate([200, 100, 200]);
+    } catch (_) {}
+  }
+
+  pushApprovedOrderNotification(orderDto: any) {
+    const orderId = String(orderDto?.order?.id ?? '');
+    if (!orderId || this.notifiedApprovedIds.has(orderId)) {
+      return;
+    }
+    this.notifiedApprovedIds.add(orderId);
+    this.orderSideNotifications.unshift(this.buildOrderNotifyPayload(orderDto, 'approved'));
+    this.playSound();
+    try {
+      navigator.vibrate([200, 100, 200]);
+    } catch (_) {}
+  }
+
+  private seedWaitingNotificationIds() {
+    (this.ApprovalOrderList || []).forEach((orderDto: any) => {
+      const id = String(orderDto?.order?.id ?? '');
+      if (id) {
+        this.notifiedWaitingIds.add(id);
+      }
+    });
+  }
+
+  private notifyNewWaitingOrdersFromList() {
+    (this.ApprovalOrderList || []).forEach((orderDto: any) => {
+      this.pushWaitingOrderNotification(orderDto);
+    });
+  }
+
+  private parseWsOrderId(msg: string, prefix: string): number | null {
+    const m = String(msg).match(new RegExp(`${prefix}\\s*:\\s*(\\d+)`, 'i'));
+    return m ? Number(m[1]) : null;
+  }
+
+  private notifyApprovedFromWs(msg: string) {
+    const orderId = this.parseWsOrderId(msg, 'kitchen');
+    if (orderId != null) {
+      if (this.notifiedApprovedIds.has(String(orderId))) {
+        return;
+      }
+      const local = (this.ApprovalOrderList || []).find(o => Number(o?.order?.id) === orderId)
+        || (this.ApprovedOrderList || []).find(o => Number(o?.order?.id) === orderId);
+      if (local) {
+        this.pushApprovedOrderNotification(local);
+        return;
+      }
+      if (USE_DATABASE) {
+        this.graphqlService.getPaidOrdersByIds([orderId]).subscribe((result: any) => {
+          const dbOrder = (result?.data?.kubera_order || [])[0];
+          if (!dbOrder) {
+            return;
+          }
+          const orderDto = {
+            order: {
+              id: dbOrder.id,
+              order_ref_id: dbOrder.order_ref_id,
+              table_no: dbOrder.table_no,
+              table_place: dbOrder.table_place,
+              order_created_time: this.convertToIST(dbOrder.created_at)
+            },
+            orderItems: dbOrder.order_items || []
+          };
+          this.pushApprovedOrderNotification(orderDto);
+        });
+      }
+      return;
+    }
+    this.playSound();
+  }
+
+  private waitingIdsSeeded = false;
+
+  private refreshListsForWs(msg: string) {
+    const isApproval = msg.includes("approval");
+    if (isApproval) {
+      this.selectedTab = 'waiting_order';
+    }
+    if (USE_DATABASE) {
+      this.showSpinner = true;
+      this.syncActiveOrdersDb(() => {
+        this.showSpinner = false;
+        if (isApproval) {
+          this.notifyNewWaitingOrdersFromList();
+        }
+      });
+      if (!isApproval) {
+        this.getUpdatedApprovedOrdersDb();
+      }
+    } else {
+      this.getUpdatedApprovalWaitingOrders().then(() => {
+        if (isApproval) {
+          this.notifyNewWaitingOrdersFromList();
+        }
+      });
+      this.getUpdatedApprovedOrders();
+    }
+  }
+
   approveOrderBYpopup(msg: any) {
     if (typeof msg === "string") {
       if (msg.includes("pickup")) {
 
       }
       if (msg.includes("approval") || msg.includes("kitchen")) {
-        this.playSound()
+        if (msg.includes("kitchen")) {
+          this.notifyApprovedFromWs(msg);
+        }
         if (this.showSpinner == false) {
-          this.getUpdatedApprovalWaitingOrders();
-          if (USE_DATABASE) {
-            this.getUpdatedApprovedOrdersDb();
-          } else {
-            this.getUpdatedApprovedOrders();
-          }
+          this.refreshListsForWs(msg);
         } else {
           setTimeout(() => {
             if (this.showSpinner == false) {
-              this.getUpdatedApprovalWaitingOrders();
-              if (USE_DATABASE) {
-                this.getUpdatedApprovedOrdersDb();
-              } else {
-                this.getUpdatedApprovedOrders();
-              }
+              this.refreshListsForWs(msg);
             }
           }, 30000);
         }
@@ -453,6 +588,10 @@ export class CaptainPageComponent implements AfterViewInit {
     this.ApprovedOrderList.sort((a, b) => Number(b.order.id) - Number(a.order.id));
     this.converteLIstTomap(this.ApprovedOrderList);
     this.getOrderItemStatus(this.ApprovedOrderList);
+    if (!this.waitingIdsSeeded) {
+      this.seedWaitingNotificationIds();
+      this.waitingIdsSeeded = true;
+    }
   }
 
   files: any[] = [];
@@ -480,6 +619,10 @@ export class CaptainPageComponent implements AfterViewInit {
       this.ApprovalOrderList.sort((a, b) => a.order.id - b.order.id);
       this.ApprovalOrderList.reverse()
       this.showSpinner = false;
+      if (!this.waitingIdsSeeded) {
+        this.seedWaitingNotificationIds();
+        this.waitingIdsSeeded = true;
+      }
     }
   }
 
@@ -569,6 +712,9 @@ export class CaptainPageComponent implements AfterViewInit {
 
   async approvedOrder(id: any, order_ref_id: any) {
     this.loadingOrderId = id;
+    const pendingOrder = (this.ApprovalOrderList || []).find(
+      (o: any) => Number(o?.order?.id) === Number(id)
+    );
     const sourcePath = '/orders/approval_waiting_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv';
     let approvedDestinationPath = '/orders/approved_orders/' + 'order_' + id + '_order_ref_' + order_ref_id + '.csv';
     let res: any = "";
@@ -587,7 +733,10 @@ export class CaptainPageComponent implements AfterViewInit {
         async (dbRes: any) => {
           console.log('DB updateOrderStatus response:', dbRes);
           await this.syncDeliverySideEffects(Number(id), 'Approved', 'Café confirmed — preparing your order');
-          this.sendMessageToWebSocket('kitchen');
+          if (pendingOrder) {
+            this.pushApprovedOrderNotification(pendingOrder);
+          }
+          this.sendMessageToWebSocket(`kitchen:${id}`);
           setTimeout(() => {
             this.loadingOrderId = null;
             this.refreshOrder();
@@ -595,7 +744,10 @@ export class CaptainPageComponent implements AfterViewInit {
         },
         (error: any) => {
           console.error('Error updating status in DB:', error);
-          this.sendMessageToWebSocket('kitchen');
+          if (pendingOrder) {
+            this.pushApprovedOrderNotification(pendingOrder);
+          }
+          this.sendMessageToWebSocket(`kitchen:${id}`);
           setTimeout(() => {
             this.loadingOrderId = null;
             this.refreshOrder();
@@ -603,7 +755,10 @@ export class CaptainPageComponent implements AfterViewInit {
         }
       );
     } else {
-      this.sendMessageToWebSocket('kitchen');
+      if (pendingOrder) {
+        this.pushApprovedOrderNotification(pendingOrder);
+      }
+      this.sendMessageToWebSocket(`kitchen:${id}`);
       setTimeout(() => {
         this.loadingOrderId = null;
         this.refreshOrder();
@@ -1060,6 +1215,9 @@ export class CaptainPageComponent implements AfterViewInit {
     sessionStorage.setItem('tableCustomerName', this.tableCustomerName);
     sessionStorage.setItem('tableSet', '1');
     sessionStorage.setItem('isCap', 'true');
+    if (sessionStorage.getItem('order_mode') === 'self') {
+      sessionStorage.removeItem('order_mode');
+    }
     this.sharedService.setShowMenuFlag(1)
     this.sharedService.navigateToMenu('menu');
   }
@@ -1082,6 +1240,9 @@ export class CaptainPageComponent implements AfterViewInit {
     sessionStorage.setItem('customer_number', latestCustomerNumber);
     sessionStorage.setItem('tableSet', '1');
     sessionStorage.setItem('isCap', 'true');
+    if (sessionStorage.getItem('order_mode') === 'self') {
+      sessionStorage.removeItem('order_mode');
+    }
     this.sharedService.setShowMenuFlag(1);
 
     this.sharedService.navigateToMenu('menu');

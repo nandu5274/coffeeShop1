@@ -13,7 +13,8 @@ import {
   KUBERA_ACCOUNT_MENU_DELETE_API,
   KUBERA_ACCOUNT_MENU_UPDATE_API,
   UPSTASH_REDIS_REST_URL,
-  UPSTASH_REDIS_REST_TOKEN
+  UPSTASH_REDIS_REST_TOKEN,
+  SELF_ORDERING_ENABLED
 } from '../common/constanst';
 import * as localMenuJsonData from 'src/app/sampleResponse/menu-list.json';
 
@@ -75,6 +76,9 @@ export class MenuUpdateComponent implements OnInit {
   selectedCourseFilter = 'all';
   categoriesList: string[] = [];
   categoryToCourseIdMap: { [key: string]: number } = {};
+
+  /** From constanst.ts — DB-backed toggle later */
+  readonly selfOrderingEnabled = SELF_ORDERING_ENABLED;
 
   // Swiggy PDF hike popup
   showSwiggyPdfModal = false;

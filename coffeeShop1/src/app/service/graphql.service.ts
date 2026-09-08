@@ -6,6 +6,12 @@ import { SharedService } from './shared-service';
 import { Observable } from 'rxjs';
 import { GRAPHQL_KEY } from '../common/constanst';
 
+const HASURA_CONTEXT = {
+  headers: {
+    'x-hasura-admin-secret': GRAPHQL_KEY,
+  },
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -47,11 +53,7 @@ export class GraphqlService {
        
         kubera_order_insert_input
       },
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     }) .subscribe(
       ( data:any ) => {
         this.responseDto.status = 'success'
@@ -95,11 +97,7 @@ export class GraphqlService {
       variables: {
         orderId: orderIds, // replace 'id' with the actual field you want to query
       },
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     })
     .subscribe(
       (data: any) => {
@@ -141,11 +139,7 @@ export class GraphqlService {
       variables: {
         orderIds,
       },
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     });
   }
 
@@ -182,11 +176,7 @@ export class GraphqlService {
     return this.apollo.query({
       query,
       fetchPolicy: 'network-only',
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     });
   }
 
@@ -223,11 +213,7 @@ export class GraphqlService {
     return this.apollo.query({
       query,
       fetchPolicy: 'network-only',
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     });
   }
 
@@ -265,11 +251,7 @@ export class GraphqlService {
     return this.apollo.query({
       query,
       fetchPolicy: 'network-only',
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     });
   }
 
@@ -302,11 +284,7 @@ export class GraphqlService {
       variables: {
         orderIds,
       },
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     });
   }
 
@@ -339,11 +317,7 @@ export class GraphqlService {
         itemId,
         status,
       },
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     });
   }
   
@@ -371,11 +345,7 @@ export class GraphqlService {
         itemId,
         order_status,
       },
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     });
   }
 
@@ -403,11 +373,7 @@ export class GraphqlService {
         order_status,
         check_out_id
       },
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     });
   }
 
@@ -429,11 +395,7 @@ export class GraphqlService {
         order_status,
         check_out_id
       },
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     });
   }
 
@@ -450,7 +412,7 @@ export class GraphqlService {
       variables: {
         orderIds
       },
-      context: { headers: { 'x-hasura-access-key': GRAPHQL_KEY } }
+      context: HASURA_CONTEXT
     });
   }
 
@@ -467,7 +429,7 @@ export class GraphqlService {
       variables: {
         objects
       },
-      context: { headers: { 'x-hasura-access-key': GRAPHQL_KEY } }
+      context: HASURA_CONTEXT
     });
   }
 
@@ -484,7 +446,7 @@ export class GraphqlService {
       variables: {
         updates
       },
-      context: { headers: { 'x-hasura-access-key': GRAPHQL_KEY } }
+      context: HASURA_CONTEXT
     });
   }
 
@@ -505,7 +467,7 @@ export class GraphqlService {
         itemUpdates,
         orderUpdates
       },
-      context: { headers: { 'x-hasura-access-key': GRAPHQL_KEY } }
+      context: HASURA_CONTEXT
     });
   }
 
@@ -532,7 +494,7 @@ export class GraphqlService {
         additional: order_additional_service_amount,
         total: order_total_amount
       },
-      context: { headers: { 'x-hasura-access-key': GRAPHQL_KEY } }
+      context: HASURA_CONTEXT
     });
   }
 
@@ -557,11 +519,7 @@ export class GraphqlService {
         kubera_employee_login_insert_input
         
       },
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     });
   }
 
@@ -587,11 +545,7 @@ export class GraphqlService {
         user_name
         
       },
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     });
   }
   
@@ -616,11 +570,7 @@ mutation update_kubera_employee_login($user_name: String!, $renew_date: timestam
         user_name,
         renew_date
       },
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     });
   }
   
@@ -651,11 +601,7 @@ mutation InsertPaymentDetail($kubera_payment_details_insert_input: kubera_paymen
         kubera_payment_details_insert_input
         
       },
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     });
   }
 
@@ -686,7 +632,7 @@ query get_payment_mode_summary {
       variables: {
         kubera_payment_details_insert_input
       },
-      context: { headers: { 'x-hasura-access-key': GRAPHQL_KEY } }
+      context: HASURA_CONTEXT
     });
   }
 
@@ -712,11 +658,7 @@ query get_payment_mode_summary {
       variables: {
         dateStr
       },
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     });
   }
 
@@ -757,11 +699,7 @@ query get_payment_mode_summary {
       variables: {
         orderIds
       },
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     });
   }
 
@@ -811,11 +749,7 @@ query get_payment_mode_summary {
         orderIds,
         checkoutIds
       },
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     });
   }
 
@@ -840,11 +774,7 @@ query get_payment_mode_summary {
         statuses,
         startDate
       },
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY,
-        },
-      },
+      context: HASURA_CONTEXT,
     });
   }
 
@@ -890,11 +820,7 @@ query get_payment_mode_summary {
         startDate,
         place: 'ONLINE_DELIVERY'
       },
-      context: {
-        headers: {
-          'x-hasura-access-key': GRAPHQL_KEY
-        }
-      }
+      context: HASURA_CONTEXT
     });
   }
 

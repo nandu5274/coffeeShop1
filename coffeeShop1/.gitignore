@@ -1,13 +1,14 @@
-node_modules
-node_modules.nosync
-**/.DS_Store
+node_modules/
+node_modules*
 /.angular/cache
-echo .DS_Store >> .gitignore
-# Ignore Mac DS_Store files
+dist/
+table-qrs/
+scripts/
+
+# Mac / System files
 .DS_Store
 **/.DS_Store
+
 src/app/common/constanst.ts
-.DS_Store
-src/.DS_Store
-src/assets/.DS_Store
-dist/
+
+

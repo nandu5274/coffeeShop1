@@ -17,7 +17,11 @@
 
           <div class="btns">
             <a   *ngIf="showMenu" class="btn-menu animated fadeInUp scrollto" (click)="navigateToMenu('menu')">Our Menu</a>
-            <a class="btn-book animated fadeInUp scrollto" (click)="navigateToDelivery()">Online Delivery</a>
+            <a
+              *ngIf="deliveryHomeButtonEnabled"
+              class="btn-book animated fadeInUp scrollto"
+              (click)="navigateToDelivery()"
+            >Online Delivery</a>
           </div>
         </div>
 

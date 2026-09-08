@@ -4,7 +4,8 @@ import { Component, ElementRef, HostListener, OnDestroy, OnInit, Renderer2, View
 import { NavigationEnd, Router } from '@angular/router';
 import { Howl } from 'howler';
 import { Subscription, filter } from 'rxjs';
-import { isCustomerDeliveryUrl, isStaffShellUrl, VERSION } from './common/constanst';
+import { VERSION } from './common/constanst';
+import { isCustomerDeliveryUrl, isStaffShellUrl } from './common/delivery.utils';
 import { HasuraApiService } from './service/hasura.api.service';
 import { WebSocketService } from './service/WebSocket.service';
 import { SharedService } from './service/shared-service';

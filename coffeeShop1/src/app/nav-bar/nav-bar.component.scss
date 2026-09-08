@@ -442,6 +442,18 @@ padding-right: 4px;
   max-width: min(100%, 22rem);
 }
 
+.nav-login-link {
+  color: #cda45e !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+
+/* Mobile sidebar (white panel): keep login readable */
+:host-context(.navbar-mobile) .nav-login-link,
+.navbar-mobile .nav-login-link {
+  color: #1a1814 !important;
+}
+
 .delivery-subheader {
   position: fixed;
   left: 0;

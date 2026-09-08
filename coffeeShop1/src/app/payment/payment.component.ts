@@ -12,9 +12,9 @@ import {
   BELL_MSG_TIME_OUT,
   DELIVERY_TABLE_PLACE,
   KUBERA_PAYMENT_EDIT_LOGIN_PASSWORD,
-  USE_DATABASE,
-  deliveryDisplayTableNo
+  USE_DATABASE
 } from '../common/constanst';
+import { deliveryDisplayTableNo } from '../common/delivery.utils';
 import { HasuraApiService } from '../service/hasura.api.service';
 import { GraphqlService } from '../service/graphql.service';
 import { CustomerService } from '../service/customer.service';
@@ -43,6 +43,19 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
   TotalActualAmount: any = 0;
   showBellmsgAlert = false;
   isConnected = false;
+  orderSideNotifications: Array<{
+    uid: string;
+    orderId: string;
+    type: 'waiting' | 'approved';
+    title: string;
+    tableLabel: string;
+    time: string;
+    items: Array<{ name: string; qty: any }>;
+  }> = [];
+  private notifiedWaitingIds = new Set<string>();
+  private notifiedApprovedIds = new Set<string>();
+  private orderNotifyUid = 0;
+  private waitingIdsSeeded = false;
   selectedDiscount: number = 0; // Default discount is 0
   selectedDateFilter: string = '';
   lastFetchedDate: string = '';
@@ -93,6 +106,15 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
     this.selectedDateFilter = this.getTodayDateString();
     this.getCheckOutOrders();
     //this.getPaidOrders();
+    this.graphqlService.getApprovalWaitingOrders().subscribe(
+      (result: any) => {
+        const orders = result?.data?.kubera_order || [];
+        this.seedWaitingNotificationIds(orders);
+      },
+      () => {
+        this.waitingIdsSeeded = true;
+      }
+    );
 
     console.log("caption")
 
@@ -139,7 +161,135 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
   }
 
   playSound() {
-    //this.sound.play();
+    this.sound.play();
+  }
+
+  dismissOrderSideNotification(uid: string) {
+    this.orderSideNotifications = this.orderSideNotifications.filter(n => n.uid !== uid);
+  }
+
+  private formatOrderNotifyTime(createdAt: any): string {
+    if (!createdAt) {
+      return '';
+    }
+    try {
+      return this.datePipe.transform(createdAt, 'dd MMM yyyy, hh:mm a') || String(createdAt);
+    } catch {
+      return String(createdAt);
+    }
+  }
+
+  private paymentTableLabel(order: any): string {
+    if (!order) {
+      return '';
+    }
+    if (String(order.table_place || '') === DELIVERY_TABLE_PLACE) {
+      return `Delivery ${deliveryDisplayTableNo(order.order_ref_id || order.id)}`;
+    }
+    return `${order.table_place || ''} ${order.table_no || ''}`.trim();
+  }
+
+  private mapDbOrderToNotifyDto(dbOrder: any) {
+    return {
+      order: {
+        id: dbOrder.id,
+        order_ref_id: dbOrder.order_ref_id,
+        table_no: dbOrder.table_no,
+        table_place: dbOrder.table_place,
+        order_created_time: this.formatOrderNotifyTime(dbOrder.created_at)
+      },
+      orderItems: dbOrder.order_items || []
+    };
+  }
+
+  private buildOrderNotifyPayload(orderDto: any, type: 'waiting' | 'approved') {
+    const order = orderDto?.order || {};
+    return {
+      uid: `${type}-${order.id}-${++this.orderNotifyUid}`,
+      orderId: String(order.id ?? ''),
+      type,
+      title: type === 'waiting' ? 'Order is waiting for approval' : 'New order approved',
+      tableLabel: this.paymentTableLabel(order),
+      time: order.order_created_time || '',
+      items: (orderDto?.orderItems || []).map((item: any) => ({
+        name: item.item_name,
+        qty: item.item_quantity
+      }))
+    };
+  }
+
+  pushWaitingOrderNotification(orderDto: any) {
+    const orderId = String(orderDto?.order?.id ?? '');
+    if (!orderId || this.notifiedWaitingIds.has(orderId)) {
+      return;
+    }
+    this.notifiedWaitingIds.add(orderId);
+    this.orderSideNotifications.unshift(this.buildOrderNotifyPayload(orderDto, 'waiting'));
+    this.playSound();
+    try {
+      navigator.vibrate([200, 100, 200]);
+    } catch (_) {}
+  }
+
+  pushApprovedOrderNotification(orderDto: any) {
+    const orderId = String(orderDto?.order?.id ?? '');
+    if (!orderId || this.notifiedApprovedIds.has(orderId)) {
+      return;
+    }
+    this.notifiedApprovedIds.add(orderId);
+    this.orderSideNotifications.unshift(this.buildOrderNotifyPayload(orderDto, 'approved'));
+    this.playSound();
+    try {
+      navigator.vibrate([200, 100, 200]);
+    } catch (_) {}
+  }
+
+  private seedWaitingNotificationIds(orders: any[]) {
+    (orders || []).forEach((dbOrder: any) => {
+      const id = String(dbOrder?.id ?? '');
+      if (id) {
+        this.notifiedWaitingIds.add(id);
+      }
+    });
+    this.waitingIdsSeeded = true;
+  }
+
+  private fetchAndNotifyWaitingOrders() {
+    this.graphqlService.getApprovalWaitingOrders().subscribe(
+      (result: any) => {
+        const orders = result?.data?.kubera_order || [];
+        if (!this.waitingIdsSeeded) {
+          this.seedWaitingNotificationIds(orders);
+          return;
+        }
+        orders.forEach((dbOrder: any) => {
+          this.pushWaitingOrderNotification(this.mapDbOrderToNotifyDto(dbOrder));
+        });
+      },
+      (err: any) => console.error('Waiting notify fetch failed', err)
+    );
+  }
+
+  private parseWsOrderId(msg: string, prefix: string): number | null {
+    const m = String(msg).match(new RegExp(`${prefix}\\s*:\\s*(\\d+)`, 'i'));
+    return m ? Number(m[1]) : null;
+  }
+
+  private notifyApprovedFromWs(msg: string) {
+    const orderId = this.parseWsOrderId(msg, 'kitchen');
+    if (orderId != null) {
+      if (this.notifiedApprovedIds.has(String(orderId))) {
+        return;
+      }
+      this.graphqlService.getPaidOrdersByIds([orderId]).subscribe((result: any) => {
+        const dbOrder = (result?.data?.kubera_order || [])[0];
+        if (dbOrder) {
+          this.pushApprovedOrderNotification(this.mapDbOrderToNotifyDto(dbOrder));
+        }
+      });
+      return;
+    }
+    this.playSound();
   }
 
   schedulePushNotification(message: any) {
@@ -174,6 +324,12 @@ export class PaymentComponent implements AfterViewInit, OnDestroy {
 
   approveOrderBYpopup(msg: any) {
     if (typeof msg === "string") {
+      if (msg.includes("approval")) {
+        this.fetchAndNotifyWaitingOrders();
+      }
+      if (msg.includes("kitchen")) {
+        this.notifyApprovedFromWs(msg);
+      }
       if (msg.includes("payment")) {
         this.playSound()
         if (this.showSpinner == false) {

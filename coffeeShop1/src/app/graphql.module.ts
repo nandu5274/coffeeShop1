@@ -1,16 +1,22 @@
 import { APOLLO_OPTIONS, ApolloModule } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { NgModule } from '@angular/core';
-import { ApolloClientOptions, InMemoryCache } from '@apollo/client/core';
+import { ApolloClientOptions, ApolloLink, InMemoryCache } from '@apollo/client/core';
+import { setContext } from '@apollo/client/link/context';
+import { GRAPHQL_KEY } from './common/constanst';
 
-const uri = 'https://glorious-marten-67.hasura.app/v1/graphql'; // <-- add the URL of the GraphQL server here
+const uri = 'https://glorious-marten-67.hasura.app/v1/graphql';
+
 export function createApollo(httpLink: HttpLink): ApolloClientOptions<any> {
-  return {
-    link: httpLink.create({ uri }),
-    cache: new InMemoryCache(),
+  const authLink = setContext(() => ({
     headers: {
-      'x-hasura-admin-secret': '1YgBZ03vEHJxek3JftBf8yg57IVJeWzBKMvO1tYs4x6UQuOeGGSkznWRCHl0nlq8',
+      'x-hasura-admin-secret': GRAPHQL_KEY,
     },
+  }));
+
+  return {
+    link: ApolloLink.from([authLink, httpLink.create({ uri })]),
+    cache: new InMemoryCache(),
   };
 }
 

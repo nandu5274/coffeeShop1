@@ -4,9 +4,9 @@ import { switchMap } from 'rxjs/operators';
 import {
   DELIVERY_TABLE_PLACE,
   RESTAURANT_LAT,
-  RESTAURANT_LNG,
-  deliveryDisplayTableNo
+  RESTAURANT_LNG
 } from '../common/constanst';
+import { deliveryDisplayTableNo } from '../common/delivery.utils';
 import { DeliveryHistoryService } from '../service/delivery-history.service';
 import { GraphqlService } from '../service/graphql.service';
 import { SharedService } from '../service/shared-service';
