@@ -1,0 +1,600 @@
+<!-- Authentication Modal Overlay (Shown when user is not logged in) -->
+<div class="health-login-overlay" *ngIf="!isAuthenticated">
+  <div class="health-login-card glass-card">
+    <div class="login-header">
+      <div class="lock-icon-badge">
+        <i class="bi bi-shield-lock-fill"></i>
+      </div>
+      <h2 class="login-title">System Health Authentication</h2>
+      <p class="login-subtitle">
+        Access to Hasura databases and system diagnostic tools is restricted. 
+        Request an OTP to <strong>cafekubera2223@gmail.com</strong> or enter Master Code to access.
+      </p>
+    </div>
+
+    <!-- Error Banner -->
+    <div class="login-alert error" *ngIf="loginErrorMsg">
+      <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ loginErrorMsg }}
+    </div>
+
+    <!-- OTP Sent Notice Banner -->
+    <div class="login-alert success" *ngIf="otpSentNotice">
+      <i class="bi bi-check-circle-fill me-1"></i> OTP sent successfully to <strong>cafekubera2223@gmail.com</strong>!
+    </div>
+
+    <form (submit)="verifyAndLogin(); $event.preventDefault()" class="login-form">
+      <div class="form-group">
+        <label for="otpInput" class="form-label">ENTER OTP / MASTER CODE</label>
+        <div class="input-icon-wrap">
+          <i class="bi bi-key-fill field-icon"></i>
+          <input 
+            type="password" 
+            id="otpInput" 
+            name="otpInput" 
+            [(ngModel)]="otpInput" 
+            placeholder="Enter OTP / Code" 
+            autocomplete="off" 
+            class="login-input" 
+            autofocus />
+        </div>
+      </div>
+
+      <div class="login-actions">
+        <button 
+          type="button" 
+          class="btn-send-otp" 
+          (click)="sendMailOtp()" 
+          [disabled]="sendingOtp">
+          <i class="bi bi-envelope-at-fill" [class.spin]="sendingOtp"></i>
+          <span>{{ sendingOtp ? 'Sending OTP...' : (otpSentNotice ? 'Resend OTP to Mail' : 'Send OTP to Mail') }}</span>
+        </button>
+
+        <button type="submit" class="btn-verify-access">
+          <i class="bi bi-unlock-fill"></i> Verify & Access
+        </button>
+      </div>
+    </form>
+
+    <div class="login-footer">
+      <a routerLink="/" class="back-home-link">
+        <i class="bi bi-arrow-left"></i> Back to Homepage
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Main Health Dashboard Content (Shown only when authenticated) -->
+<div class="health-page-container" *ngIf="isAuthenticated">
+  <!-- Top Navigation Header -->
+  <header class="health-header glass-card">
+    <div class="header-content">
+      <div class="header-left">
+        <a routerLink="/" class="back-link">
+          <i class="bi bi-arrow-left"></i> Home
+        </a>
+        <h1 class="page-title">
+          <i class="bi bi-heart-pulse-fill title-icon"></i>
+          System Health Monitor
+        </h1>
+        <p class="subtitle">Real-time status monitor for all Hasura GraphQL engines, backend APIs, and application features</p>
+      </div>
+
+      <div class="header-actions">
+        <button 
+          class="btn-action primary-btn" 
+          (click)="runAllChecks()" 
+          [disabled]="isRefreshingAll">
+          <i class="bi bi-arrow-repeat" [class.spin]="isRefreshingAll"></i>
+          <span>{{ isRefreshingAll ? 'Auditing Services...' : 'Run Full Diagnostics' }}</span>
+        </button>
+
+        <button 
+          class="btn-action secondary-btn" 
+          (click)="copyDiagnosticReport()">
+          <i class="bi" [class.bi-check-lg]="copiedNotice" [class.bi-clipboard-data]="!copiedNotice"></i>
+          <span>{{ copiedNotice ? 'Report Copied!' : 'Copy Summary Report' }}</span>
+        </button>
+
+        <button 
+          class="btn-action danger-btn" 
+          (click)="lockHealthPage()"
+          title="Lock System Health Monitor">
+          <i class="bi bi-lock-fill"></i>
+          <span>Lock Page</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Overall Status Banner -->
+  <section class="status-banner-card glass-card" [ngClass]="overallSystemStatus">
+    <div class="banner-inner">
+      <div class="status-indicator-box">
+        <div class="pulse-ring"></div>
+        <i class="bi" [ngClass]="{
+          'bi-check-circle-fill': overallSystemStatus === 'healthy',
+          'bi-exclamation-triangle-fill': overallSystemStatus === 'degraded',
+          'bi-x-circle-fill': overallSystemStatus === 'down'
+        }"></i>
+      </div>
+
+      <div class="status-text-meta">
+        <div class="status-headline">
+          <span class="status-label">Overall Application Status:</span>
+          <span class="status-value-text">
+            {{ overallSystemStatus === 'healthy' ? 'ALL SYSTEMS OPERATIONAL' : (overallSystemStatus === 'degraded' ? 'DEGRADED PERFORMANCE DETECTED' : 'CRITICAL OUTAGE DETECTED') }}
+          </span>
+        </div>
+        <p class="status-description">
+          <span *ngIf="overallSystemStatus === 'healthy'">
+            All {{ totalServicesCount }} registered Hasura instances and backend services are responding normally.
+          </span>
+          <span *ngIf="overallSystemStatus === 'degraded'">
+            One or more Hasura services are experiencing higher latency than expected (>1500ms).
+          </span>
+          <span *ngIf="overallSystemStatus === 'down'">
+            Attention required: {{ downCount }} error(s) detected<ng-container *ngIf="hasVersionMismatch"> (including Version Mismatch Error: UI {{ VERSION }} vs API {{ apiVersion || 'Error' }})</ng-container>.
+          </span>
+        </p>
+      </div>
+
+      <!-- Auto refresh timer controls -->
+      <div class="auto-refresh-box">
+        <span class="refresh-label">
+          <i class="bi bi-clock-history"></i> Auto Refresh
+        </span>
+        <select 
+          class="refresh-select" 
+          [value]="autoRefreshIntervalSec" 
+          (change)="setAutoRefreshInterval(+($any($event.target).value))">
+          <option [value]="0">Off</option>
+          <option [value]="10">Every 10s</option>
+          <option [value]="30">Every 30s</option>
+          <option [value]="60">Every 60s</option>
+        </select>
+        <span class="countdown-badge" *ngIf="autoRefreshIntervalSec > 0">
+          {{ autoRefreshCountdown }}s
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Summary KPI Cards -->
+  <section class="metrics-grid">
+    <div class="metric-card glass-card">
+      <div class="metric-icon total">
+        <i class="bi bi-layers-half"></i>
+      </div>
+      <div class="metric-body">
+        <span class="metric-value">{{ totalServicesCount }}</span>
+        <span class="metric-title">Monitored Services</span>
+      </div>
+    </div>
+
+    <div class="metric-card glass-card">
+      <div class="metric-icon healthy">
+        <i class="bi bi-check2-circle"></i>
+      </div>
+      <div class="metric-body">
+        <span class="metric-value">{{ healthyCount }}</span>
+        <span class="metric-title">Operational</span>
+      </div>
+    </div>
+
+    <div class="metric-card glass-card">
+      <div class="metric-icon degraded">
+        <i class="bi bi-dash-circle"></i>
+      </div>
+      <div class="metric-body">
+        <span class="metric-value">{{ degradedCount }}</span>
+        <span class="metric-title">Degraded Latency</span>
+      </div>
+    </div>
+
+    <div class="metric-card glass-card down-card" (click)="openErrorModal()" title="Click to view detailed error breakdown popup">
+      <div class="metric-icon down">
+        <i class="bi bi-x-octagon"></i>
+      </div>
+      <div class="metric-body">
+        <span class="metric-value">{{ downCount }}</span>
+        <span class="metric-title">Offline / Error</span>
+      </div>
+      <div class="click-hint-badge" *ngIf="downCount > 0">
+        <i class="bi bi-eye-fill me-1"></i> View Errors
+      </div>
+    </div>
+
+    <div class="metric-card glass-card">
+      <div class="metric-icon latency">
+        <i class="bi bi-lightning-charge"></i>
+      </div>
+      <div class="metric-body">
+        <span class="metric-value">{{ avgLatencyMs }} <small>ms</small></span>
+        <span class="metric-title">Avg Hasura Latency</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tab Filters & Search Bar -->
+  <section class="controls-toolbar glass-card">
+    <div class="tabs-group">
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'all'" 
+        (click)="activeTab = 'all'">
+        <i class="bi bi-grid-fill me-1"></i> All Checks ({{ services.length }})
+      </button>
+
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'hasura'" 
+        (click)="activeTab = 'hasura'">
+        <i class="bi bi-database-fill-gear me-1"></i> Hasura Engines (6)
+      </button>
+
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'backend'" 
+        (click)="activeTab = 'backend'">
+        <i class="bi bi-hdd-rack-fill me-1"></i> Auxiliary APIs (3)
+      </button>
+
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'config'" 
+        (click)="activeTab = 'config'">
+        <i class="bi bi-sliders me-1"></i> App Configs ({{ appConfigs.length }})
+      </button>
+
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'client'" 
+        (click)="activeTab = 'client'">
+        <i class="bi bi-laptop me-1"></i> Client Runtime ({{ clientMetrics.length }})
+      </button>
+    </div>
+
+    <div class="search-input-box" *ngIf="activeTab === 'all' || activeTab === 'hasura' || activeTab === 'backend'">
+      <i class="bi bi-search search-icon"></i>
+      <input 
+        type="text" 
+        placeholder="Search services or endpoints..." 
+        [value]="searchQuery" 
+        (input)="searchQuery = $any($event.target).value">
+      <button 
+        class="clear-search-btn" 
+        *ngIf="searchQuery" 
+        (click)="searchQuery = ''">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- Main Content Areas based on Tab -->
+  
+  <!-- Services & Hasura Grid -->
+  <section class="services-section" *ngIf="activeTab === 'all' || activeTab === 'hasura' || activeTab === 'backend'">
+    <div class="section-title-row">
+      <h2 class="section-heading">
+        <i class="bi bi-hdd-stack-fill text-gold me-2"></i>
+        Monitored Service Endpoints
+      </h2>
+      <span class="last-audit-text" *ngIf="lastAuditTime">
+        Last audited: {{ lastAuditTime | date:'mediumTime' }}
+      </span>
+    </div>
+
+    <div class="services-grid">
+      <div 
+        class="service-card glass-card" 
+        *ngFor="let service of filteredServices" 
+        [ngClass]="service.status">
+        
+        <div class="service-card-header">
+          <div class="header-title-box">
+            <span class="category-pill" [ngClass]="service.category">
+              {{ service.category === 'hasura' ? 'HASURA DB' : 'AUX API' }}
+            </span>
+            <h3 class="service-name">{{ service.name }}</h3>
+          </div>
+
+          <div class="status-badge-chip" [ngClass]="service.status">
+            <span class="status-dot"></span>
+            <span class="status-label-text">
+              <ng-container [ngSwitch]="service.status">
+                <span *ngSwitchCase="'healthy'">Operational</span>
+                <span *ngSwitchCase="'degraded'">Slow</span>
+                <span *ngSwitchCase="'down'">Down</span>
+                <span *ngSwitchCase="'checking'">Checking...</span>
+                <span *ngSwitchDefault>Pending</span>
+              </ng-container>
+            </span>
+          </div>
+        </div>
+
+        <p class="service-desc">{{ service.description }}</p>
+
+        <!-- Latency Progress Meter -->
+        <div class="latency-row" *ngIf="service.latencyMs !== undefined && service.status !== 'down'">
+          <div class="latency-label-bar">
+            <span class="latency-title"><i class="bi bi-speedometer"></i> Response Latency:</span>
+            <span class="latency-val" [class.slow]="service.latencyMs > 1500">{{ service.latencyMs }} ms</span>
+          </div>
+          <div class="latency-track">
+            <div 
+              class="latency-fill" 
+              [style.width.%]="getLatencyPercentage(service.latencyMs)"
+              [ngClass]="{
+                'fast': service.latencyMs <= 500,
+                'moderate': service.latencyMs > 500 && service.latencyMs <= 1500,
+                'slow': service.latencyMs > 1500
+              }"></div>
+          </div>
+        </div>
+
+        <!-- Endpoints & Secret Info -->
+        <div class="url-meta-box">
+          <div class="url-line" *ngIf="service.graphqlUrl">
+            <span class="meta-tag">GraphQL</span>
+            <code class="url-text" [title]="service.graphqlUrl">{{ service.graphqlUrl }}</code>
+          </div>
+          <div class="url-line" *ngIf="service.restUrl">
+            <span class="meta-tag rest">REST</span>
+            <code class="url-text" [title]="service.restUrl">{{ service.restUrl }}</code>
+          </div>
+          <div class="secret-tag" *ngIf="service.secretHeaderName">
+            <i class="bi bi-key-fill text-gold me-1"></i>
+            Auth Header: <code>{{ service.secretHeaderName }}</code>
+          </div>
+        </div>
+
+        <!-- Error Message Banner if Down -->
+        <div class="error-banner" *ngIf="service.errorMessage">
+          <i class="bi bi-exclamation-octagon-fill me-1"></i>
+          <span>{{ service.errorMessage }}</span>
+        </div>
+
+        <!-- Card Action Footer -->
+        <div class="card-footer-row">
+          <button class="btn-text-action" (click)="toggleDetails(service)">
+            <i class="bi" [class.bi-chevron-down]="!service.showDetails" [class.bi-chevron-up]="service.showDetails"></i>
+            {{ service.showDetails ? 'Hide Details' : 'View Details' }}
+          </button>
+
+          <button class="btn-recheck" (click)="checkService(service)" [disabled]="service.status === 'checking'">
+            <i class="bi bi-arrow-clockwise" [class.spin]="service.status === 'checking'"></i>
+            Re-test
+          </button>
+        </div>
+
+        <!-- Expanded Tech Details -->
+        <div class="expanded-details-panel" *ngIf="service.showDetails">
+          <div class="detail-item">
+            <span class="detail-label">Status Code:</span>
+            <span class="detail-val">{{ service.statusCode || 'N/A' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Query Method:</span>
+            <span class="detail-val">{{ service.queryTypeUsed || 'Standard Ping' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Last Checked:</span>
+            <span class="detail-val">{{ service.lastChecked ? (service.lastChecked | date:'medium') : 'Never' }}</span>
+          </div>
+          <div class="detail-item" *ngIf="service.details">
+            <span class="detail-label">Diagnostic Notes:</span>
+            <span class="detail-val">{{ service.details }}</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Application Configuration Switch Status Section -->
+  <section class="config-section" *ngIf="activeTab === 'all' || activeTab === 'config'">
+    <div class="section-title-row">
+      <h2 class="section-heading">
+        <i class="bi bi-sliders text-gold me-2"></i>
+        Application Feature Switches & Environment Settings
+      </h2>
+    </div>
+
+    <div class="config-grid">
+      <div class="config-card glass-card" *ngFor="let config of appConfigs">
+        <div class="config-header">
+          <span class="config-label">{{ config.label }}</span>
+          <span class="config-key-badge"><code>{{ config.key }}</code></span>
+        </div>
+
+        <div class="config-value-row">
+          <ng-container [ngSwitch]="config.type">
+            <span *ngSwitchCase="'boolean'" class="bool-pill" [class.active]="config.value" [class.inactive]="!config.value">
+              <i class="bi" [class.bi-check-circle-fill]="config.value" [class.bi-x-circle-fill]="!config.value"></i>
+              {{ config.value ? 'ENABLED' : 'DISABLED' }}
+            </span>
+            <span *ngSwitchDefault class="string-value" [ngClass]="config.status">
+              <i class="bi" *ngIf="config.key === 'VERSION'" [ngClass]="{
+                'bi-check-circle-fill me-1': config.status === 'ok',
+                'bi-x-circle-fill me-1': config.status === 'error',
+                'bi-hourglass-split me-1': config.status === 'info'
+              }"></i>
+              {{ config.value }}
+            </span>
+          </ng-container>
+        </div>
+
+        <p class="config-desc" [ngClass]="config.status">{{ config.description }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Client Browser Diagnostics Section -->
+  <section class="client-section" *ngIf="activeTab === 'all' || activeTab === 'client'">
+    <div class="section-title-row">
+      <h2 class="section-heading">
+        <i class="bi bi-display-fill text-gold me-2"></i>
+        Client Browser & Runtime Diagnostics
+      </h2>
+    </div>
+
+    <div class="client-grid">
+      <div class="client-card glass-card" *ngFor="let metric of clientMetrics">
+        <div class="metric-icon-box" [ngClass]="metric.status">
+          <i class="bi {{ metric.icon }}"></i>
+        </div>
+        <div class="metric-meta-box">
+          <span class="metric-name">{{ metric.label }}</span>
+          <span class="metric-val-text" [ngClass]="metric.status">{{ metric.value }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Error Breakdown Details Modal Overlay -->
+  <div class="health-modal-overlay" *ngIf="showErrorModal" (click)="closeErrorModal()">
+    <div class="health-modal-card glass-card error-modal" (click)="$event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <div class="modal-icon-badge error">
+            <i class="bi bi-exclamation-octagon-fill"></i>
+          </div>
+          <div>
+            <h2 class="modal-title">System Error Breakdown</h2>
+            <p class="modal-subtitle">
+              Detailed diagnostic report for {{ downCount }} active failure(s) & version mismatches
+            </p>
+          </div>
+        </div>
+        <button class="modal-close-btn" (click)="closeErrorModal()" title="Close Modal">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body custom-scrollbar">
+        <!-- Section 1: Version Mismatch Error -->
+        <div class="error-detail-card mismatch-card" *ngIf="hasVersionMismatch">
+          <div class="error-card-header">
+            <span class="error-type-badge red">
+              <i class="bi bi-git me-1"></i> BUILD VERSION MISMATCH
+            </span>
+            <span class="error-time-tag">Critical Priority</span>
+          </div>
+          <h3 class="error-title">UI & API Build Release Mismatch</h3>
+          <p class="error-desc">
+            Frontend client build version (<strong>{{ VERSION }}</strong>) does not match the expected API release version (<strong>{{ apiVersion || 'Error / Unknown' }}</strong>).
+          </p>
+          <div class="error-meta-box">
+            <div class="meta-row">
+              <span class="meta-lbl">Frontend Release:</span>
+              <code class="meta-val red">{{ VERSION }}</code>
+            </div>
+            <div class="meta-row">
+              <span class="meta-lbl">Backend API Expected:</span>
+              <code class="meta-val red">{{ apiVersion || 'Unreachable / Error' }}</code>
+            </div>
+            <div class="meta-row">
+              <span class="meta-lbl">Impact:</span>
+              <span class="meta-val">Schema or endpoint mismatch may break admin API calls or cart transactions.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Failing Hasura / Aux Services -->
+        <ng-container *ngIf="downServices.length > 0">
+          <div class="error-detail-card service-card-err" *ngFor="let s of downServices">
+            <div class="error-card-header">
+              <span class="error-type-badge red">
+                <i class="bi bi-hdd-stack-fill me-1"></i> {{ s.category === 'hasura' ? 'HASURA DATABASE' : 'AUXILIARY API' }}
+              </span>
+              <span class="error-time-tag" *ngIf="s.statusCode">HTTP {{ s.statusCode }}</span>
+            </div>
+            <h3 class="error-title">{{ s.name }}</h3>
+            <p class="error-desc">{{ s.description }}</p>
+
+            <div class="error-meta-box">
+              <div class="meta-row" *ngIf="s.graphqlUrl">
+                <span class="meta-lbl">GraphQL Endpoint:</span>
+                <code class="meta-val">{{ s.graphqlUrl }}</code>
+              </div>
+              <div class="meta-row" *ngIf="s.restUrl">
+                <span class="meta-lbl">REST Endpoint:</span>
+                <code class="meta-val">{{ s.restUrl }}</code>
+              </div>
+              <div class="meta-row" *ngIf="s.errorMessage">
+                <span class="meta-lbl">Error Message:</span>
+                <span class="meta-val red">{{ s.errorMessage }}</span>
+              </div>
+              <div class="meta-row" *ngIf="s.details">
+                <span class="meta-lbl">Diagnostic Note:</span>
+                <span class="meta-val">{{ s.details }}</span>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Section 3: App Config Errors -->
+        <ng-container *ngIf="errorConfigs.length > 0">
+          <div class="error-detail-card config-card-err" *ngFor="let c of errorConfigs">
+            <div class="error-card-header">
+              <span class="error-type-badge orange">
+                <i class="bi bi-sliders me-1"></i> CONFIGURATION ERROR
+              </span>
+              <code>{{ c.key }}</code>
+            </div>
+            <h3 class="error-title">{{ c.label }}</h3>
+            <p class="error-desc">{{ c.description }}</p>
+            <div class="error-meta-box">
+              <div class="meta-row">
+                <span class="meta-lbl">Current Setting:</span>
+                <code class="meta-val orange">{{ c.value }}</code>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Section 4: Client Metric Errors -->
+        <ng-container *ngIf="errorClientMetrics.length > 0">
+          <div class="error-detail-card client-card-err" *ngFor="let m of errorClientMetrics">
+            <div class="error-card-header">
+              <span class="error-type-badge red">
+                <i class="bi {{ m.icon }} me-1"></i> CLIENT RUNTIME ISSUE
+              </span>
+            </div>
+            <h3 class="error-title">{{ m.label }}</h3>
+            <div class="error-meta-box">
+              <div class="meta-row">
+                <span class="meta-lbl">Status Value:</span>
+                <span class="meta-val red">{{ m.value }}</span>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Healthy State: No errors -->
+        <div class="empty-error-state" *ngIf="downCount === 0 && !hasVersionMismatch">
+          <div class="empty-icon-circle">
+            <i class="bi bi-check-circle-fill"></i>
+          </div>
+          <h3>No System Errors Found</h3>
+          <p>All Hasura engines, auxiliary APIs, build versions, and configuration settings are fully functional and operational.</p>
+        </div>
+      </div>
+
+      <!-- Modal Footer Actions -->
+      <div class="modal-footer">
+        <button class="btn-action primary-btn" (click)="runAllChecks()">
+          <i class="bi bi-arrow-repeat" [class.spin]="isRefreshingAll"></i>
+          <span>Re-Run Full Audit</span>
+        </button>
+
+        <button class="btn-action secondary-btn" (click)="closeErrorModal()">
+          <span>Close Window</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -252,10 +252,11 @@ export class AppComponent implements OnInit, OnDestroy {
   }
   showVersionModal: any = false
   checkVersion(api_version: any, recursiveStatus: any) {
-    if (this.version === api_version) {
+    const isHealthRoute = window.location.pathname.includes('/health') || window.location.pathname.includes('/status');
+    if (this.version === api_version || isHealthRoute) {
       sessionStorage.setItem("reloadCount", "0")
       sessionStorage.setItem("recursive", recursiveStatus)
-      //  console.log("latest version");
+      //  console.log("latest version or health route");
       this.showVersionModal = false
 
     } else {

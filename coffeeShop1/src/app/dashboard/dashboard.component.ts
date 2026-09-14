@@ -5,10 +5,13 @@ import { SharedService } from '../service/shared-service';
 interface SalesDataPoint {
   month: string;
   revenue: number;
+  actualAmount: number;
+  paidAmount: number;
   orders: number;
   cashAmount: number;
   onlineAmount: number;
   platformAmount: number;
+  grandTotal?: number;
 }
 
 interface PaymentModeData {
@@ -65,6 +68,11 @@ export class DashboardComponent implements OnInit {
   dailyTooltipX: number = 0;
   dailyTooltipY: number = 0;
 
+  // Daily Sales Modal Popup state
+  showDailyModal: boolean = false;
+  selectedDailyDetail: any = null;
+  dailyModalSearchTerm: string = '';
+
   // Hover Tooltip States (Monthly)
   hoveredPoint: any = null;
   tooltipX: number = 0;
@@ -75,6 +83,7 @@ export class DashboardComponent implements OnInit {
   livePayments: any[] = [];
   liveOrders: any[] = [];
   liveOrderItems: any[] = [];
+  liveDailyReports: any[] = [];
 
   // Aggregated Visual Data
   salesData: SalesDataPoint[] = [];
@@ -117,6 +126,17 @@ export class DashboardComponent implements OnInit {
 
   refreshDashboardData(): void {
     this.showSpinner = true;
+
+    this.hasuraService.getDailySalesReportFromAlive().subscribe({
+      next: (res: any) => {
+        const reports = res?.data?.daily_sales_reports || res?.data?.daily_sales_report || [];
+        if (reports.length > 0) {
+          this.liveDailyReports = reports;
+        }
+      },
+      error: (err) => console.error('Error fetching daily sales reports:', err)
+    });
+
     this.hasuraService.getPaymentDetailsFromAlive().subscribe({
       next: (res) => {
         if (res && res.data && res.data.payment_details) {
@@ -284,6 +304,8 @@ export class DashboardComponent implements OnInit {
       hourlyData.push({
         month: label,
         revenue: 0,
+        actualAmount: 0,
+        paidAmount: 0,
         orders: 0,
         cashAmount: 0,
         onlineAmount: 0,
@@ -323,6 +345,8 @@ export class DashboardComponent implements OnInit {
         const mode = (payment.payment_mode || 'UPI').toLowerCase();
 
         hourlyData[parsedHour].revenue += actualAmount;
+        hourlyData[parsedHour].actualAmount += actualAmount;
+        hourlyData[parsedHour].paidAmount += paidAmount;
         hourlyData[parsedHour].orders += 1;
         if (mode === 'cash') {
           hourlyData[parsedHour].cashAmount += paidAmount;
@@ -456,6 +480,8 @@ export class DashboardComponent implements OnInit {
       dailyBaseline.push({
         month: day.toString(), // using 'month' field for Day number label
         revenue: 0,
+        actualAmount: 0,
+        paidAmount: 0,
         orders: 0,
         cashAmount: 0,
         onlineAmount: 0,
@@ -464,11 +490,24 @@ export class DashboardComponent implements OnInit {
     }
 
     this.livePayments.forEach(payment => {
-      const dateParts = payment.created_at ? payment.created_at.split('-') : [];
+      if (!payment.created_at) return;
+      let str = payment.created_at.trim();
+      if (str.includes('T')) str = str.split('T')[0];
+      if (str.includes(' ')) str = str.split(' ')[0];
+      const dateParts = str.split(/[-\/]/);
       if (dateParts.length === 3) {
-        const monthNum = parseInt(dateParts[0], 10) - 1;
-        const dayNum = parseInt(dateParts[1], 10);
-        const year = dateParts[2];
+        let year = '';
+        let monthNum = -1;
+        let dayNum = -1;
+        if (dateParts[0].length === 4) {
+          year = dateParts[0];
+          monthNum = parseInt(dateParts[1], 10) - 1;
+          dayNum = parseInt(dateParts[2], 10);
+        } else if (dateParts[2].length === 4) {
+          year = dateParts[2];
+          monthNum = parseInt(dateParts[0], 10) - 1;
+          dayNum = parseInt(dateParts[1], 10);
+        }
         
         if (year === this.selectedYear && monthNum === monthIdx) {
           const actualAmount = Number(payment.actual_amount) || 0;
@@ -478,6 +517,8 @@ export class DashboardComponent implements OnInit {
           if (dayNum >= 1 && dayNum <= daysInMonth) {
             const idx = dayNum - 1;
             dailyBaseline[idx].revenue += actualAmount;
+            dailyBaseline[idx].actualAmount += actualAmount;
+            dailyBaseline[idx].paidAmount += paidAmount;
             dailyBaseline[idx].orders += 1;
             if (mode === 'cash') {
               dailyBaseline[idx].cashAmount += paidAmount;
@@ -488,6 +529,40 @@ export class DashboardComponent implements OnInit {
         }
       }
     });
+
+    (this.liveDailyReports || []).forEach(r => {
+      const reportDate = r.report_date || r.created_at;
+      if (!reportDate) return;
+      let str = reportDate.trim();
+      if (str.includes('T')) str = str.split('T')[0];
+      if (str.includes(' ')) str = str.split(' ')[0];
+      const dateParts = str.split(/[-\/]/);
+      if (dateParts.length === 3) {
+        let year = '';
+        let monthNum = -1;
+        let dayNum = -1;
+        if (dateParts[0].length === 4) {
+          year = dateParts[0];
+          monthNum = parseInt(dateParts[1], 10) - 1;
+          dayNum = parseInt(dateParts[2], 10);
+        } else if (dateParts[2].length === 4) {
+          year = dateParts[2];
+          monthNum = parseInt(dateParts[0], 10) - 1;
+          dayNum = parseInt(dateParts[1], 10);
+        }
+        if (year === this.selectedYear && monthNum === monthIdx && dayNum >= 1 && dayNum <= daysInMonth) {
+          const idx = dayNum - 1;
+          const pTot = r.platform_total != null ? Number(r.platform_total) : ((Number(r.swiggy_amount) || 0) + (Number(r.zomato_amount) || 0) + (Number(r.swiggy_dine_in_amount) || 0) + (Number(r.dstrict_amount) || 0));
+          dailyBaseline[idx].platformAmount += pTot;
+        }
+      }
+    });
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const idx = day - 1;
+      dailyBaseline[idx].grandTotal = dailyBaseline[idx].paidAmount + dailyBaseline[idx].platformAmount;
+    }
+
     this.dailySalesData = dailyBaseline;
 
 
@@ -497,6 +572,8 @@ export class DashboardComponent implements OnInit {
       monthlyBaseline[m] = {
         month: m.substring(0, 3), // "Jan", "Feb", etc.
         revenue: 0,
+        actualAmount: 0,
+        paidAmount: 0,
         orders: 0,
         cashAmount: 0,
         onlineAmount: 0,
@@ -505,10 +582,21 @@ export class DashboardComponent implements OnInit {
     });
 
     this.livePayments.forEach(payment => {
-      const dateParts = payment.created_at ? payment.created_at.split('-') : [];
+      if (!payment.created_at) return;
+      let str = payment.created_at.trim();
+      if (str.includes('T')) str = str.split('T')[0];
+      if (str.includes(' ')) str = str.split(' ')[0];
+      const dateParts = str.split(/[-\/]/);
       if (dateParts.length === 3) {
-        const monthNum = parseInt(dateParts[0], 10) - 1;
-        const year = dateParts[2];
+        let year = '';
+        let monthNum = -1;
+        if (dateParts[0].length === 4) {
+          year = dateParts[0];
+          monthNum = parseInt(dateParts[1], 10) - 1;
+        } else if (dateParts[2].length === 4) {
+          year = dateParts[2];
+          monthNum = parseInt(dateParts[0], 10) - 1;
+        }
 
         if (year === this.selectedYear && monthNum >= 0 && monthNum < 12) {
           const monthName = this.monthsList[monthNum];
@@ -518,6 +606,8 @@ export class DashboardComponent implements OnInit {
 
           if (monthlyBaseline[monthName]) {
             monthlyBaseline[monthName].revenue += actualAmount;
+            monthlyBaseline[monthName].actualAmount += actualAmount;
+            monthlyBaseline[monthName].paidAmount += paidAmount;
             monthlyBaseline[monthName].orders += 1;
             if (mode === 'cash') {
               monthlyBaseline[monthName].cashAmount += paidAmount;
@@ -528,6 +618,38 @@ export class DashboardComponent implements OnInit {
         }
       }
     });
+
+    (this.liveDailyReports || []).forEach(r => {
+      const reportDate = r.report_date || r.created_at;
+      if (!reportDate) return;
+      let str = reportDate.trim();
+      if (str.includes('T')) str = str.split('T')[0];
+      if (str.includes(' ')) str = str.split(' ')[0];
+      const dateParts = str.split(/[-\/]/);
+      if (dateParts.length === 3) {
+        let year = '';
+        let monthNum = -1;
+        if (dateParts[0].length === 4) {
+          year = dateParts[0];
+          monthNum = parseInt(dateParts[1], 10) - 1;
+        } else if (dateParts[2].length === 4) {
+          year = dateParts[2];
+          monthNum = parseInt(dateParts[0], 10) - 1;
+        }
+        if (year === this.selectedYear && monthNum >= 0 && monthNum < 12) {
+          const monthName = this.monthsList[monthNum];
+          const pTot = r.platform_total != null ? Number(r.platform_total) : ((Number(r.swiggy_amount) || 0) + (Number(r.zomato_amount) || 0) + (Number(r.swiggy_dine_in_amount) || 0) + (Number(r.dstrict_amount) || 0));
+          if (monthlyBaseline[monthName]) {
+            monthlyBaseline[monthName].platformAmount += pTot;
+          }
+        }
+      }
+    });
+
+    this.monthsList.forEach(m => {
+      monthlyBaseline[m].grandTotal = monthlyBaseline[m].paidAmount + monthlyBaseline[m].platformAmount;
+    });
+
     this.salesData = this.monthsList.map(m => monthlyBaseline[m]);
   }
 
@@ -688,7 +810,7 @@ export class DashboardComponent implements OnInit {
     
     if (parentRect) {
       this.tooltipX = rect.left - parentRect.left + rect.width / 2;
-      this.tooltipY = rect.top - parentRect.top - 50;
+      this.tooltipY = rect.top - parentRect.top - 2;
     }
   }
 
@@ -704,7 +826,7 @@ export class DashboardComponent implements OnInit {
     
     if (parentRect) {
       this.todayTooltipX = rect.left - parentRect.left + rect.width / 2;
-      this.todayTooltipY = rect.top - parentRect.top - 50;
+      this.todayTooltipY = rect.top - parentRect.top - 2;
     }
   }
 
@@ -720,12 +842,47 @@ export class DashboardComponent implements OnInit {
     
     if (parentRect) {
       this.dailyTooltipX = rect.left - parentRect.left + rect.width / 2;
-      this.dailyTooltipY = rect.top - parentRect.top - 50;
+      this.dailyTooltipY = rect.top - parentRect.top - 2;
     }
   }
 
   hideDailyPointTooltip(): void {
     this.dailyHoveredPoint = null;
+  }
+
+  getDayOfWeek(dayNumStr: string): string {
+    if (!dayNumStr) return '';
+    const dayNum = parseInt(dayNumStr, 10);
+    const monthIdx = this.monthsList.indexOf(this.selectedMonth);
+    const yearNum = parseInt(this.selectedYear, 10);
+    if (isNaN(dayNum) || monthIdx === -1 || isNaN(yearNum)) return '';
+    const date = new Date(yearNum, monthIdx, dayNum);
+    if (isNaN(date.getTime())) return '';
+    return date.toLocaleDateString('en-US', { weekday: 'long' });
+  }
+
+  getShortDayOfWeek(dayNumStr: string): string {
+    if (!dayNumStr) return '';
+    const dayNum = parseInt(dayNumStr, 10);
+    const monthIdx = this.monthsList.indexOf(this.selectedMonth);
+    const yearNum = parseInt(this.selectedYear, 10);
+    if (isNaN(dayNum) || monthIdx === -1 || isNaN(yearNum)) return '';
+    const date = new Date(yearNum, monthIdx, dayNum);
+    if (isNaN(date.getTime())) return '';
+    return date.toLocaleDateString('en-US', { weekday: 'short' });
+  }
+
+  getUltraShortDayOfWeek(dayNumStr: string): string {
+    if (!dayNumStr) return '';
+    const dayNum = parseInt(dayNumStr, 10);
+    const monthIdx = this.monthsList.indexOf(this.selectedMonth);
+    const yearNum = parseInt(this.selectedYear, 10);
+    if (isNaN(dayNum) || monthIdx === -1 || isNaN(yearNum)) return '';
+    const date = new Date(yearNum, monthIdx, dayNum);
+    if (isNaN(date.getTime())) return '';
+    const dayIdx = date.getDay();
+    const shortNames = ['S', 'M', 'Tu', 'W', 'Th', 'F', 'Sa'];
+    return shortNames[dayIdx] || '';
   }
 
   showSegmentTooltip(event: MouseEvent, segment: any): void {
@@ -741,7 +898,9 @@ export class DashboardComponent implements OnInit {
   }
 
   formatCurrency(value: number): string {
-    return '₹' + value.toLocaleString('en-IN');
+    if (value === undefined || value === null || isNaN(value)) return '₹0';
+    const rounded = Math.round(value * 100) / 100;
+    return '₹' + rounded.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   }
 
   // 4. Product Sales Graph Coordinate math & Tooltips
@@ -818,5 +977,430 @@ export class DashboardComponent implements OnInit {
     } else if (chartName === 'product') {
       this.productChartSize = this.productChartSize === 'full' ? 'half' : 'full';
     }
+  }
+
+  isPaymentOnDate(createdAt: string, targetYear: string, targetMonthIdx: number, targetDayNum: number): boolean {
+    if (!createdAt) return false;
+    let str = createdAt.trim();
+    if (str.includes('T')) str = str.split('T')[0];
+    if (str.includes(' ')) str = str.split(' ')[0];
+
+    const parts = str.split(/[-\/]/);
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        // YYYY-MM-DD
+        const y = parts[0];
+        const m = parseInt(parts[1], 10) - 1;
+        const d = parseInt(parts[2], 10);
+        return y === targetYear && m === targetMonthIdx && d === targetDayNum;
+      } else if (parts[2].length === 4) {
+        // MM-DD-YYYY
+        const y = parts[2];
+        const m = parseInt(parts[0], 10) - 1;
+        const d = parseInt(parts[1], 10);
+        return y === targetYear && m === targetMonthIdx && d === targetDayNum;
+      }
+    }
+    return false;
+  }
+
+  applyReportToModal(reportRow: any): void {
+    if (!this.selectedDailyDetail || !reportRow) return;
+
+    const sAmt = Number(reportRow.swiggy_amount) || 0;
+    const zAmt = Number(reportRow.zomato_amount) || 0;
+    const sdAmt = Number(reportRow.swiggy_dine_in_amount) || 0;
+    const dAmt = Number(reportRow.dstrict_amount) || 0;
+    const cAmt = reportRow.cash_amount != null ? Number(reportRow.cash_amount) : this.selectedDailyDetail.cashAmount;
+    const oAmt = reportRow.online_amount != null ? Number(reportRow.online_amount) : this.selectedDailyDetail.onlineAmount;
+    const pTot = reportRow.platform_total != null ? Number(reportRow.platform_total) : (sAmt + zAmt + sdAmt + dAmt);
+    const gTot = reportRow.grand_total != null ? Number(reportRow.grand_total) : (this.selectedDailyDetail.totalPaid + pTot);
+
+    this.selectedDailyDetail.cashAmount = cAmt;
+    this.selectedDailyDetail.onlineAmount = oAmt;
+    this.selectedDailyDetail.swiggyAmount = sAmt;
+    this.selectedDailyDetail.zomatoAmount = zAmt;
+    this.selectedDailyDetail.swiggyDineInAmount = sdAmt;
+    this.selectedDailyDetail.dstrictAmount = dAmt;
+    this.selectedDailyDetail.platformTotal = pTot;
+    this.selectedDailyDetail.grandTotal = gTot;
+
+    if (reportRow.total_orders != null) this.selectedDailyDetail.totalOrders = Number(reportRow.total_orders);
+    if (reportRow.total_actual != null) this.selectedDailyDetail.totalActual = Number(reportRow.total_actual);
+    if (reportRow.total_paid != null) this.selectedDailyDetail.totalPaid = Number(reportRow.total_paid);
+    if (reportRow.difference != null) this.selectedDailyDetail.totalDiff = Number(reportRow.difference);
+  }
+
+  // Daily Sales Click Modal Handler
+  openDailySalesModal(point: SalesDataPoint): void {
+    if (!point || !point.month) return;
+
+    const dayNum = parseInt(point.month, 10);
+    const monthIdx = this.monthsList.indexOf(this.selectedMonth);
+
+    // Filter payments for this day using flexible date parsing
+    const dayPayments = this.livePayments.filter(payment =>
+      this.isPaymentOnDate(payment.created_at, this.selectedYear, monthIdx, dayNum)
+    );
+
+    const formattedYyyyMmDd = `${this.selectedYear}-${(monthIdx + 1).toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}`;
+    const formattedMmDdYyyy = `${(monthIdx + 1).toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}-${this.selectedYear}`;
+
+    let totalActual = 0;
+    let totalPaid = 0;
+    let cashAmount = 0;
+    let onlineAmount = 0;
+    let swiggyAmount = 0;
+    let zomatoAmount = 0;
+    let swiggyDineInAmount = 0;
+    let dstrictAmount = 0;
+
+    const modeMap = new Map<string, { mode: string; count: number; actual: number; paid: number }>();
+
+    dayPayments.forEach(p => {
+      const actual = Number(p.actual_amount) || 0;
+      const paid = Number(p.paid_amount) || 0;
+      const rawMode = (p.payment_mode || 'UPI').trim();
+      const lowerMode = rawMode.toLowerCase();
+
+      totalActual += actual;
+      totalPaid += paid;
+
+      if (lowerMode === 'cash') {
+        cashAmount += paid;
+      } else {
+        onlineAmount += paid;
+      }
+
+      if (lowerMode.includes('swiggy dine') || lowerMode.includes('swiggy_dine')) {
+        swiggyDineInAmount += paid;
+      } else if (lowerMode.includes('swiggy')) {
+        swiggyAmount += paid;
+      } else if (lowerMode.includes('zomato')) {
+        zomatoAmount += paid;
+      } else if (lowerMode.includes('dstrict') || lowerMode.includes('magic')) {
+        dstrictAmount += paid;
+      }
+
+      // Exclude owner mode from breakdown cards
+      if (lowerMode === 'owner') return;
+
+      const normKey = lowerMode;
+      if (!modeMap.has(normKey)) {
+        modeMap.set(normKey, { mode: rawMode, count: 0, actual: 0, paid: 0 });
+      }
+      const item = modeMap.get(normKey)!;
+      item.count += 1;
+      item.actual += actual;
+      item.paid += paid;
+    });
+
+    const modeBreakdown = Array.from(modeMap.values()).sort((a, b) => b.paid - a.paid);
+
+    this.selectedDailyDetail = {
+      dayNumber: dayNum,
+      displayDate: `Daily Sales Report: ${this.getDayOfWeek(dayNum.toString())}, ${this.selectedMonth} ${dayNum}, ${this.selectedYear}`,
+      totalOrders: dayPayments.length,
+      totalActual,
+      totalPaid,
+      totalDiff: totalActual - totalPaid,
+      cashAmount,
+      onlineAmount,
+      swiggyAmount,
+      zomatoAmount,
+      swiggyDineInAmount,
+      dstrictAmount,
+      platformTotal: swiggyAmount + zomatoAmount + swiggyDineInAmount + dstrictAmount,
+      grandTotal: totalPaid + (swiggyAmount + zomatoAmount + swiggyDineInAmount + dstrictAmount),
+      modeBreakdown,
+      payments: dayPayments
+    };
+
+    this.dailyModalSearchTerm = '';
+    this.showDailyModal = true;
+
+    // Helper to find report by date
+    const findMatchingReport = (reports: any[]) => {
+      return reports.find(r =>
+        r.report_date === formattedYyyyMmDd ||
+        r.report_date === formattedMmDdYyyy ||
+        this.isPaymentOnDate(r.report_date, this.selectedYear, monthIdx, dayNum) ||
+        (r.report_date && r.report_date.startsWith(formattedYyyyMmDd)) ||
+        (r.created_at && this.isPaymentOnDate(r.created_at, this.selectedYear, monthIdx, dayNum))
+      );
+    };
+
+    const cachedReport = findMatchingReport(this.liveDailyReports);
+    if (cachedReport) {
+      this.applyReportToModal(cachedReport);
+    }
+
+    // Always fetch fresh from Hasura daily_sales_report table on modal open
+    this.hasuraService.getDailySalesReportFromAlive().subscribe({
+      next: (res: any) => {
+        const reports = res?.data?.daily_sales_report || res?.data?.daily_sales_reports || [];
+        if (reports.length > 0) {
+          this.liveDailyReports = reports;
+          const freshReport = findMatchingReport(reports);
+          if (freshReport) {
+            this.applyReportToModal(freshReport);
+          }
+        }
+      },
+      error: (err) => console.error('Error fetching live daily sales report for modal:', err)
+    });
+  }
+
+  // Monthly Sales Click Modal Handler
+  openMonthlySalesModal(point: SalesDataPoint, index: number): void {
+    if (index < 0 || index >= this.monthsList.length) return;
+
+    const monthName = this.monthsList[index];
+    const monthNum = index;
+
+    // Filter payments for this month in selectedYear
+    const monthPayments = this.livePayments.filter(payment => {
+      if (!payment.created_at) return false;
+      let str = payment.created_at.trim();
+      if (str.includes('T')) str = str.split('T')[0];
+      if (str.includes(' ')) str = str.split(' ')[0];
+      const parts = str.split(/[-\/]/);
+      if (parts.length === 3) {
+        if (parts[0].length === 4) {
+          const y = parts[0];
+          const m = parseInt(parts[1], 10) - 1;
+          return y === this.selectedYear && m === monthNum;
+        } else if (parts[2].length === 4) {
+          const y = parts[2];
+          const m = parseInt(parts[0], 10) - 1;
+          return y === this.selectedYear && m === monthNum;
+        }
+      }
+      return false;
+    });
+
+    let totalActual = 0;
+    let totalPaid = 0;
+    let cashAmount = 0;
+    let onlineAmount = 0;
+    let swiggyAmount = 0;
+    let zomatoAmount = 0;
+    let swiggyDineInAmount = 0;
+    let dstrictAmount = 0;
+
+    const modeMap = new Map<string, { mode: string; count: number; actual: number; paid: number }>();
+
+    monthPayments.forEach(p => {
+      const actual = Number(p.actual_amount) || 0;
+      const paid = Number(p.paid_amount) || 0;
+      const rawMode = (p.payment_mode || 'UPI').trim();
+      const lowerMode = rawMode.toLowerCase();
+
+      totalActual += actual;
+      totalPaid += paid;
+
+      if (lowerMode === 'cash') {
+        cashAmount += paid;
+      } else {
+        onlineAmount += paid;
+      }
+
+      if (lowerMode.includes('swiggy dine') || lowerMode.includes('swiggy_dine')) {
+        swiggyDineInAmount += paid;
+      } else if (lowerMode.includes('swiggy')) {
+        swiggyAmount += paid;
+      } else if (lowerMode.includes('zomato')) {
+        zomatoAmount += paid;
+      } else if (lowerMode.includes('dstrict') || lowerMode.includes('magic')) {
+        dstrictAmount += paid;
+      }
+
+      if (lowerMode === 'owner') return;
+
+      const normKey = lowerMode;
+      if (!modeMap.has(normKey)) {
+        modeMap.set(normKey, { mode: rawMode, count: 0, actual: 0, paid: 0 });
+      }
+      const item = modeMap.get(normKey)!;
+      item.count += 1;
+      item.actual += actual;
+      item.paid += paid;
+    });
+
+    const modeBreakdown = Array.from(modeMap.values()).sort((a, b) => b.paid - a.paid);
+
+    this.selectedDailyDetail = {
+      dayNumber: index + 1,
+      displayDate: `Monthly Sales Report: ${monthName} ${this.selectedYear}`,
+      totalOrders: monthPayments.length,
+      totalActual,
+      totalPaid,
+      totalDiff: totalActual - totalPaid,
+      cashAmount,
+      onlineAmount,
+      swiggyAmount,
+      zomatoAmount,
+      swiggyDineInAmount,
+      dstrictAmount,
+      platformTotal: swiggyAmount + zomatoAmount + swiggyDineInAmount + dstrictAmount,
+      grandTotal: totalPaid + (swiggyAmount + zomatoAmount + swiggyDineInAmount + dstrictAmount),
+      modeBreakdown,
+      payments: monthPayments
+    };
+
+    const applyMonthlyReports = (reports: any[]) => {
+      const monthReports = (reports || []).filter(r => {
+        const reportDate = r.report_date || r.created_at;
+        if (!reportDate) return false;
+        let str = reportDate.trim();
+        if (str.includes('T')) str = str.split('T')[0];
+        if (str.includes(' ')) str = str.split(' ')[0];
+        const parts = str.split(/[-\/]/);
+        if (parts.length === 3) {
+          if (parts[0].length === 4) {
+            const y = parts[0];
+            const m = parseInt(parts[1], 10) - 1;
+            return y === this.selectedYear && m === monthNum;
+          } else if (parts[2].length === 4) {
+            const y = parts[2];
+            const m = parseInt(parts[0], 10) - 1;
+            return y === this.selectedYear && m === monthNum;
+          }
+        }
+        return false;
+      });
+
+      if (monthReports.length > 0 && this.selectedDailyDetail) {
+        let rSwiggy = 0, rZomato = 0, rDineIn = 0, rDstrict = 0, rPlatform = 0;
+
+        monthReports.forEach((r: any) => {
+          rSwiggy += Number(r.swiggy_amount) || 0;
+          rZomato += Number(r.zomato_amount) || 0;
+          rDineIn += Number(r.swiggy_dine_in_amount) || 0;
+          rDstrict += Number(r.dstrict_amount) || 0;
+          const pTot = r.platform_total != null ? Number(r.platform_total) : ((Number(r.swiggy_amount) || 0) + (Number(r.zomato_amount) || 0) + (Number(r.swiggy_dine_in_amount) || 0) + (Number(r.dstrict_amount) || 0));
+          rPlatform += pTot;
+        });
+
+        // Fallback summary totals only if live payments were empty for this month
+        if (monthPayments.length === 0) {
+          let rOrders = 0, rActual = 0, rPaid = 0, rDiff = 0, rCash = 0, rOnline = 0;
+          monthReports.forEach((r: any) => {
+            rOrders += Number(r.total_orders) || 0;
+            rActual += Number(r.total_actual) || 0;
+            rPaid += Number(r.total_paid) || 0;
+            rDiff += Number(r.difference) || 0;
+            rCash += Number(r.cash_amount) || 0;
+            rOnline += Number(r.online_amount) || 0;
+          });
+          if (rOrders > 0) this.selectedDailyDetail.totalOrders = rOrders;
+          if (rActual > 0) this.selectedDailyDetail.totalActual = rActual;
+          if (rPaid > 0) this.selectedDailyDetail.totalPaid = rPaid;
+          this.selectedDailyDetail.totalDiff = rDiff;
+          if (rCash > 0) this.selectedDailyDetail.cashAmount = rCash;
+          if (rOnline > 0) this.selectedDailyDetail.onlineAmount = rOnline;
+        }
+
+        this.selectedDailyDetail.swiggyAmount = rSwiggy;
+        this.selectedDailyDetail.zomatoAmount = rZomato;
+        this.selectedDailyDetail.swiggyDineInAmount = rDineIn;
+        this.selectedDailyDetail.dstrictAmount = rDstrict;
+        this.selectedDailyDetail.platformTotal = rPlatform;
+        this.selectedDailyDetail.grandTotal = this.selectedDailyDetail.totalPaid + rPlatform;
+      }
+    };
+
+    applyMonthlyReports(this.liveDailyReports);
+
+    this.dailyModalSearchTerm = '';
+    this.showDailyModal = true;
+
+    this.hasuraService.getDailySalesReportFromAlive().subscribe({
+      next: (res: any) => {
+        const reports = res?.data?.daily_sales_report || res?.data?.daily_sales_reports || [];
+        if (reports.length > 0) {
+          this.liveDailyReports = reports;
+          applyMonthlyReports(reports);
+        }
+      },
+      error: (err) => console.error('Error fetching live daily sales report for monthly modal:', err)
+    });
+  }
+
+  closeDailyModal(): void {
+    this.showDailyModal = false;
+    this.selectedDailyDetail = null;
+  }
+
+  getFilteredModalPayments(): any[] {
+    if (!this.selectedDailyDetail || !this.selectedDailyDetail.payments) return [];
+    if (!this.dailyModalSearchTerm || !this.dailyModalSearchTerm.trim()) {
+      return this.selectedDailyDetail.payments;
+    }
+    const term = this.dailyModalSearchTerm.toLowerCase().trim();
+    return this.selectedDailyDetail.payments.filter((p: any) => 
+      (p.bill_no && p.bill_no.toString().toLowerCase().includes(term)) ||
+      (p.payment_mode && p.payment_mode.toLowerCase().includes(term)) ||
+      (p.created_time && p.created_time.toLowerCase().includes(term))
+    );
+  }
+
+  getModeBadgeClass(mode: string): string {
+    if (!mode) return 'badge-default';
+    const m = mode.toLowerCase();
+    if (m.includes('swiggy')) return 'badge-swiggy';
+    if (m.includes('zomato')) return 'badge-zomato';
+    if (m.includes('cash')) return 'badge-cash';
+    if (m.includes('online') || m.includes('upi')) return 'badge-upi';
+    if (m.includes('card')) return 'badge-card';
+    if (m.includes('magic') || m.includes('platform') || m.includes('dstrict')) return 'badge-platform';
+    return 'badge-default';
+  }
+
+  formatTimeDisplay(timeStr: string): string {
+    if (!timeStr) return '-';
+
+    let tStr = timeStr.trim();
+
+    // Handle ISO timestamp string e.g. "2026-09-11T14:30:00.000Z"
+    if (tStr.includes('T')) {
+      const d = new Date(tStr);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      }
+    }
+
+    // Handle custom format with double hyphen e.g. "09-09-2026--14:30:00-PM"
+    if (tStr.includes('--')) {
+      const parts = tStr.split('--');
+      tStr = parts[parts.length - 1];
+    } else {
+      // Strip date prefix e.g. "09-09-2026-14:30:00-PM", "2026-09-11 14:30:00", "09/09/2026 14:30"
+      const datePrefixMatch = tStr.match(/^\d{1,4}[-\/\.]\d{1,4}[-\/\.]\d{2,4}[-\sT]+(.*)$/);
+      if (datePrefixMatch && datePrefixMatch[1]) {
+        tStr = datePrefixMatch[1];
+      }
+    }
+
+    // Extract hours, minutes, and optional AM/PM suffix
+    const match = tStr.match(/(\d{1,2})[:.-](\d{2})(?:[:.-](\d{2}))?(?:[-\s]?([APMapm]{2}))?/);
+    if (match) {
+      let h = parseInt(match[1], 10);
+      const m = match[2];
+      let ampm = match[4] ? match[4].toUpperCase() : '';
+
+      if (!ampm) {
+        ampm = h >= 12 ? 'PM' : 'AM';
+        if (h > 12) h -= 12;
+        if (h === 0) h = 12;
+      } else {
+        if (h > 12) h -= 12;
+        if (h === 0) h = 12;
+      }
+
+      return `${h}:${m} ${ampm}`;
+    }
+
+    return timeStr;
   }
 }

@@ -263,4 +263,33 @@ export class HasuraApiService {
     return this.http.post<any>('https://alive-bedbug-11.hasura.app/v1/graphql', body, { headers });
   }
 
+  getDailySalesReportFromAlive(): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'x-hasura-admin-secret': PAYMENT_HASURA_ADMIN_SECRET
+    });
+    const body = {
+      query: `
+        query {
+          daily_sales_reports(order_by: {report_date: desc}) {
+            report_date
+            total_orders
+            total_actual
+            total_paid
+            difference
+            cash_amount
+            online_amount
+            swiggy_amount
+            zomato_amount
+            swiggy_dine_in_amount
+            dstrict_amount
+            platform_total
+            grand_total
+            created_at
+          }
+        }
+      `
+    };
+    return this.http.post<any>('https://alive-bedbug-11.hasura.app/v1/graphql', body, { headers });
+  }
 }

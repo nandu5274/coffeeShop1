@@ -5,185 +5,79 @@
 <div *ngIf="showPaidSpinner" class="spinner-overlay">
   <div class="spinner"></div>
 </div>
-<!--   
-  <div  *ngIf="!loggedIn" > <app-login [pageType]="pageType" (loginStatus)="handleLoginStatus($event)"></app-login></div>
-   -->
+<!-- Admin Security Gate Modal Overlay (Shown when user is not logged in) -->
+<div class="admin-login-overlay" *ngIf="!isAuthenticated">
+  <div class="admin-login-card glass-card">
+    <div class="login-header">
+      <div class="lock-icon-badge">
+        <i class="bi bi-shield-lock-fill"></i>
+      </div>
+      <h2 class="login-title">Admin Portal Login</h2>
+      <p class="login-subtitle">
+        Access to administrative financial ledgers & system controls is restricted. Enter Admin Password to proceed.
+      </p>
+    </div>
 
-<div>
+    <!-- Error Banner -->
+    <div class="login-alert error" *ngIf="loginErrorMsg">
+      <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ loginErrorMsg }}
+    </div>
+
+    <form (submit)="verifyAndLogin(); $event.preventDefault()" class="login-form">
+      <div class="form-group">
+        <label for="adminPasswordInput" class="form-label">ENTER ADMIN PASSWORD</label>
+        <div class="input-icon-wrap">
+          <i class="bi bi-key-fill field-icon"></i>
+          <input 
+            type="password" 
+            id="adminPasswordInput" 
+            name="adminPasswordInput" 
+            [(ngModel)]="passwordInput" 
+            placeholder="Enter Password" 
+            autocomplete="off" 
+            class="login-input" 
+            autofocus />
+        </div>
+      </div>
+
+      <div class="login-actions">
+        <button type="submit" class="btn-verify-access">
+          <i class="bi bi-unlock-fill"></i> Login
+        </button>
+      </div>
+    </form>
+
+    <div class="login-footer">
+      <a routerLink="/" class="back-home-link">
+        <i class="bi bi-arrow-left"></i> Back to Homepage
+      </a>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="isAuthenticated">
 
   <section id="menu" class="menu section-bg" style="padding-top: 9em;">
 
 
     
+    <div style="display: flex; justify-content: flex-end; padding: 0 20px 10px 20px;">
+      <button class="lock-admin-top-btn" (click)="lockAdminPage()" title="Lock Admin Portal" style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: rgba(220, 53, 69, 0.18); border: 1px solid rgba(220, 53, 69, 0.5); color: #ff6b6b; border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 600; transition: all 0.2s ease;">
+        <i class="bi bi-lock-fill"></i> Lock Admin
+      </button>
+    </div>
+
     <div class="tabs" [class.sticky-tabs]="isSticky">
-
-      <div class="tab tab-btn " (click)="selectTab('admin')" [class.active]="selectedTab === 'admin'">admin 
-      </div>
-
-      <div class="tab tab-btn " (click)="selectTab('payments')" [class.active]="selectedTab === 'payments'">Payments 
-      </div>
 
       <div class="tab tab-btn " (click)="selectTab('inventory')" [class.active]="selectedTab === 'inventory'">Inventory
       </div>
+
+      <div class="tab tab-btn " (click)="selectTab('links')" [class.active]="selectedTab === 'links'">links
+      </div>
     </div>
 
 
     <div class="tab-content">
-      <div *ngIf="selectedTab === 'admin'">
-
-        <div class="container" data-aos="fade-up">
-
-          <div class="section-title" style="padding-top: 1em; padding-bottom: 0px;">
-            <h2>Admin Dashboard</h2>
-
-            <div  style="display: flex; flex-direction: row;" class="refresh">
-              <p>Admin Payments</p>
-              <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
-             
-                <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px; display: flex; gap: 8px;">
-                  <button style=" background-color: #d49b3b; color: #11100e;"  (click)="openAdminPaymentForm()" >Add Payment</button>
-                  <button style=" background-color: #d49b3b; color: #11100e;"  routerLink="/dashboard" >Sales Dashboard</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div >
-            <div style="display: flex;">
-              <select class="form-control"  [(ngModel)]="searchSelectedMonth" style=" background: #cda45e; margin: 1em;">
-                <option value="Month" disabled>Select Month</option>
-                <option value="January">January</option>
-                <option value="February">February</option>
-                <option value="March">March</option>
-                <option value="April">April</option>
-                <option value="May">May</option>
-                <option value="June">June</option>
-                <option value="July">July</option>
-                <option value="August">August</option>
-                <option value="September">September</option>
-                <option value="October">October</option>
-                <option value="November">November</option>
-                <option value="December">December</option>
-              </select>
-            
-              <select class="form-control" [(ngModel)]="searchSelectedYear" style=" background: #cda45e; margin: 1em;">
-                <option value="Year" disabled>Select Year</option>
-                <option value="2025">2025</option>
-                <option value="2026">2026</option>
-                <option value="2027">2027</option>
-                <option value="2028">2028</option>
-                <option value="2029">2029</option>
-              </select>
-            
-        
-              <button style="height: fit-content; background-color: #d49b3b; color: #11100e; place-self: center;"  (click)="onAdminPaymentGridReadyByMonth()">Search</button>
-           
-        
-            </div>
-
-            <div  style="margin: 12px;  text-align: center;">
-              <span style="font-weight: bold; font-size: 18px; color: #cda45e;">Total Amount: </span>
-              <span style="font-weight: bold; font-size: 24px; color: #cda45e;">{{totalMonthAmount}}</span>
-              <!-- <button (click)="exportToExcel()">Export to Excel</button> -->
-            </div>
-          <div  style="height: 100%; display: flex; flex-direction: column;" >
-            <ag-grid-angular
-            style="width: 100%; height: 500px;"
-            class="ag-theme-alpine"
-            [defaultColDef]="defaultColDef"
-            [rowData]="adminPaymentRowData"
-            [columnDefs]="adminPaymentColumnDefs"
-            (gridReady)="onAdminPaymentGridReady()">
-          </ag-grid-angular>
-
-
-          
-        </div>
-          </div>
-      
-       <!-- <div>
-          <input type="file" (change)="onFileSelected($event)" accept="image/*" />
-
-          <h3>Extracted Payment Details</h3>
-          <p><strong>Paid to:</strong> {{ sender }}</p>
-          <p><strong>Amount:</strong> ₹{{ amount }}</p>
-          <p><strong>Phone Number:</strong> {{ phoneNumber }}</p>
-          <p><strong>Banking Name:</strong> {{ bankingName }}</p>
-          <p><strong>Transaction ID:</strong> {{ transactionId }}</p>
-          <p><strong>UTR:</strong> {{ utr }}</p>
-          <p><strong>Debited Account:</strong> {{ debitedAccount }}</p>
-
-        </div> -->
-      </div>
-
-  
-      </div>
-
-      <!-- tab 1 ending -->
-     
-      <app-admin-form  [isVisible]="isFormVisible" 
-      (cancel)="closeForm()"  (fromData)="createPaymentDetails($event)"></app-admin-form>
-
-<app-admin-payment-form [isVisible]="isAdminPaymentFormVisible" 
-(cancel)="closeAdminPaymentForm()"  (fromData)="createAdminPaymentDetails($event)"></app-admin-payment-form>
-    </div>
-
-
-
-
-    <div class="tab-content">
-      <div *ngIf="selectedTab === 'payments'">
-
-        <div class="container" data-aos="fade-up">
-
-          <div class="section-title" style="padding-top: 1em;">
-            <h2>Payment</h2>
-
-            <div  style="display: flex; flex-direction: row;" class="refresh">
-              <p>Kubera Payments</p>
-              <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
-             
-                <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
-                  <button style=" background-color: #d49b3b; color: #11100e;"  (click)="openForm()" >Create</button>
-                  <button style=" background-color: #d49b3b; color: #11100e;"  (click) = "clearFilters()" >orders</button>
-                </div>
-              
-              </div>
-            
-            </div>
-           
-          </div>
-
-          <div>
-
-  
-          <div  style="height: 100%; display: flex; flex-direction: column;" >
-            <ag-grid-angular
-            style="width: 100%; height: 500px;"
-            class="ag-theme-alpine"
-            [defaultColDef]="defaultColDef"
-            [rowData]="rowData"
-            [columnDefs]="columnDefs"
-            (gridReady)="onGridReady()">
-          </ag-grid-angular>
-
-
-          
-        </div>
-          </div>
-      
-   
-      
-        
-      </div>
-  
-      </div>
-
-      <!-- tab 1 ending -->
-     
-      <app-admin-form  [isVisible]="isFormVisible" 
-      (cancel)="closeForm()"  (fromData)="createPaymentDetails($event)"></app-admin-form>
-
       <div *ngIf="selectedTab === 'inventory'">
 
         <div class="buttons" style="margin: 0px; padding: 3px 9px 0px 16px;">
@@ -196,7 +90,105 @@
 
 
       </div>
-      <div *ngIf="selectedTab === 'tab3'">Content for Tab 3> </div>
+
+      <!-- System Links Tab -->
+      <div *ngIf="selectedTab === 'links'" class="system-links-tab">
+        <div class="container" data-aos="fade-up">
+          <div class="section-title" style="padding-top: 1em; padding-bottom: 0px;">
+            <h2>System Links</h2>
+          </div>
+
+          <!-- Controls: Category Filter & Search Bar -->
+          <div class="links-controls-bar">
+            <div class="category-pills-group">
+              <button 
+                class="pill-btn" 
+                [class.active]="activeLinkCategory === 'all'" 
+                (click)="activeLinkCategory = 'all'">
+                All ({{ systemLinks.length }})
+              </button>
+
+              <button 
+                class="pill-btn" 
+                [class.active]="activeLinkCategory === 'staff'" 
+                (click)="activeLinkCategory = 'staff'">
+                Staff & Ops
+              </button>
+
+              <button 
+                class="pill-btn" 
+                [class.active]="activeLinkCategory === 'store'" 
+                (click)="activeLinkCategory = 'store'">
+                Storefront
+              </button>
+
+              <button 
+                class="pill-btn" 
+                [class.active]="activeLinkCategory === 'analytics'" 
+                (click)="activeLinkCategory = 'analytics'">
+                Analytics & Tools
+              </button>
+            </div>
+
+            <div class="links-search-input">
+              <i class="bi bi-search field-icon"></i>
+              <input 
+                type="text" 
+                placeholder="Search links..." 
+                [(ngModel)]="linkSearchQuery" />
+            </div>
+          </div>
+
+          <!-- Compact Form Cards Grid -->
+          <div class="system-links-grid compact-grid">
+            <div 
+              class="link-form-card compact-card glass-card" 
+              *ngFor="let link of filteredSystemLinks">
+              
+              <div class="card-main-content">
+                <div class="link-icon-box small">
+                  <i class="bi {{ link.icon }}"></i>
+                </div>
+
+                <div class="link-info">
+                  <div class="title-row">
+                    <h4 class="link-title">{{ link.title }}</h4>
+                    <span class="category-badge" [ngClass]="link.badgeClass || 'badge-primary'">
+                      {{ link.badge }}
+                    </span>
+                  </div>
+                  <code class="link-path-badge">{{ link.path }}</code>
+                </div>
+              </div>
+
+              <div class="card-actions-row compact-actions">
+                <a 
+                  [routerLink]="link.path" 
+                  class="btn-open-link sm" 
+                  target="_blank"
+                  title="Open Page">
+                  <i class="bi bi-box-arrow-up-right me-1"></i> Open
+                </a>
+
+                <button 
+                  class="btn-copy-link sm" 
+                  (click)="copyLinkUrl(link.path)"
+                  [title]="copiedLinkPath === link.path ? 'Copied URL!' : 'Copy Link URL'">
+                  <i class="bi" [class.bi-check-lg]="copiedLinkPath === link.path" [class.bi-clipboard]="copiedLinkPath !== link.path"></i>
+                  <span>{{ copiedLinkPath === link.path ? 'Copied' : 'Copy' }}</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Empty Search State -->
+          <div class="empty-links-state" *ngIf="filteredSystemLinks.length === 0">
+            <i class="bi bi-search empty-icon"></i>
+            <h3>No links match your search</h3>
+          </div>
+        </div>
+      </div>
 
     </div>
 

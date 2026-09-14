@@ -6,6 +6,12 @@ import { ItemsMenuComponent } from './items-menu/items-menu.component';
 const routes: Routes = [
   { path: '', component: HomePageComponent },
   { path: 'menu', component: ItemsMenuComponent, data: { fragment: 'menu' } },
+  {
+    path: 'health',
+    loadComponent: () => import('./health/health.component').then((m) => m.HealthComponent)
+  },
+  { path: 'healthz', redirectTo: 'health', pathMatch: 'full' },
+  { path: 'status', redirectTo: 'health', pathMatch: 'full' },
 
   {
     path: 'ar-view',

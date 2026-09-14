@@ -216,8 +216,13 @@
                 </div>
                 <div class="tooltip-row">
                   <span class="dot gold"></span>
-                  <span class="label">Revenue:</span>
-                  <span class="value">{{ formatCurrency(todayHoveredPoint.revenue) }}</span>
+                  <span class="label">Actual Amount:</span>
+                  <span class="value">{{ formatCurrency(todayHoveredPoint.actualAmount) }}</span>
+                </div>
+                <div class="tooltip-row">
+                  <span class="dot cyan"></span>
+                  <span class="label">Paid Amount:</span>
+                  <span class="value">{{ formatCurrency(todayHoveredPoint.paidAmount) }}</span>
                 </div>
                 <div class="tooltip-row">
                   <span class="dot green"></span>
@@ -294,13 +299,12 @@
                 <!-- X Axis Labels -->
                 <g class="x-axis-labels">
                   <ng-container *ngFor="let d of dailySalesData; let i = index">
-                    <text *ngIf="i % 5 === 0 || i === dailySalesData.length - 1"
-                          [attr.x]="getDailyXCoordinate(i)" 
-                          [attr.y]="svgHeight - svgPadding + 20" 
-                          fill="rgba(255, 255, 255, 0.6)" 
-                          font-size="11" 
+                    <text [attr.x]="getDailyXCoordinate(i)" 
+                          [attr.y]="svgHeight - svgPadding + 18" 
+                          fill="rgba(255, 255, 255, 0.65)" 
+                          font-size="9" 
                           text-anchor="middle">
-                      Day {{ d.month }}
+                      {{ getUltraShortDayOfWeek(d.month) }} {{ d.month }}
                     </text>
                   </ng-container>
                 </g>
@@ -329,7 +333,8 @@
                           stroke-width="2"
                           class="interactive-dot"
                           (mouseenter)="showDailyPointTooltip($event, d, i)"
-                          (mouseleave)="hideDailyPointTooltip()" />
+                          (mouseleave)="hideDailyPointTooltip()"
+                          (click)="openDailySalesModal(d)" />
                 </g>
 
                 <!-- BAR Chart Drawing -->
@@ -343,19 +348,30 @@
                         rx="2"
                         class="interactive-bar"
                         (mouseenter)="showDailyPointTooltip($event, d, i)"
-                        (mouseleave)="hideDailyPointTooltip()" />
+                        (mouseleave)="hideDailyPointTooltip()"
+                        (click)="openDailySalesModal(d)" />
                 </g>
               </svg>
 
               <!-- Daily Dynamic Tooltip -->
               <div *ngIf="dailyHoveredPoint" class="chart-tooltip" [style.left.px]="dailyTooltipX" [style.top.px]="dailyTooltipY">
                 <div class="tooltip-title">
-                  Date: {{ selectedMonth }} {{ dailyHoveredPoint.month }}, {{ selectedYear }}
+                  Date: {{ getDayOfWeek(dailyHoveredPoint.month) }}, {{ selectedMonth }} {{ dailyHoveredPoint.month }}, {{ selectedYear }}
                 </div>
                 <div class="tooltip-row">
                   <span class="dot gold"></span>
-                  <span class="label">Revenue:</span>
-                  <span class="value">{{ formatCurrency(dailyHoveredPoint.revenue) }}</span>
+                  <span class="label">Actual Amount:</span>
+                  <span class="value">{{ formatCurrency(dailyHoveredPoint.actualAmount) }}</span>
+                </div>
+                <div class="tooltip-row">
+                  <span class="dot cyan"></span>
+                  <span class="label">Paid Amount:</span>
+                  <span class="value">{{ formatCurrency(dailyHoveredPoint.paidAmount) }}</span>
+                </div>
+                <div class="tooltip-row" *ngIf="dailyHoveredPoint.grandTotal != null">
+                  <span class="dot purple"></span>
+                  <span class="label">Grand Total:</span>
+                  <span class="value text-gold" style="font-weight: 700;">{{ formatCurrency(dailyHoveredPoint.grandTotal) }}</span>
                 </div>
                 <div class="tooltip-row">
                   <span class="dot green"></span>
@@ -467,6 +483,7 @@
                           stroke="#cda45e" 
                           stroke-width="2"
                           class="interactive-dot"
+                          (click)="openMonthlySalesModal(d, i)"
                           (mouseenter)="showPointTooltip($event, d, i)"
                           (mouseleave)="hidePointTooltip()" />
                 </g>
@@ -481,6 +498,7 @@
                         fill="url(#barGradient)" 
                         rx="4"
                         class="interactive-bar"
+                        (click)="openMonthlySalesModal(d, i)"
                         (mouseenter)="showPointTooltip($event, d, i)"
                         (mouseleave)="hidePointTooltip()" />
                 </g>
@@ -493,8 +511,18 @@
                 </div>
                 <div class="tooltip-row">
                   <span class="dot gold"></span>
-                  <span class="label">Revenue:</span>
-                  <span class="value">{{ formatCurrency(hoveredPoint.revenue) }}</span>
+                  <span class="label">Actual Amount:</span>
+                  <span class="value">{{ formatCurrency(hoveredPoint.actualAmount) }}</span>
+                </div>
+                <div class="tooltip-row">
+                  <span class="dot cyan"></span>
+                  <span class="label">Paid Amount:</span>
+                  <span class="value">{{ formatCurrency(hoveredPoint.paidAmount) }}</span>
+                </div>
+                <div class="tooltip-row" *ngIf="hoveredPoint.grandTotal != null">
+                  <span class="dot purple"></span>
+                  <span class="label">Grand Total:</span>
+                  <span class="value text-gold" style="font-weight: 700;">{{ formatCurrency(hoveredPoint.grandTotal) }}</span>
                 </div>
                 <div class="tooltip-row">
                   <span class="dot green"></span>
@@ -756,3 +784,181 @@
 
   </div>
 </section>
+
+<!-- Daily Sales Detail Modal Popup -->
+<div *ngIf="showDailyModal && selectedDailyDetail" class="daily-sales-modal-overlay" (click)="closeDailyModal()">
+  <div class="daily-sales-modal-card glass-panel" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header-flex">
+      <div class="modal-title-box">
+        <h3>
+          <i class="bi bi-calendar-event text-gold me-2"></i>
+          {{ selectedDailyDetail.displayDate }}
+        </h3>
+        <span class="subtitle">Complete breakdown of transactions, payment channels & orders</span>
+      </div>
+      <button class="modal-close-btn" (click)="closeDailyModal()" title="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body-content">
+      <!-- 1. Key Summary Stats (Cards Grid) -->
+      <div class="kpi-summary-grid">
+        <div class="summary-kpi-card gold-border">
+          <div class="kpi-icon"><i class="bi bi-receipt"></i></div>
+          <div class="kpi-meta">
+            <span class="label">Total Orders</span>
+            <span class="value">{{ selectedDailyDetail.totalOrders }}</span>
+          </div>
+        </div>
+        <div class="summary-kpi-card green-border">
+          <div class="kpi-icon"><i class="bi bi-cash-stack"></i></div>
+          <div class="kpi-meta">
+            <span class="label">Actual Amount</span>
+            <span class="value text-gold">{{ formatCurrency(selectedDailyDetail.totalActual) }}</span>
+          </div>
+        </div>
+        <div class="summary-kpi-card cyan-border">
+          <div class="kpi-icon"><i class="bi bi-credit-card-2-front"></i></div>
+          <div class="kpi-meta">
+            <span class="label">Paid Amount</span>
+            <span class="value text-cyan">{{ formatCurrency(selectedDailyDetail.totalPaid) }}</span>
+          </div>
+        </div>
+        <div class="summary-kpi-card orange-border">
+          <div class="kpi-icon"><i class="bi bi-calculator"></i></div>
+          <div class="kpi-meta">
+            <span class="label">Discrepancy / Diff</span>
+            <span class="value" [class.text-danger]="selectedDailyDetail.totalDiff > 0" [class.text-success]="selectedDailyDetail.totalDiff <= 0">
+              {{ formatCurrency(selectedDailyDetail.totalDiff) }}
+            </span>
+          </div>
+        </div>
+        <div class="summary-kpi-card green-border">
+          <div class="kpi-icon"><i class="bi bi-currency-rupee"></i></div>
+          <div class="kpi-meta">
+            <span class="label">Cash Amount</span>
+            <span class="value text-success">{{ formatCurrency(selectedDailyDetail.cashAmount || 0) }}</span>
+          </div>
+        </div>
+        <div class="summary-kpi-card cyan-border">
+          <div class="kpi-icon"><i class="bi bi-globe"></i></div>
+          <div class="kpi-meta">
+            <span class="label">Online Amount</span>
+            <span class="value text-cyan">{{ formatCurrency(selectedDailyDetail.onlineAmount || 0) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Online Platform Settlement & Totals -->
+      <div class="modal-section-title mt-3">
+        <h5><i class="bi bi-diagram-3-fill me-1"></i> Online Platform Settlement & Totals</h5>
+      </div>
+      <div class="kpi-summary-grid mb-3">
+        <div class="summary-kpi-card orange-border">
+          <div class="kpi-icon"><i class="bi bi-bag-check"></i></div>
+          <div class="kpi-meta">
+            <span class="label">Swiggy Amount</span>
+            <span class="value text-warning">{{ formatCurrency(selectedDailyDetail.swiggyAmount || 0) }}</span>
+          </div>
+        </div>
+        <div class="summary-kpi-card red-border">
+          <div class="kpi-icon"><i class="bi bi-bag-check-fill"></i></div>
+          <div class="kpi-meta">
+            <span class="label">Zomato Amount</span>
+            <span class="value text-danger">{{ formatCurrency(selectedDailyDetail.zomatoAmount || 0) }}</span>
+          </div>
+        </div>
+        <div class="summary-kpi-card orange-border">
+          <div class="kpi-icon"><i class="bi bi-cup-hot-fill"></i></div>
+          <div class="kpi-meta">
+            <span class="label">Swiggy Dine-In</span>
+            <span class="value text-warning">{{ formatCurrency(selectedDailyDetail.swiggyDineInAmount || 0) }}</span>
+          </div>
+        </div>
+        <div class="summary-kpi-card purple-border">
+          <div class="kpi-icon"><i class="bi bi-building"></i></div>
+          <div class="kpi-meta">
+            <span class="label">Dstrict Amount</span>
+            <span class="value text-purple">{{ formatCurrency(selectedDailyDetail.dstrictAmount || 0) }}</span>
+          </div>
+        </div>
+        <div class="summary-kpi-card purple-border">
+          <div class="kpi-icon"><i class="bi bi-diagram-3"></i></div>
+          <div class="kpi-meta">
+            <span class="label">Platform Total</span>
+            <span class="value text-purple">{{ formatCurrency(selectedDailyDetail.platformTotal || 0) }}</span>
+          </div>
+        </div>
+        <div class="summary-kpi-card grand-total-highlight">
+          <div class="kpi-icon"><i class="bi bi-wallet2"></i></div>
+          <div class="kpi-meta">
+            <span class="label">Grand Total</span>
+            <span class="value">{{ formatCurrency(selectedDailyDetail.grandTotal || 0) }}</span>
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- 3. Transactions Table -->
+      <div class="modal-section-title">
+        <h5><i class="bi bi-list-ul me-1"></i> Daily Transactions List</h5>
+        <div class="search-box-inline">
+          <i class="bi bi-search search-icon"></i>
+          <input type="text" class="search-input" placeholder="Search Bill No or Mode..." [(ngModel)]="dailyModalSearchTerm">
+        </div>
+      </div>
+
+      <div class="table-responsive daily-table-container">
+        <table class="table custom-dark-table align-middle">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Bill No</th>
+              <th>Time</th>
+              <th>Payment Mode</th>
+              <th class="text-end">Actual Amount</th>
+              <th class="text-end">Paid Amount</th>
+              <th class="text-end">Difference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of getFilteredModalPayments(); let idx = index">
+              <td>{{ idx + 1 }}</td>
+              <td>
+                <span class="bill-no-badge">{{ p.bill_no || p.order_id || 'N/A' }}</span>
+              </td>
+              <td>{{ formatTimeDisplay(p.created_time) }}</td>
+              <td>
+                <span class="mode-badge" [ngClass]="getModeBadgeClass(p.payment_mode)">
+                  {{ p.payment_mode || 'UPI' }}
+                </span>
+              </td>
+              <td class="text-end font-weight-bold">{{ formatCurrency(p.actual_amount || 0) }}</td>
+              <td class="text-end font-weight-bold text-cyan">{{ formatCurrency(p.paid_amount || 0) }}</td>
+              <td class="text-end" [class.text-danger]="(p.actual_amount - p.paid_amount) > 0" [class.text-success]="(p.actual_amount - p.paid_amount) <= 0">
+                {{ formatCurrency((p.actual_amount || 0) - (p.paid_amount || 0)) }}
+              </td>
+            </tr>
+            <tr *ngIf="getFilteredModalPayments().length === 0">
+              <td colspan="7" class="text-center py-4 text-muted">
+                <i class="bi bi-info-circle fs-4 d-block mb-1"></i>
+                No transactions recorded for this date.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer-flex">
+      <button class="btn-close-modal" (click)="closeDailyModal()">
+        <i class="bi bi-check2 me-1"></i> Close
+      </button>
+    </div>
+  </div>
+</div>

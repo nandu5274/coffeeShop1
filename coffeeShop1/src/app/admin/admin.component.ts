@@ -1,5 +1,7 @@
 import { DatePipe } from '@angular/common';
-import { Component, HostListener, ViewChild } from '@angular/core';
+import { Component, HostListener, ViewChild, OnInit } from '@angular/core';
+import { of } from 'rxjs';
+import { catchError, timeout } from 'rxjs/operators';
 import { DropboxService } from '../service/dropbox.service';
 import { SharedService } from '../service/shared-service';
 import { HasuraApiService } from '../service/hasura.api.service';
@@ -19,13 +21,29 @@ import { AdminResponseData } from '../interfaces/admin-reponse-data';
 import { WebSocketService } from '../service/WebSocket.service';
 import { OcrService } from '../service/ocr.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { PAYMENT_TRIGGER_YOUR_ADMIN_SECRET } from '../common/constanst';
+import { PAYMENT_TRIGGER_YOUR_ADMIN_SECRET, KUBERA_HEALTH_MASTER_OTP } from '../common/constanst';
+export interface SystemLinkItem {
+  title: string;
+  path: string;
+  category: 'staff' | 'store' | 'analytics';
+  icon: string;
+  description: string;
+  badge: string;
+  badgeClass?: string;
+  isExternal?: boolean;
+}
+
 @Component({
   selector: 'app-admin',
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.scss']
 })
-export class AdminComponent {
+export class AdminComponent implements OnInit {
+  // Authentication  // Security Authentication Gate
+  public isAuthenticated: boolean = false;
+  public passwordInput: string = '';
+  public loginErrorMsg: string | null = null;
+
   selectedTab: string = 'inventory';
   loggedIn: boolean = false;
   pageType:any="admin";
@@ -43,8 +61,247 @@ export class AdminComponent {
   transactionId: any;
   utr: any;
   debitedAccount: string | undefined;
+
+  public activeLinkCategory: string = 'all';
+  public linkSearchQuery: string = '';
+  public copiedLinkPath: string | null = null;
+
+  public systemLinks: SystemLinkItem[] = [
+    {
+      title: 'System Health Monitor',
+      path: '/health',
+      category: 'analytics',
+      icon: 'bi-heart-pulse-fill',
+      description: 'Real-time diagnostic monitor for Hasura DBs, Redis, Dropbox, Telegram, & build version mismatch.',
+      badge: 'Diagnostics',
+      badgeClass: 'badge-danger'
+    },
+    {
+      title: 'Sales & Revenue Dashboard',
+      path: '/dashboard',
+      category: 'analytics',
+      icon: 'bi-graph-up-arrow',
+      description: 'Live daily sales reports, payment mode breakdown, and order analytics.',
+      badge: 'Analytics',
+      badgeClass: 'badge-warning'
+    },
+    {
+      title: 'Kitchen Display System (KDS)',
+      path: '/kit',
+      category: 'staff',
+      icon: 'bi-fire',
+      description: 'Kitchen Order Tickets (KOT) live view for chefs to manage order preparation.',
+      badge: 'Kitchen',
+      badgeClass: 'badge-success'
+    },
+    {
+      title: 'Captain POS Portal',
+      path: '/captain',
+      category: 'staff',
+      icon: 'bi-person-badge-fill',
+      description: 'Order taking interface for table waiters and floor captains.',
+      badge: 'POS',
+      badgeClass: 'badge-info'
+    },
+    {
+      title: 'Counter Billing & Cashier',
+      path: '/counter',
+      category: 'staff',
+      icon: 'bi-calculator-fill',
+      description: 'Counter cashier desk for bill generation, cash collection, and quick orders.',
+      badge: 'Billing',
+      badgeClass: 'badge-primary'
+    },
+    {
+      title: 'Cap Selector (Table Floor)',
+      path: '/cap',
+      category: 'staff',
+      icon: 'bi-grid-3x3-gap-fill',
+      description: 'Table floor selection view for assigning orders to specific tables.',
+      badge: 'Floor',
+      badgeClass: 'badge-secondary'
+    },
+    {
+      title: 'Delivery Agent App',
+      path: '/delivery-agent',
+      category: 'staff',
+      icon: 'bi-bicycle',
+      description: 'Driver portal for active delivery orders, navigation, and drop-off confirmation.',
+      badge: 'Delivery',
+      badgeClass: 'badge-success'
+    },
+    {
+      title: 'Menu Catalog Management',
+      path: '/menu-update',
+      category: 'staff',
+      icon: 'bi-pencil-square',
+      description: 'Update item prices, availability toggles, and add new menu categories.',
+      badge: 'Catalog',
+      badgeClass: 'badge-warning'
+    },
+    {
+      title: 'Stock & Inventory Control',
+      path: '/stock',
+      category: 'staff',
+      icon: 'bi-box-seam-fill',
+      description: 'Track ingredient stock levels, stock-ins, and supplier orders.',
+      badge: 'Inventory',
+      badgeClass: 'badge-info'
+    },
+    {
+      title: 'Admin Dashboard & Payments',
+      path: '/admin',
+      category: 'analytics',
+      icon: 'bi-shield-lock-fill',
+      description: 'Kubera payments ledger & administrative control panel.',
+      badge: 'Admin',
+      badgeClass: 'badge-danger'
+    },
+    {
+      title: 'Cafe Kubera Homepage',
+      path: '/',
+      category: 'store',
+      icon: 'bi-house-door-fill',
+      description: 'Main cafe landing page with hero banner, table booking, and story.',
+      badge: 'Storefront',
+      badgeClass: 'badge-primary'
+    },
+    {
+      title: 'Digital Menu Catalog',
+      path: '/menu',
+      category: 'store',
+      icon: 'bi-cup-hot-fill',
+      description: 'Digital menu catalog with categories, cart, and self-ordering.',
+      badge: 'Menu',
+      badgeClass: 'badge-primary'
+    },
+    {
+      title: '3D Augmented Reality (AR)',
+      path: '/ar-view',
+      category: 'store',
+      icon: 'bi-cube-fill',
+      description: 'AR camera view for 3D food item visualization on customer devices.',
+      badge: '3D / AR',
+      badgeClass: 'badge-purple'
+    },
+    {
+      title: 'Online Delivery Storefront',
+      path: '/delivery',
+      category: 'store',
+      icon: 'bi-truck',
+      description: 'Customer online delivery portal with location picker and live status.',
+      badge: 'Delivery',
+      badgeClass: 'badge-success'
+    },
+    {
+      title: 'Delivery Address Book',
+      path: '/delivery/addresses',
+      category: 'store',
+      icon: 'bi-geo-alt-fill',
+      description: 'Saved delivery addresses management with map pin selector.',
+      badge: 'Addresses',
+      badgeClass: 'badge-secondary'
+    },
+    {
+      title: 'Active Delivery Tracking',
+      path: '/delivery/orders',
+      category: 'store',
+      icon: 'bi-clock-history',
+      description: 'Live order tracking status for pending online delivery orders.',
+      badge: 'Tracking',
+      badgeClass: 'badge-info'
+    },
+    {
+      title: 'Customer Profile & Orders',
+      path: '/profile',
+      category: 'store',
+      icon: 'bi-person-circle',
+      description: 'Customer account profile, order history, and saved preferences.',
+      badge: 'Account',
+      badgeClass: 'badge-primary'
+    },
+    {
+      title: 'Membership Loyalty Card',
+      path: '/card',
+      category: 'store',
+      icon: 'bi-card-heading',
+      description: 'Customer VIP membership card, reward points, and discount perks.',
+      badge: 'Loyalty',
+      badgeClass: 'badge-warning'
+    },
+    {
+      title: 'Payment Gateway Portal',
+      path: '/payment',
+      category: 'analytics',
+      icon: 'bi-credit-card-fill',
+      description: 'Direct payment checkout gateway & transaction processing.',
+      badge: 'Payments',
+      badgeClass: 'badge-danger'
+    }
+  ];
+
+  get filteredSystemLinks(): SystemLinkItem[] {
+    return this.systemLinks.filter((link) => {
+      const matchCategory =
+        this.activeLinkCategory === 'all' || link.category === this.activeLinkCategory;
+
+      const q = (this.linkSearchQuery || '').toLowerCase().trim();
+      const matchSearch =
+        !q ||
+        link.title.toLowerCase().includes(q) ||
+        link.path.toLowerCase().includes(q) ||
+        link.description.toLowerCase().includes(q) ||
+        link.badge.toLowerCase().includes(q);
+
+      return matchCategory && matchSearch;
+    });
+  }
+
+  public copyLinkUrl(path: string): void {
+    const fullUrl = window.location.origin + path;
+    navigator.clipboard.writeText(fullUrl).then(() => {
+      this.copiedLinkPath = path;
+      setTimeout(() => {
+        if (this.copiedLinkPath === path) {
+          this.copiedLinkPath = null;
+        }
+      }, 2500);
+    });
+  }
   constructor( private datePipe: DatePipe, private dropboxService: DropboxService,private http: HttpClient,
     private sharedService: SharedService, private dataService: HasuraApiService, private webSocketService: WebSocketService,private ocrService: OcrService) {}
+
+  ngOnInit(): void {
+    const sessionAuth = sessionStorage.getItem('admin_authenticated');
+    if (sessionAuth === 'true') {
+      this.isAuthenticated = true;
+    } else {
+      this.isAuthenticated = false;
+    }
+  }
+
+  public verifyAndLogin(): void {
+    const input = (this.passwordInput || '').trim();
+    if (!input) {
+      this.loginErrorMsg = 'Please enter the admin password.';
+      return;
+    }
+
+    if (input === KUBERA_HEALTH_MASTER_OTP) {
+      this.isAuthenticated = true;
+      sessionStorage.setItem('admin_authenticated', 'true');
+      this.loginErrorMsg = null;
+    } else {
+      this.loginErrorMsg = 'Invalid password. Please try again.';
+    }
+  }
+
+  public lockAdminPage(): void {
+    this.isAuthenticated = false;
+    sessionStorage.removeItem('admin_authenticated');
+    this.passwordInput = '';
+    this.loginErrorMsg = null;
+  }
 
   isSticky: boolean = false;
   @HostListener('window:scroll', ['$event'])
