@@ -21,16 +21,22 @@ export class HomePageComponent implements OnInit, AfterViewInit {
     private location: Location,
     private sharedService: SharedService,
     private dataService: HasuraApiService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) { }
 
   showMenu:any = this.sharedService.getShowMenuFlagData();
   showSpinner:any = true;
   ngOnInit() {
     setTimeout(() => {
-      this.showSpinner = false
-    }, 1000); // 5 minutes in milliseconds
+      this.showSpinner = false;
+    }, 1000);
 
+    this.route.fragment.subscribe((fragment) => {
+      if (fragment) {
+        this.scrollToFragment(fragment);
+      }
+    });
   }
 
   ngAfterViewInit() {
@@ -39,14 +45,31 @@ export class HomePageComponent implements OnInit, AfterViewInit {
   
       this.sharedService.getShowMenuFlagDataObservable().subscribe((data) => {
         this.showMenu = data;
-      })
-  
-    })
+      });
 
+      if (this.route.snapshot.fragment) {
+        this.scrollToFragment(this.route.snapshot.fragment);
+      }
+    }, 150);
+  }
 
+  private scrollToFragment(fragment: string) {
+    setTimeout(() => {
+      const el = document.getElementById(fragment);
+      if (el) {
+        const header = document.getElementById('header');
+        const offset = header ? header.offsetHeight : 0;
+        const elementPos = el.getBoundingClientRect().top + window.pageYOffset;
+        window.scrollTo({
+          top: elementPos - offset,
+          behavior: 'smooth'
+        });
+      }
+    }, 250);
   }
 
   navigateToMenu(menu: any) {
+    this.scrollToFragment(menu);
     this.sharedService.navigateToMenu(menu);
   }
 

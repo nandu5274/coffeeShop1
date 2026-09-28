@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { HasuraApiService } from '../service/hasura.api.service';
 import { SharedService } from '../service/shared-service';
+import * as menuListJsonData from 'src/app/sampleResponse/menu-list.json';
+import { KUBERA_HEALTH_MASTER_OTP } from '../common/constanst';
 
 interface SalesDataPoint {
   month: string;
@@ -35,24 +37,117 @@ interface MenuItemSales {
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
+  // Authentication Gate State
+  public isAuthenticated: boolean = false;
+  public passwordInput: string = '';
+  public loginErrorMsg: string | null = null;
+
   showSpinner: boolean = false;
-  selectedYear: string = '2026';
-  selectedMonth: string = '';
-  selectedDate: string = '';
   chartType: 'line' | 'bar' = 'line';
   
+  // Active View Tab State ('daily' | 'monthly')
+  activeTab: 'daily' | 'monthly' = 'daily';
+
+  // Independent Daily Scope Filters
+  dailySelectedDate: string = '';
+  dailySelectedMonth: string = '';
+  dailySelectedYear: string = '2026';
+
+  // Independent Monthly Scope Filters
+  monthlySelectedMonth: string = '';
+  monthlySelectedYear: string = '2026';
+
+  // Backward compatibility getters/setters
+  get selectedDate(): string { return this.dailySelectedDate; }
+  set selectedDate(val: string) { this.dailySelectedDate = val; }
+
+  get selectedMonth(): string {
+    return this.activeTab === 'daily' ? this.dailySelectedMonth : this.monthlySelectedMonth;
+  }
+  set selectedMonth(val: string) {
+    if (this.activeTab === 'daily') {
+      this.dailySelectedMonth = val;
+    } else {
+      this.monthlySelectedMonth = val;
+    }
+  }
+
+  get selectedYear(): string {
+    return this.activeTab === 'daily' ? this.dailySelectedYear : this.monthlySelectedYear;
+  }
+  set selectedYear(val: string) {
+    if (this.activeTab === 'daily') {
+      this.dailySelectedYear = val;
+    } else {
+      this.monthlySelectedYear = val;
+    }
+  }
+
   // Sizing Layout States
   hourlyChartSize: 'full' | 'half' = 'full';
-  dailyChartSize: 'full' | 'half' = 'half';
-  monthlyChartSize: 'full' | 'half' = 'half';
+  dailyChartSize: 'full' | 'half' = 'full';
+  monthlyChartSize: 'full' | 'half' = 'full';
   productChartSize: 'full' | 'half' = 'half';
   
-  // Product Sales Graph properties (Order items based)
+  // Item Segment Palette Colors for Circular Graphs
+  itemColors: string[] = [
+    '#cda45e', // Gold
+    '#30d530', // Emerald Green
+    '#00d2ff', // Cyan
+    '#a855f7', // Violet
+    '#f78f1e', // Orange
+    '#e84949', // Coral Red
+    '#38ef7d', // Mint Green
+    '#ff6b6b', // Rose Red
+    '#4ecdc4', // Turquoise
+    '#ffe66d', // Yellow
+    '#a8bde4', // Soft Blue
+    '#d4a5a5'  // Soft Pink
+  ];
+
+  // Daily Product Sales Graph & Table properties (Selected Date)
   topProductSales: any[] = [];
+  dailyItemSegments: any[] = [];
+  dailyTotalItemQty: number = 0;
+  dailyTotalItemRevenue: number = 0;
+  dailyHoveredSegment: any = null;
   productChartType: 'line' | 'bar' = 'bar';
   productHoveredPoint: any = null;
   productTooltipX: number = 0;
   productTooltipY: number = 0;
+
+  // Monthly Product Sales Graph & Table properties (Selected Month)
+  monthlyProductSales: any[] = [];
+  monthlyItemSegments: any[] = [];
+  monthlyTotalItemQty: number = 0;
+  monthlyTotalItemRevenue: number = 0;
+  monthlyHoveredSegment: any = null;
+  monthlyProductChartType: 'line' | 'bar' = 'bar';
+  monthlyProductHoveredPoint: any = null;
+  monthlyProductTooltipX: number = 0;
+  monthlyProductTooltipY: number = 0;
+  monthlyProductChartSize: 'full' | 'half' = 'half';
+
+  // Cuisine Revenue Share Graph properties
+  cuisineTotalRevenue: number = 0;
+  cuisineTotalQuantity: number = 0;
+  cuisineChartType: 'donut' | 'bar' = 'donut';
+  cuisineChartSize: 'full' | 'half' = 'half';
+  cuisineViewScope: 'monthly' | 'daily' = 'daily';
+  cuisineHoveredSegment: any = null;
+  itemCuisineMap: Map<string, string> = new Map();
+
+  // Platform Revenue Share properties (Swiggy, Zomato, Swiggy Dine-In, Dstrict, In-Store)
+  dailyPlatformSalesData: any[] = [];
+  dailyPlatformTotalRevenue: number = 0;
+  dailyPlatformHoveredSegment: any = null;
+
+  monthlyPlatformSalesData: any[] = [];
+  monthlyPlatformTotalRevenue: number = 0;
+  monthlyPlatformHoveredSegment: any = null;
+
+  platformChartType: 'donut' | 'bar' = 'donut';
+  platformChartSize: 'full' | 'half' = 'half';
   
   // Today's/Hourly Sales Graph properties
   todaySalesData: SalesDataPoint[] = [];
@@ -85,11 +180,31 @@ export class DashboardComponent implements OnInit {
   liveOrderItems: any[] = [];
   liveDailyReports: any[] = [];
 
-  // Aggregated Visual Data
+  // Aggregated Visual Data (Yearly Monthly baseline)
   salesData: SalesDataPoint[] = [];
-  paymentModes: PaymentModeData[] = [];
-  topItems: MenuItemSales[] = [];
-  
+
+  // Independent Visual Datasets for Daily vs Monthly
+  dailyPaymentModes: PaymentModeData[] = [];
+  monthlyPaymentModes: PaymentModeData[] = [];
+
+  dailyTopItems: MenuItemSales[] = [];
+  monthlyTopItems: MenuItemSales[] = [];
+
+  dailyCuisineSalesData: any[] = [];
+  monthlyCuisineSalesData: any[] = [];
+
+  get paymentModes(): PaymentModeData[] {
+    return this.activeTab === 'daily' ? this.dailyPaymentModes : this.monthlyPaymentModes;
+  }
+
+  get topItems(): MenuItemSales[] {
+    return this.activeTab === 'daily' ? this.dailyTopItems : this.monthlyTopItems;
+  }
+
+  get cuisineSalesData(): any[] {
+    return this.activeTab === 'daily' ? this.dailyCuisineSalesData : this.monthlyCuisineSalesData;
+  }
+
   // KPI Summaries
   kpis = {
     totalRevenue: 0,
@@ -98,6 +213,31 @@ export class DashboardComponent implements OnInit {
     topPaymentMode: 'UPI',
     targetProgress: 75
   };
+
+  monthlyKpis = {
+    totalRevenue: 0,
+    totalOrders: 0,
+    aov: 0,
+    targetProgress: 0
+  };
+
+  setActiveTab(tab: 'daily' | 'monthly'): void {
+    this.activeTab = tab;
+    this.cuisineViewScope = tab;
+    this.processSalesData();
+  }
+
+  onDailyFilterChange(): void {
+    this.processSalesData();
+  }
+
+  onMonthlyFilterChange(): void {
+    this.processSalesData();
+  }
+
+  onFilterChange(): void {
+    this.processSalesData();
+  }
 
   // SVG dimensions
   svgWidth = 800;
@@ -117,11 +257,44 @@ export class DashboardComponent implements OnInit {
     private hasuraService: HasuraApiService,
     private sharedService: SharedService
   ) {
-    this.selectedMonth = this.getInitialSelectedMonth();
+    const initialMonth = this.getInitialSelectedMonth();
+    this.dailySelectedMonth = initialMonth;
+    this.monthlySelectedMonth = initialMonth;
   }
 
   ngOnInit(): void {
+    const sessionAuth = sessionStorage.getItem('dashboard_authenticated');
+    if (sessionAuth === 'true') {
+      this.isAuthenticated = true;
+    } else {
+      this.isAuthenticated = false;
+    }
+    this.initMenuPriceMap();
+    this.initCuisineMap();
     this.refreshDashboardData();
+  }
+
+  public verifyAndLogin(): void {
+    const input = (this.passwordInput || '').trim();
+    if (!input) {
+      this.loginErrorMsg = 'Please enter the dashboard password.';
+      return;
+    }
+
+    if (input === KUBERA_HEALTH_MASTER_OTP) {
+      this.isAuthenticated = true;
+      sessionStorage.setItem('dashboard_authenticated', 'true');
+      this.loginErrorMsg = null;
+    } else {
+      this.loginErrorMsg = 'Invalid password. Please try again.';
+    }
+  }
+
+  public lockDashboardPage(): void {
+    this.isAuthenticated = false;
+    sessionStorage.removeItem('dashboard_authenticated');
+    this.passwordInput = '';
+    this.loginErrorMsg = null;
   }
 
   refreshDashboardData(): void {
@@ -280,10 +453,226 @@ export class DashboardComponent implements OnInit {
     return dateStr;
   }
 
+  calculateRealPaymentModes(payments: any[]): PaymentModeData[] {
+    if (!payments || payments.length === 0) {
+      return [
+        { mode: 'Online UPI', amount: 0, percentage: 0, color: '#cda45e', dashArray: '0 439.82', dashOffset: 439.82 },
+        { mode: 'Credit/Debit Card', amount: 0, percentage: 0, color: '#30d530', dashArray: '0 439.82', dashOffset: 439.82 },
+        { mode: 'Cash payments', amount: 0, percentage: 0, color: '#f78f1e', dashArray: '0 439.82', dashOffset: 439.82 }
+      ];
+    }
+
+    const modeMap = new Map<string, { name: string; amount: number; color: string }>();
+
+    payments.forEach(p => {
+      const rawMode = (p.payment_mode || 'UPI').trim();
+      const lower = rawMode.toLowerCase();
+      const paid = Number(p.paid_amount) || Number(p.actual_amount) || 0;
+
+      let key = 'Online UPI';
+      let color = '#cda45e';
+
+      if (lower.includes('cash')) {
+        key = 'Cash payments';
+        color = '#f78f1e';
+      } else if (lower.includes('card')) {
+        key = 'Credit/Debit Card';
+        color = '#30d530';
+      } else if (lower.includes('swiggy')) {
+        key = 'Swiggy Platform';
+        color = '#e84949';
+      } else if (lower.includes('zomato')) {
+        key = 'Zomato Platform';
+        color = '#ff6b6b';
+      } else if (lower.includes('dstrict') || lower.includes('magic')) {
+        key = 'Dstrict';
+        color = '#a855f7';
+      }
+
+      if (modeMap.has(key)) {
+        modeMap.get(key)!.amount += paid;
+      } else {
+        modeMap.set(key, { name: key, amount: paid, color });
+      }
+    });
+
+    const modeList = Array.from(modeMap.values()).sort((a, b) => b.amount - a.amount);
+    const totalAmount = modeList.reduce((acc, curr) => acc + curr.amount, 0) || 1;
+
+    let runningCircumference = 0;
+    return modeList.map(item => {
+      const percentage = Math.round((item.amount / totalAmount) * 100);
+      const strokeLength = (item.amount / totalAmount) * this.doughnutCircumference;
+      const strokeOffset = this.doughnutCircumference - runningCircumference;
+      runningCircumference += strokeLength;
+
+      return {
+        mode: item.name,
+        amount: item.amount,
+        percentage,
+        color: item.color,
+        dashArray: `${strokeLength} ${this.doughnutCircumference - strokeLength}`,
+        dashOffset: strokeOffset
+      };
+    });
+  }
+
+  calculateRealPopularItems(orderItems: any[]): MenuItemSales[] {
+    if (!orderItems || orderItems.length === 0) {
+      return [];
+    }
+
+    const itemMap = new Map<string, { name: string; quantity: number; revenue: number }>();
+    orderItems.forEach((item: any) => {
+      const name = item.item_name || 'Unknown Item';
+      const qty = Number(item.item_quantity) || 0;
+      const unitCost = this.getItemPrice(name);
+      const rev = qty * unitCost;
+
+      if (itemMap.has(name)) {
+        const existing = itemMap.get(name)!;
+        existing.quantity += qty;
+        existing.revenue += rev;
+      } else {
+        itemMap.set(name, { name, quantity: qty, revenue: rev });
+      }
+    });
+
+    return Array.from(itemMap.values()).sort((a, b) => b.quantity - a.quantity);
+  }
+
+  calculateRealCuisineShare(orderItems: any[], fallbackRev: number, fallbackOrd: number): any[] {
+    const cuisineMap = new Map<string, { name: string; revenue: number; quantity: number }>();
+    
+    orderItems.forEach((item: any) => {
+      const name = item.item_name || 'Unknown Item';
+      const qty = Number(item.item_quantity) || 0;
+      const unitCost = this.getItemPrice(name);
+      const rev = qty * unitCost;
+      const cuisine = this.getItemCuisine(name);
+
+      if (cuisineMap.has(cuisine)) {
+        const existing = cuisineMap.get(cuisine)!;
+        existing.quantity += qty;
+        existing.revenue += rev;
+      } else {
+        cuisineMap.set(cuisine, { name: cuisine, revenue: rev, quantity: qty });
+      }
+    });
+
+    const rawCuisineList = Array.from(cuisineMap.values()).sort((a, b) => b.revenue - a.revenue);
+    
+    if (rawCuisineList.length === 0 && fallbackRev > 0) {
+      cuisineMap.set('Barista & Beverages', { name: 'Barista & Beverages', revenue: Math.round(fallbackRev * 0.45), quantity: Math.max(1, Math.round(fallbackOrd * 0.45)) });
+      cuisineMap.set('Continental & Snacks', { name: 'Continental & Snacks', revenue: Math.round(fallbackRev * 0.30), quantity: Math.max(1, Math.round(fallbackOrd * 0.30)) });
+      cuisineMap.set('Chef Specials', { name: 'Chef Specials', revenue: Math.round(fallbackRev * 0.15), quantity: Math.max(1, Math.round(fallbackOrd * 0.15)) });
+      cuisineMap.set('Bakery & Desserts', { name: 'Bakery & Desserts', revenue: Math.round(fallbackRev * 0.10), quantity: Math.max(1, Math.round(fallbackOrd * 0.10)) });
+    }
+
+    const finalCuisineList = Array.from(cuisineMap.values()).sort((a, b) => b.revenue - a.revenue);
+    const cuisineTotalRev = finalCuisineList.reduce((sum, c) => sum + c.revenue, 0) || 1;
+    const cuisineTotalQty = finalCuisineList.reduce((sum, c) => sum + c.quantity, 0);
+
+    let runningCuisineCircumference = 0;
+    const cuisineColors = ['#cda45e', '#30d530', '#00d2ff', '#a855f7', '#f78f1e', '#e84949', '#38ef7d'];
+
+    return finalCuisineList.map((c, idx) => {
+      const color = cuisineColors[idx % cuisineColors.length];
+      const percentage = Math.round((c.revenue / cuisineTotalRev) * 1000) / 10;
+      const strokeLength = (c.revenue / cuisineTotalRev) * this.doughnutCircumference;
+      const strokeOffset = this.doughnutCircumference - runningCuisineCircumference;
+      runningCuisineCircumference += strokeLength;
+
+      return {
+        ...c,
+        color,
+        percentage,
+        dashArray: `${strokeLength} ${this.doughnutCircumference - strokeLength}`,
+        dashOffset: strokeOffset
+      };
+    });
+  }
+
+  calculateRealPlatformShare(payments: any[], reports: any[]): any[] {
+    let swiggy = 0;
+    let zomato = 0;
+    let swiggyDineIn = 0;
+    let dstrict = 0;
+    let direct = 0;
+
+    (payments || []).forEach(p => {
+      const paid = Number(p.paid_amount) || Number(p.actual_amount) || 0;
+      const mode = (p.payment_mode || '').toLowerCase().trim();
+
+      if (mode.includes('swiggy dine') || mode.includes('swiggy_dine')) {
+        swiggyDineIn += paid;
+      } else if (mode.includes('swiggy')) {
+        swiggy += paid;
+      } else if (mode.includes('zomato')) {
+        zomato += paid;
+      } else if (mode.includes('dstrict') || mode.includes('magic')) {
+        dstrict += paid;
+      } else if (mode.includes('cash') || mode.includes('card') || mode.includes('upi') || mode.includes('online')) {
+        direct += paid;
+      } else if (mode) {
+        direct += paid;
+      }
+    });
+
+    let repSwiggy = 0;
+    let repZomato = 0;
+    let repDineIn = 0;
+    let repDstrict = 0;
+
+    (reports || []).forEach(r => {
+      repSwiggy += Number(r.swiggy_amount) || 0;
+      repZomato += Number(r.zomato_amount) || 0;
+      repDineIn += Number(r.swiggy_dine_in_amount) || 0;
+      repDstrict += Number(r.dstrict_amount) || 0;
+    });
+
+    swiggy = Math.max(swiggy, repSwiggy);
+    zomato = Math.max(zomato, repZomato);
+    swiggyDineIn = Math.max(swiggyDineIn, repDineIn);
+    dstrict = Math.max(dstrict, repDstrict);
+
+    const platformList = [
+      { name: 'Swiggy', amount: swiggy, color: '#f78f1e', icon: 'bi-box-seam' },
+      { name: 'Zomato', amount: zomato, color: '#e84949', icon: 'bi-bag-check' },
+      { name: 'Swiggy Dine-In', amount: swiggyDineIn, color: '#ff9f43', icon: 'bi-cup-hot' },
+      { name: 'Dstrict', amount: dstrict, color: '#a855f7', icon: 'bi-lightning-charge' },
+      { name: 'Direct / In-Store', amount: direct, color: '#30d530', icon: 'bi-shop' }
+    ].filter(p => p.amount > 0);
+
+    if (platformList.length === 0) {
+      return [];
+    }
+
+    const totalRevenue = platformList.reduce((acc, curr) => acc + curr.amount, 0) || 1;
+    let runningCircumference = 0;
+
+    return platformList.map(item => {
+      const percentage = Math.round((item.amount / totalRevenue) * 1000) / 10;
+      const strokeLength = (item.amount / totalRevenue) * this.doughnutCircumference;
+      const strokeOffset = this.doughnutCircumference - runningCircumference;
+      runningCircumference += strokeLength;
+
+      return {
+        ...item,
+        percentage,
+        dashArray: `${strokeLength} ${this.doughnutCircumference - strokeLength}`,
+        dashOffset: strokeOffset
+      };
+    });
+  }
+
   processSalesData(): void {
+    // ==========================================
+    // 1. PROCESS DAILY ANALYTICS DATA (INDEPENDENT SCOPE)
+    // ==========================================
     let queryDateStr = '';
-    if (this.selectedDate) {
-      const parts = this.selectedDate.split('-');
+    if (this.dailySelectedDate) {
+      const parts = this.dailySelectedDate.split('-');
       if (parts.length === 3) {
         queryDateStr = `${parts[1]}-${parts[2]}-${parts[0]}`; // YYYY-MM-DD to MM-DD-YYYY
       }
@@ -292,7 +681,7 @@ export class DashboardComponent implements OnInit {
       queryDateStr = this.getTodayDateStr();
     }
 
-    // 1. Filter payments for HOURLY graph, KPIs, doughnut, and topItems based on selectedDate
+    // Filter real payments for dailySelectedDate
     const datePayments = this.livePayments.filter(payment => payment.created_at === queryDateStr);
 
     // Initialize Hourly bins (0 to 23)
@@ -313,7 +702,7 @@ export class DashboardComponent implements OnInit {
       });
     }
 
-    // Populate hourly bins
+    // Populate hourly bins from datePayments
     datePayments.forEach(payment => {
       let parsedHour = -1;
       if (payment.created_time) {
@@ -371,85 +760,51 @@ export class DashboardComponent implements OnInit {
     }
     this.todaySalesData = hourlyData.filter((_, idx) => idx >= startHour && idx <= endHour);
 
-    // Calculate main KPIs using selectedDate actual data
-    let sumRevenue = 0;
-    let sumOrders = 0;
-    let sumCash = 0;
-    let sumOnline = 0;
+    // Calculate Daily KPIs directly from real payments
+    let sumDailyRevenue = 0;
+    let sumDailyOrders = datePayments.length;
+    let sumDailyCash = 0;
+    let sumDailyOnline = 0;
 
     datePayments.forEach(p => {
-      sumRevenue += Number(p.actual_amount) || 0;
-      sumOrders += 1;
+      const actual = Number(p.actual_amount) || 0;
+      const paid = Number(p.paid_amount) || 0;
+      sumDailyRevenue += actual;
       const mode = (p.payment_mode || 'UPI').toLowerCase();
       if (mode === 'cash') {
-        sumCash += Number(p.paid_amount) || 0;
+        sumDailyCash += paid;
       } else {
-        sumOnline += Number(p.paid_amount) || 0;
+        sumDailyOnline += paid;
       }
     });
 
-    this.kpis.totalRevenue = sumRevenue;
-    this.kpis.totalOrders = sumOrders;
-    this.kpis.aov = sumOrders > 0 ? Math.round(sumRevenue / sumOrders) : 0;
-    this.kpis.topPaymentMode = sumOnline >= sumCash ? 'UPI/Online' : 'Cash';
+    this.kpis.totalRevenue = sumDailyRevenue;
+    this.kpis.totalOrders = sumDailyOrders;
+    this.kpis.aov = sumDailyOrders > 0 ? Math.round(sumDailyRevenue / sumDailyOrders) : 0;
+    this.kpis.topPaymentMode = sumDailyOnline >= sumDailyCash ? 'UPI/Online' : 'Cash';
+    this.kpis.targetProgress = Math.min(100, Math.round((sumDailyRevenue / 10000) * 100));
 
-    // Target progress for the day (out of ₹10,000 target)
-    const dailyTarget = 10000;
-    this.kpis.targetProgress = Math.min(100, Math.round((sumRevenue / dailyTarget) * 100));
+    // REAL-TIME Daily Checkouts By Mode Doughnut
+    this.dailyPaymentModes = this.calculateRealPaymentModes(datePayments);
 
-    // Doughnut split for selectedDate actual data
-    const totalPayments = sumCash + sumOnline || 1;
-    const rawModes = [
-      { mode: 'Online UPI', amount: Math.round(sumOnline * 0.65), color: '#cda45e' },
-      { mode: 'Credit/Debit Card', amount: Math.round(sumOnline * 0.35), color: '#30d530' },
-      { mode: 'Cash payments', amount: sumCash, color: '#f78f1e' },
-      { mode: 'Delivery Platforms', amount: Math.round(sumRevenue * 0.12), color: '#e84949' }
-    ];
-
-    const sumModes = rawModes.reduce((acc, curr) => acc + curr.amount, 0) || 1;
-    let runningCircumference = 0;
-    this.paymentModes = rawModes.map(item => {
-      const percentage = Math.round((item.amount / sumModes) * 100);
-      const strokeLength = (item.amount / sumModes) * this.doughnutCircumference;
-      const strokeOffset = this.doughnutCircumference - runningCircumference;
-      runningCircumference += strokeLength;
-
-      return {
-        ...item,
-        percentage,
-        dashArray: `${strokeLength} ${this.doughnutCircumference - strokeLength}`,
-        dashOffset: strokeOffset
-      };
+    // Filter real order items for dailySelectedDate
+    const orderDateStr = this.dailySelectedDate || this.getTodayDateStr();
+    const dateOrderItems = this.liveOrderItems.filter(item => {
+      if (!item.created_at) return false;
+      let str = item.created_at.trim();
+      if (str.includes('--')) str = str.split('--')[0];
+      if (str.includes('T')) str = str.split('T')[0];
+      if (str.includes(' ')) str = str.split(' ')[0];
+      return str === orderDateStr || item.created_at.startsWith(orderDateStr);
     });
 
-    // Top selling menu items for selectedDate actual data
-    this.topItems = [
-      { name: 'Espresso Classic', quantity: Math.round(sumOrders * 0.35), revenue: Math.round(sumRevenue * 0.25) },
-      { name: 'Cold Brew Brewtiful', quantity: Math.round(sumOrders * 0.24), revenue: Math.round(sumRevenue * 0.22) },
-      { name: 'Gold Cappuccino', quantity: Math.round(sumOrders * 0.18), revenue: Math.round(sumRevenue * 0.19) },
-      { name: 'Croissant Butter', quantity: Math.round(sumOrders * 0.15), revenue: Math.round(sumRevenue * 0.12) },
-      { name: 'Vanilla Iced Latte', quantity: Math.round(sumOrders * 0.12), revenue: Math.round(sumRevenue * 0.10) }
-    ].sort((a, b) => b.quantity - a.quantity);
-
-    // 4. Aggregate actual order items sales for selectedDate based on database order_items
-    const orderDateStr = this.selectedDate || this.getTodayDateStr();
-    const dateOrderItems = this.liveOrderItems.filter(item => item.created_at && item.created_at.startsWith(orderDateStr));
-
+    // REAL-TIME Daily Product Sales Volume & Circular Segments
     const itemMap = new Map<string, { name: string; quantity: number; revenue: number }>();
     dateOrderItems.forEach((item: any) => {
       const name = item.item_name || 'Unknown Item';
       const qty = Number(item.item_quantity) || 0;
-      
-      // Since order_item does not have item_cost column, estimate based on menu averages
-      let estimatedCost = 80;
-      const lowerName = name.toLowerCase();
-      if (lowerName.includes('water')) estimatedCost = 20;
-      else if (lowerName.includes('red bull')) estimatedCost = 110;
-      else if (lowerName.includes('shake') || lowerName.includes('smoothie')) estimatedCost = 140;
-      else if (lowerName.includes('espresso') || lowerName.includes('cappuccino')) estimatedCost = 120;
-      else if (lowerName.includes('latte') || lowerName.includes('cold brew')) estimatedCost = 130;
-      
-      const rev = qty * estimatedCost;
+      const unitCost = this.getItemPrice(name);
+      const rev = qty * unitCost;
 
       if (itemMap.has(name)) {
         const existing = itemMap.get(name)!;
@@ -460,25 +815,45 @@ export class DashboardComponent implements OnInit {
       }
     });
 
-    this.topProductSales = Array.from(itemMap.values())
-      .sort((a, b) => b.quantity - a.quantity)
-      .slice(0, 8);
+    const dailyItemsList = Array.from(itemMap.values()).sort((a, b) => b.quantity - a.quantity);
+    this.topProductSales = dailyItemsList;
+    const dailySeg = this.calculateItemSegments(dailyItemsList);
+    this.dailyItemSegments = dailySeg.segments;
+    this.dailyTotalItemQty = dailySeg.totalQuantity;
+    this.dailyTotalItemRevenue = dailySeg.totalRevenue;
+
+    // REAL-TIME Daily Popular Menu Items
+    this.dailyTopItems = dailyItemsList.length > 0 ? dailyItemsList : this.calculateRealPopularItems(dateOrderItems);
+
+    // REAL-TIME Daily Cuisine Revenue Share
+    this.dailyCuisineSalesData = this.calculateRealCuisineShare(dateOrderItems, sumDailyRevenue, sumDailyOrders);
+
+    // REAL-TIME Daily Platform Revenue Share
+    const dailySelectedDateClean = this.dailySelectedDate || this.getTodayDateStr();
+    const dateDailyReports = (this.liveDailyReports || []).filter(r => {
+      const d = (r.report_date || r.created_at || '').trim();
+      return d.startsWith(dailySelectedDateClean) || (queryDateStr && d.startsWith(queryDateStr));
+    });
+    this.dailyPlatformSalesData = this.calculateRealPlatformShare(datePayments, dateDailyReports);
+    this.dailyPlatformTotalRevenue = this.dailyPlatformSalesData.reduce((sum, item) => sum + item.amount, 0);
 
 
-    // 2. Filter payments for DAILY graph based on selectedMonth & selectedYear
-    const monthIdx = this.monthsList.indexOf(this.selectedMonth);
-    let daysInMonth = 30;
-    if (['January', 'March', 'May', 'July', 'August', 'October', 'December'].includes(this.selectedMonth)) {
-      daysInMonth = 31;
-    } else if (this.selectedMonth === 'February') {
-      const yearNum = parseInt(this.selectedYear, 10);
-      daysInMonth = (yearNum % 4 === 0) ? 29 : 28;
+    // ==========================================
+    // 2. DAILY SALES CURVE CHART (FOR dailySelectedMonth & dailySelectedYear)
+    // ==========================================
+    const dailyMonthIdx = this.monthsList.indexOf(this.dailySelectedMonth);
+    let daysInDailyMonth = 30;
+    if (['January', 'March', 'May', 'July', 'August', 'October', 'December'].includes(this.dailySelectedMonth)) {
+      daysInDailyMonth = 31;
+    } else if (this.dailySelectedMonth === 'February') {
+      const yearNum = parseInt(this.dailySelectedYear, 10);
+      daysInDailyMonth = (yearNum % 4 === 0) ? 29 : 28;
     }
 
     const dailyBaseline: SalesDataPoint[] = [];
-    for (let day = 1; day <= daysInMonth; day++) {
+    for (let day = 1; day <= daysInDailyMonth; day++) {
       dailyBaseline.push({
-        month: day.toString(), // using 'month' field for Day number label
+        month: day.toString(),
         revenue: 0,
         actualAmount: 0,
         paidAmount: 0,
@@ -509,12 +884,12 @@ export class DashboardComponent implements OnInit {
           dayNum = parseInt(dateParts[1], 10);
         }
         
-        if (year === this.selectedYear && monthNum === monthIdx) {
+        if (year === this.dailySelectedYear && monthNum === dailyMonthIdx) {
           const actualAmount = Number(payment.actual_amount) || 0;
           const paidAmount = Number(payment.paid_amount) || 0;
           const mode = (payment.payment_mode || 'UPI').toLowerCase();
 
-          if (dayNum >= 1 && dayNum <= daysInMonth) {
+          if (dayNum >= 1 && dayNum <= daysInDailyMonth) {
             const idx = dayNum - 1;
             dailyBaseline[idx].revenue += actualAmount;
             dailyBaseline[idx].actualAmount += actualAmount;
@@ -550,7 +925,7 @@ export class DashboardComponent implements OnInit {
           monthNum = parseInt(dateParts[0], 10) - 1;
           dayNum = parseInt(dateParts[1], 10);
         }
-        if (year === this.selectedYear && monthNum === monthIdx && dayNum >= 1 && dayNum <= daysInMonth) {
+        if (year === this.dailySelectedYear && monthNum === dailyMonthIdx && dayNum >= 1 && dayNum <= daysInDailyMonth) {
           const idx = dayNum - 1;
           const pTot = r.platform_total != null ? Number(r.platform_total) : ((Number(r.swiggy_amount) || 0) + (Number(r.zomato_amount) || 0) + (Number(r.swiggy_dine_in_amount) || 0) + (Number(r.dstrict_amount) || 0));
           dailyBaseline[idx].platformAmount += pTot;
@@ -558,7 +933,7 @@ export class DashboardComponent implements OnInit {
       }
     });
 
-    for (let day = 1; day <= daysInMonth; day++) {
+    for (let day = 1; day <= daysInDailyMonth; day++) {
       const idx = day - 1;
       dailyBaseline[idx].grandTotal = dailyBaseline[idx].paidAmount + dailyBaseline[idx].platformAmount;
     }
@@ -566,11 +941,14 @@ export class DashboardComponent implements OnInit {
     this.dailySalesData = dailyBaseline;
 
 
-    // 3. Filter payments for MONTHLY graph based on selectedYear
+    // ==========================================
+    // 3. PROCESS MONTHLY ANALYTICS DATA (INDEPENDENT SCOPE)
+    // ==========================================
+    const monthlyMonthIdx = this.monthsList.indexOf(this.monthlySelectedMonth);
     const monthlyBaseline: { [key: string]: SalesDataPoint } = {};
     this.monthsList.forEach(m => {
       monthlyBaseline[m] = {
-        month: m.substring(0, 3), // "Jan", "Feb", etc.
+        month: m.substring(0, 3),
         revenue: 0,
         actualAmount: 0,
         paidAmount: 0,
@@ -580,6 +958,10 @@ export class DashboardComponent implements OnInit {
         platformAmount: 0
       };
     });
+
+    const monthPayments = this.livePayments.filter(payment =>
+      this.isItemInMonth(payment.created_at, this.monthlySelectedYear, monthlyMonthIdx)
+    );
 
     this.livePayments.forEach(payment => {
       if (!payment.created_at) return;
@@ -598,7 +980,7 @@ export class DashboardComponent implements OnInit {
           monthNum = parseInt(dateParts[0], 10) - 1;
         }
 
-        if (year === this.selectedYear && monthNum >= 0 && monthNum < 12) {
+        if (year === this.monthlySelectedYear && monthNum >= 0 && monthNum < 12) {
           const monthName = this.monthsList[monthNum];
           const actualAmount = Number(payment.actual_amount) || 0;
           const paidAmount = Number(payment.paid_amount) || 0;
@@ -636,7 +1018,7 @@ export class DashboardComponent implements OnInit {
           year = dateParts[2];
           monthNum = parseInt(dateParts[0], 10) - 1;
         }
-        if (year === this.selectedYear && monthNum >= 0 && monthNum < 12) {
+        if (year === this.monthlySelectedYear && monthNum >= 0 && monthNum < 12) {
           const monthName = this.monthsList[monthNum];
           const pTot = r.platform_total != null ? Number(r.platform_total) : ((Number(r.swiggy_amount) || 0) + (Number(r.zomato_amount) || 0) + (Number(r.swiggy_dine_in_amount) || 0) + (Number(r.dstrict_amount) || 0));
           if (monthlyBaseline[monthName]) {
@@ -651,6 +1033,62 @@ export class DashboardComponent implements OnInit {
     });
 
     this.salesData = this.monthsList.map(m => monthlyBaseline[m]);
+
+    // Monthly KPIs
+    const currentMonthData = this.salesData[monthlyMonthIdx];
+    if (currentMonthData) {
+      const mRev = currentMonthData.grandTotal || currentMonthData.revenue || currentMonthData.actualAmount || 0;
+      const mOrders = currentMonthData.orders || 0;
+      this.monthlyKpis.totalRevenue = mRev;
+      this.monthlyKpis.totalOrders = mOrders;
+      this.monthlyKpis.aov = mOrders > 0 ? Math.round(mRev / mOrders) : 0;
+      const target = 40000;
+      this.monthlyKpis.targetProgress = Math.min(100, Math.round((mRev / target) * 100));
+    }
+
+    // REAL-TIME Monthly Payment Modes
+    this.monthlyPaymentModes = this.calculateRealPaymentModes(monthPayments);
+
+    // Filter Monthly Real Order Items
+    const monthOrderItems = this.liveOrderItems.filter(item =>
+      this.isItemInMonth(item.created_at, this.monthlySelectedYear, monthlyMonthIdx)
+    );
+
+    const monthlyItemMap = new Map<string, { name: string; quantity: number; revenue: number }>();
+    monthOrderItems.forEach((item: any) => {
+      const name = item.item_name || 'Unknown Item';
+      const qty = Number(item.item_quantity) || 0;
+      const unitCost = this.getItemPrice(name);
+      const rev = qty * unitCost;
+
+      if (monthlyItemMap.has(name)) {
+        const existing = monthlyItemMap.get(name)!;
+        existing.quantity += qty;
+        existing.revenue += rev;
+      } else {
+        monthlyItemMap.set(name, { name, quantity: qty, revenue: rev });
+      }
+    });
+
+    const monthlyProductList = Array.from(monthlyItemMap.values()).sort((a, b) => b.quantity - a.quantity);
+    this.monthlyProductSales = monthlyProductList;
+    const monthlySeg = this.calculateItemSegments(monthlyProductList);
+    this.monthlyItemSegments = monthlySeg.segments;
+    this.monthlyTotalItemQty = monthlySeg.totalQuantity;
+    this.monthlyTotalItemRevenue = monthlySeg.totalRevenue;
+
+    // REAL-TIME Monthly Popular Menu Items
+    this.monthlyTopItems = monthlyProductList.length > 0 ? monthlyProductList : this.calculateRealPopularItems(monthOrderItems);
+
+    // REAL-TIME Monthly Cuisine Revenue Share
+    this.monthlyCuisineSalesData = this.calculateRealCuisineShare(monthOrderItems, this.monthlyKpis.totalRevenue, this.monthlyKpis.totalOrders);
+
+    // REAL-TIME Monthly Platform Revenue Share
+    const monthDailyReports = (this.liveDailyReports || []).filter(r =>
+      this.isItemInMonth(r.report_date || r.created_at, this.monthlySelectedYear, monthlyMonthIdx)
+    );
+    this.monthlyPlatformSalesData = this.calculateRealPlatformShare(monthPayments, monthDailyReports);
+    this.monthlyPlatformTotalRevenue = this.monthlyPlatformSalesData.reduce((sum, item) => sum + item.amount, 0);
   }
 
   // --- SVG Plotting Calculators for Custom Charts ---
@@ -893,14 +1331,148 @@ export class DashboardComponent implements OnInit {
     this.hoveredSegment = null;
   }
 
-  onFilterChange(): void {
-    this.processSalesData();
-  }
-
   formatCurrency(value: number): string {
     if (value === undefined || value === null || isNaN(value)) return '₹0';
     const rounded = Math.round(value * 100) / 100;
     return '₹' + rounded.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
+
+  // Exact Menu Price Lookup Map & Getter
+  menuPriceMap: Map<string, number> = new Map();
+
+  initMenuPriceMap(): void {
+    try {
+      const data: any = menuListJsonData;
+      const courses = data?.menu || data?.default?.menu || [];
+      courses.forEach((c: any) => {
+        const items = c?.course?.items || [];
+        items.forEach((item: any) => {
+          if (item?.name && item?.cost != null) {
+            this.menuPriceMap.set(item.name.trim().toLowerCase(), Number(item.cost));
+          }
+        });
+      });
+    } catch (e) {
+      console.error('Error initializing menu price map:', e);
+    }
+  }
+
+  getItemPrice(itemName: string): number {
+    if (!itemName) return 0;
+    if (this.menuPriceMap.size === 0) {
+      this.initMenuPriceMap();
+    }
+    const norm = itemName.trim().toLowerCase();
+    if (this.menuPriceMap.has(norm)) {
+      return this.menuPriceMap.get(norm)!;
+    }
+    // Partial key matching for item variations
+    for (const [key, price] of this.menuPriceMap.entries()) {
+      if (norm.includes(key) || key.includes(norm)) {
+        return price;
+      }
+    }
+    // Category-specific dynamic price fallback
+    if (norm.includes('water')) return 20;
+    if (norm.includes('red bull')) return 110;
+    if (norm.includes('tea') || norm.includes('chai')) return 60;
+    if (norm.includes('coffee') || norm.includes('cappuccino') || norm.includes('latte') || norm.includes('espresso')) return 180;
+    if (norm.includes('shake') || norm.includes('smoothie')) return 190;
+    if (norm.includes('sandwich') || norm.includes('burger') || norm.includes('pizza') || norm.includes('pasta')) return 240;
+    if (norm.includes('dessert') || norm.includes('cake') || norm.includes('pastry') || norm.includes('croissant')) return 150;
+    
+    return 150;
+  }
+
+  // Item Cuisine Classifier
+  initCuisineMap(): void {
+    try {
+      const data: any = menuListJsonData;
+      const courses = data?.menu || data?.default?.menu || [];
+      courses.forEach((c: any) => {
+        const courseType = c?.course?.type || 'Other';
+        let cuisineGroup = 'Barista & Beverages';
+        const lowerType = courseType.toLowerCase();
+
+        if (lowerType.includes('coff') || lowerType.includes('tea') || lowerType.includes('shake') || lowerType.includes('soda') || lowerType.includes('beverage') || lowerType.includes('mocktail')) {
+          cuisineGroup = 'Barista & Beverages';
+        } else if (lowerType.includes('pizza') || lowerType.includes('burger') || lowerType.includes('pasta') || lowerType.includes('sandwich') || lowerType.includes('salad') || lowerType.includes('wing') || lowerType.includes('bread')) {
+          cuisineGroup = 'Continental';
+        } else if (lowerType.includes('chinese') || lowerType.includes('soup') || lowerType.includes('noodle') || lowerType.includes('rice')) {
+          cuisineGroup = 'Indo-Chinese';
+        } else if (lowerType.includes('starter') || lowerType.includes('fry') || lowerType.includes('fries')) {
+          cuisineGroup = 'Starters & Appetizers';
+        } else if (lowerType.includes('dessert') || lowerType.includes('cake') || lowerType.includes('pastry') || lowerType.includes('cookie')) {
+          cuisineGroup = 'Desserts & Bakery';
+        } else if (lowerType.includes('matcha') || lowerType.includes('chef') || lowerType.includes('spl')) {
+          cuisineGroup = 'Chef Specials & Matcha';
+        } else {
+          cuisineGroup = courseType;
+        }
+
+        const items = c?.course?.items || [];
+        items.forEach((item: any) => {
+          if (item?.name) {
+            this.itemCuisineMap.set(item.name.trim().toLowerCase(), cuisineGroup);
+          }
+        });
+      });
+    } catch (e) {
+      console.error('Error initializing cuisine map:', e);
+    }
+  }
+
+  getItemCuisine(itemName: string): string {
+    if (!itemName) return 'Barista & Beverages';
+    if (this.itemCuisineMap.size === 0) {
+      this.initCuisineMap();
+    }
+    const norm = itemName.trim().toLowerCase();
+    if (this.itemCuisineMap.has(norm)) {
+      return this.itemCuisineMap.get(norm)!;
+    }
+    for (const [key, cuisine] of this.itemCuisineMap.entries()) {
+      if (norm.includes(key) || key.includes(norm)) {
+        return cuisine;
+      }
+    }
+    if (norm.includes('coffee') || norm.includes('latte') || norm.includes('brew') || norm.includes('tea') || norm.includes('shake')) return 'Barista & Beverages';
+    if (norm.includes('pizza') || norm.includes('burger') || norm.includes('pasta') || norm.includes('sandwich')) return 'Continental';
+    if (norm.includes('noodle') || norm.includes('soup') || norm.includes('rice')) return 'Indo-Chinese';
+    if (norm.includes('fries') || norm.includes('wing') || norm.includes('roll')) return 'Starters & Appetizers';
+    if (norm.includes('cake') || norm.includes('pastry') || norm.includes('dessert')) return 'Desserts & Bakery';
+    if (norm.includes('matcha')) return 'Chef Specials & Matcha';
+    
+    return 'Barista & Beverages';
+  }
+
+  // Circular Chart Segment Calculator for Items
+  calculateItemSegments(items: any[]): { segments: any[]; totalQuantity: number; totalRevenue: number } {
+    const totalQuantity = items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+    const totalRevenue = items.reduce((sum, item) => sum + (Number(item.revenue) || 0), 0);
+
+    if (totalQuantity === 0) {
+      return { segments: [], totalQuantity: 0, totalRevenue: 0 };
+    }
+
+    let runningCircumference = 0;
+    const segments = items.map((item, idx) => {
+      const color = this.itemColors[idx % this.itemColors.length];
+      const percentage = Math.round((item.quantity / totalQuantity) * 1000) / 10;
+      const strokeLength = (item.quantity / totalQuantity) * this.doughnutCircumference;
+      const strokeOffset = this.doughnutCircumference - runningCircumference;
+      runningCircumference += strokeLength;
+
+      return {
+        ...item,
+        color,
+        percentage,
+        dashArray: `${strokeLength} ${this.doughnutCircumference - strokeLength}`,
+        dashOffset: strokeOffset
+      };
+    });
+
+    return { segments, totalQuantity, totalRevenue };
   }
 
   // 4. Product Sales Graph Coordinate math & Tooltips
@@ -967,7 +1539,98 @@ export class DashboardComponent implements OnInit {
     this.productHoveredPoint = null;
   }
 
-  toggleChartSize(chartName: 'hourly' | 'daily' | 'monthly' | 'product'): void {
+  // 5. Monthly Product Sales Graph Coordinate math & Tooltips
+  get monthlyProductMaxQuantity(): number {
+    const vals = this.monthlyProductSales.map(d => d.quantity);
+    const maxVal = Math.max(...vals, 5);
+    return Math.ceil(maxVal / 5) * 5;
+  }
+
+  getMonthlyProductYCoordinate(quantity: number): number {
+    const usableHeight = this.svgHeight - 2 * this.svgPadding;
+    const ratio = quantity / this.monthlyProductMaxQuantity;
+    return this.svgHeight - this.svgPadding - (ratio * usableHeight);
+  }
+
+  getMonthlyProductXCoordinate(index: number): number {
+    const usableWidth = this.svgWidth - 2 * this.svgPadding;
+    if (this.monthlyProductSales.length <= 1) return this.svgPadding + usableWidth / 2;
+    const spacing = usableWidth / (this.monthlyProductSales.length - 1);
+    return this.svgPadding + index * spacing;
+  }
+
+  get monthlyProductLinePath(): string {
+    if (this.monthlyProductSales.length === 0) return '';
+    return this.monthlyProductSales.map((d, i) => {
+      const x = this.getMonthlyProductXCoordinate(i);
+      const y = this.getMonthlyProductYCoordinate(d.quantity);
+      return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+    }).join(' ');
+  }
+
+  get monthlyProductLineAreaPath(): string {
+    if (this.monthlyProductSales.length === 0) return '';
+    const points = this.monthlyProductSales.map((d, i) => {
+      const x = this.getMonthlyProductXCoordinate(i);
+      const y = this.getMonthlyProductYCoordinate(d.quantity);
+      return `${x},${y}`;
+    }).join(' ');
+
+    const firstX = this.getMonthlyProductXCoordinate(0);
+    const lastX = this.getMonthlyProductXCoordinate(this.monthlyProductSales.length - 1);
+    const basePathY = this.svgHeight - this.svgPadding;
+
+    return `M ${firstX} ${basePathY} L ${points} L ${lastX} ${basePathY} Z`;
+  }
+
+  get monthlyProductGridYValues(): number[] {
+    const max = this.monthlyProductMaxQuantity;
+    return [0, max * 0.25, max * 0.5, max * 0.75, max];
+  }
+
+  showMonthlyProductPointTooltip(event: MouseEvent, point: any, index: number): void {
+    this.monthlyProductHoveredPoint = { ...point, index };
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
+    const parentRect = (event.target as HTMLElement).parentElement?.getBoundingClientRect();
+    
+    if (parentRect) {
+      this.monthlyProductTooltipX = rect.left - parentRect.left + rect.width / 2;
+      this.monthlyProductTooltipY = rect.top - parentRect.top - 50;
+    }
+  }
+
+  hideMonthlyProductPointTooltip(): void {
+    this.monthlyProductHoveredPoint = null;
+  }
+
+  isItemInMonth(createdAt: string, targetYear: string, targetMonthIdx: number): boolean {
+    if (!createdAt) return false;
+    let str = createdAt.trim();
+    if (str.includes('--')) str = str.split('--')[0];
+    if (str.includes('T')) str = str.split('T')[0];
+    if (str.includes(' ')) str = str.split(' ')[0];
+
+    const parts = str.split(/[-\/]/);
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        const y = parts[0];
+        const m = parseInt(parts[1], 10) - 1;
+        return y === targetYear && m === targetMonthIdx;
+      } else if (parts[2].length === 4) {
+        const y = parts[2];
+        const m = parseInt(parts[0], 10) - 1;
+        return y === targetYear && m === targetMonthIdx;
+      }
+    }
+    return false;
+  }
+
+  setCuisineViewScope(scope: 'monthly' | 'daily'): void {
+    this.cuisineViewScope = scope;
+    this.processSalesData();
+  }
+
+  toggleChartSize(chartName: 'hourly' | 'daily' | 'monthly' | 'product' | 'monthlyProduct' | 'cuisine' | 'platform'): void {
     if (chartName === 'hourly') {
       this.hourlyChartSize = this.hourlyChartSize === 'full' ? 'half' : 'full';
     } else if (chartName === 'daily') {
@@ -976,6 +1639,12 @@ export class DashboardComponent implements OnInit {
       this.monthlyChartSize = this.monthlyChartSize === 'full' ? 'half' : 'full';
     } else if (chartName === 'product') {
       this.productChartSize = this.productChartSize === 'full' ? 'half' : 'full';
+    } else if (chartName === 'monthlyProduct') {
+      this.monthlyProductChartSize = this.monthlyProductChartSize === 'full' ? 'half' : 'full';
+    } else if (chartName === 'cuisine') {
+      this.cuisineChartSize = this.cuisineChartSize === 'full' ? 'half' : 'full';
+    } else if (chartName === 'platform') {
+      this.platformChartSize = this.platformChartSize === 'full' ? 'half' : 'full';
     }
   }
 

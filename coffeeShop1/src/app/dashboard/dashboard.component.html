@@ -2,16 +2,81 @@
   <div class="spinner"></div>
 </div>
 
-<section id="dashboard" class="dashboard-section section-bg" style="padding-top: 8em; min-height: 100vh;">
+<!-- Dashboard Security Gate Modal Overlay (Shown when user is not logged in) -->
+<div class="admin-login-overlay" *ngIf="!isAuthenticated">
+  <div class="admin-login-card glass-card">
+    <div class="login-header">
+      <div class="lock-icon-badge">
+        <i class="bi bi-shield-lock-fill"></i>
+      </div>
+      <h2 class="login-title">Dashboard Login</h2>
+      <p class="login-subtitle">
+        Access to sales analytics & financial metrics is restricted. Enter Password to proceed.
+      </p>
+    </div>
+
+    <!-- Error Banner -->
+    <div class="login-alert error" *ngIf="loginErrorMsg">
+      <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ loginErrorMsg }}
+    </div>
+
+    <form (submit)="verifyAndLogin(); $event.preventDefault()" class="login-form">
+      <div class="form-group">
+        <label for="dashboardPasswordInput" class="form-label">ENTER DASHBOARD PASSWORD</label>
+        <div class="input-icon-wrap">
+          <i class="bi bi-key-fill field-icon"></i>
+          <input 
+            type="password" 
+            id="dashboardPasswordInput" 
+            name="dashboardPasswordInput" 
+            [(ngModel)]="passwordInput" 
+            placeholder="Enter Password" 
+            autocomplete="off" 
+            class="login-input" 
+            autofocus />
+        </div>
+      </div>
+
+      <div class="login-actions">
+        <button type="submit" class="btn-verify-access">
+          <i class="bi bi-unlock-fill"></i> Login
+        </button>
+      </div>
+    </form>
+
+    <div class="login-footer">
+      <a routerLink="/" class="back-home-link">
+        <i class="bi bi-arrow-left"></i> Back to Homepage
+      </a>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="isAuthenticated">
+<section id="dashboard" class="dashboard-section section-bg" style="padding-top: 7.5em; min-height: 100vh;">
   <div class="container" data-aos="fade-up">
 
-    <!-- Header Panel -->
-    <div class="section-title" style="padding-bottom: 1.5rem;">
+    <!-- Top Header & Navigation Tabs Panel -->
+    <div class="section-title" style="padding-bottom: 1.25rem;">
       <h2>Analytics</h2>
-      <div class="dashboard-header-flex">
-        <p>Sales Dashboard</p>
-        
-        <!-- Controls Filter Panel -->
+      <div class="dashboard-header-flex align-items-center">
+        <div>
+          <p class="m-0">Sales Analytics Dashboard</p>
+        </div>
+
+        <!-- Sleek Glassmorphic Tab Switcher (Daily Details vs Monthly Details) -->
+        <div class="dashboard-tabs-wrapper glass-panel p-1 d-flex align-items-center gap-1">
+          <button class="dashboard-tab-btn" [class.active]="activeTab === 'daily'" (click)="setActiveTab('daily')">
+            <i class="bi bi-calendar-event me-2"></i> Daily Details
+            <span class="tab-badge ms-2" *ngIf="activeTab === 'daily'">{{ getFormattedDisplayDate(selectedDate) || 'Date View' }}</span>
+          </button>
+          <button class="dashboard-tab-btn" [class.active]="activeTab === 'monthly'" (click)="setActiveTab('monthly')">
+            <i class="bi bi-calendar-month me-2"></i> Monthly Details
+            <span class="tab-badge ms-2" *ngIf="activeTab === 'monthly'">{{ selectedMonth }} {{ selectedYear }}</span>
+          </button>
+        </div>
+
+        <!-- Sync Button & Global Year Filter -->
         <div class="controls-panel glass-panel">
           <div class="filter-group">
             <label for="yearSelect">Year</label>
@@ -25,732 +90,378 @@
           <button class="refresh-btn" (click)="refreshDashboardData()" title="Sync Live Data">
             <i class="bi bi-arrow-clockwise"></i> Sync
           </button>
+
+          <button class="lock-admin-top-btn" (click)="lockDashboardPage()" title="Lock Dashboard" style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: rgba(220, 53, 69, 0.18); border: 1px solid rgba(220, 53, 69, 0.5); color: #ff6b6b; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; transition: all 0.2s ease;">
+            <i class="bi bi-lock-fill"></i> Lock
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- KPI Summary Row -->
-    <div class="row kpi-row">
-      <!-- KPI Card 1 -->
-      <div class="col-lg-3 col-md-6 mb-4">
-        <div class="kpi-card glass-panel hover-grow">
-          <div class="kpi-icon-box orange">
-            <i class="bi bi-currency-rupee"></i>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 1: DAILY DETAILS                                                      -->
+    <!-- ========================================================================= -->
+    <div *ngIf="activeTab === 'daily'" class="tab-content-fade">
+
+      <!-- Daily Controls Scope Bar -->
+      <div class="d-flex justify-content-between align-items-center mb-4 p-3 glass-panel flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-calendar-day text-gold fs-5"></i>
+          <h5 class="m-0 text-light font-weight-bold">Daily Analytics Scope</h5>
+        </div>
+        <div class="d-flex align-items-center flex-wrap gap-3">
+          <div class="filter-group-inline">
+            <label for="dailyDatePicker" class="me-2 text-gold font-weight-bold">Select Date:</label>
+            <input id="dailyDatePicker" type="date" class="form-control-inline" [(ngModel)]="dailySelectedDate" (change)="onDailyFilterChange()">
           </div>
-          <div class="kpi-content">
-            <span class="kpi-label">Today's Revenue</span>
-            <h3 class="kpi-value text-gold">{{ formatCurrency(kpis.totalRevenue) }}</h3>
-            <span class="kpi-desc">Based on today's actual sales</span>
+          <div class="filter-group-inline me-2">
+            <label for="dailyMonthSelect" class="me-2 text-gold font-weight-bold">Month:</label>
+            <select id="dailyMonthSelect" class="form-control-inline" [(ngModel)]="dailySelectedMonth" (change)="onDailyFilterChange()">
+              <option *ngFor="let m of monthsList" [value]="m">{{ m }}</option>
+            </select>
+          </div>
+          <div class="filter-group-inline me-2">
+            <label for="dailyYearSelect" class="me-2 text-gold font-weight-bold">Year:</label>
+            <select id="dailyYearSelect" class="form-control-inline" [(ngModel)]="dailySelectedYear" (change)="onDailyFilterChange()">
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+            </select>
           </div>
         </div>
       </div>
 
-      <!-- KPI Card 2 -->
-      <div class="col-lg-3 col-md-6 mb-4">
-        <div class="kpi-card glass-panel hover-grow">
-          <div class="kpi-icon-box green">
-            <i class="bi bi-cart-check-fill"></i>
-          </div>
-          <div class="kpi-content">
-            <span class="kpi-label">Today's Orders</span>
-            <h3 class="kpi-value">{{ kpis.totalOrders }}</h3>
-            <span class="kpi-desc">Total orders fulfilled today</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- KPI Card 3 -->
-      <div class="col-lg-3 col-md-6 mb-4">
-        <div class="kpi-card glass-panel hover-grow">
-          <div class="kpi-icon-box blue">
-            <i class="bi bi-graph-up-arrow"></i>
-          </div>
-          <div class="kpi-content">
-            <span class="kpi-label">Average Ticket Size</span>
-            <h3 class="kpi-value">{{ formatCurrency(kpis.aov) }}</h3>
-            <span class="kpi-desc">Today's average order value</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- KPI Card 4 -->
-      <div class="col-lg-3 col-md-6 mb-4">
-        <div class="kpi-card glass-panel hover-grow">
-          <div class="kpi-icon-box purple">
-            <i class="bi bi-wallet2"></i>
-          </div>
-          <div class="kpi-content">
-            <span class="kpi-label">Main Payment Mode</span>
-            <h3 class="kpi-value text-green">{{ kpis.topPaymentMode }}</h3>
-            <span class="kpi-desc">Dominant payment mode today</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Sales Performance Charts -->
-    <!-- Row 1: Hourly Sales (Full Width) -->
-    <div class="row mb-5">
-      <div [ngClass]="hourlyChartSize === 'full' ? 'col-12 mb-4' : 'col-lg-6 col-12 mb-4'">
-        <div class="chart-card glass-panel" style="height: 100%;">
-          <div class="chart-header flex-wrap">
-            <h4 style="flex: 1; min-width: 250px;">Sales Performance for {{ getFormattedDisplayDate(selectedDate) }} (Hourly)</h4>
-            <div class="d-flex align-items-center flex-wrap gap-3 mt-2 mt-md-0">
-              <!-- Inline Date picker filter -->
-              <div class="filter-group-inline">
-                <label for="dateSelect" class="sr-only">Date</label>
-                <input id="dateSelect" type="date" class="form-control-inline" [(ngModel)]="selectedDate" (change)="onFilterChange()">
-              </div>
-              <!-- Toggle buttons -->
-              <div class="toggle-buttons">
-                <button [class.active]="todayChartType === 'line'" (click)="todayChartType = 'line'">Line Chart</button>
-                <button [class.active]="todayChartType === 'bar'" (click)="todayChartType = 'bar'">Bar Chart</button>
-                <span class="btn-divider"></span>
-                <button (click)="toggleChartSize('hourly')" [title]="hourlyChartSize === 'full' ? 'Make half-width' : 'Make full-width'">
-                  <i class="bi" [ngClass]="hourlyChartSize === 'full' ? 'bi-arrows-angle-contract' : 'bi-arrows-angle-expand'"></i>
-                </button>
-              </div>
-              <button class="refresh-btn" (click)="refreshDashboardData()" title="Sync Live Data" style="margin: 0;">
-                <i class="bi bi-arrow-clockwise"></i> Sync
-              </button>
+      <!-- Daily KPI Summary Row -->
+      <div class="row kpi-row">
+        <!-- Daily KPI Card 1 -->
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="kpi-card glass-panel hover-grow">
+            <div class="kpi-icon-box orange">
+              <i class="bi bi-currency-rupee"></i>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Selected Date Revenue</span>
+              <h3 class="kpi-value text-gold">{{ formatCurrency(kpis.totalRevenue) }}</h3>
+              <span class="kpi-desc">{{ getFormattedDisplayDate(selectedDate) }}</span>
             </div>
           </div>
+        </div>
 
-          <div class="chart-body">
-            <div class="svg-container">
-              <svg [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight" width="100%" height="100%">
-                <defs>
-                  <linearGradient id="todayChartAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#cda45e" stop-opacity="0.35" />
-                    <stop offset="100%" stop-color="#cda45e" stop-opacity="0.0" />
-                  </linearGradient>
-                  <linearGradient id="todayBarGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#cda45e" stop-opacity="0.9" />
-                    <stop offset="100%" stop-color="#cda45e" stop-opacity="0.3" />
-                  </linearGradient>
-                </defs>
+        <!-- Daily KPI Card 2 -->
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="kpi-card glass-panel hover-grow">
+            <div class="kpi-icon-box green">
+              <i class="bi bi-cart-check-fill"></i>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Daily Orders</span>
+              <h3 class="kpi-value">{{ kpis.totalOrders }}</h3>
+              <span class="kpi-desc">Total orders fulfilled on date</span>
+            </div>
+          </div>
+        </div>
 
-                <!-- Gridlines -->
-                <g class="grid-lines">
-                  <line *ngFor="let yVal of todayGridYValues" 
-                        [attr.x1]="svgPadding" 
-                        [attr.y1]="getTodayYCoordinate(yVal)" 
-                        [attr.x2]="svgWidth - svgPadding" 
-                        [attr.y2]="getTodayYCoordinate(yVal)"
-                        stroke="rgba(255, 255, 255, 0.08)" 
-                        stroke-dasharray="4,4" />
-                </g>
+        <!-- Daily KPI Card 3 -->
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="kpi-card glass-panel hover-grow">
+            <div class="kpi-icon-box blue">
+              <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Average Ticket Size</span>
+              <h3 class="kpi-value">{{ formatCurrency(kpis.aov) }}</h3>
+              <span class="kpi-desc">Average order value on date</span>
+            </div>
+          </div>
+        </div>
 
-                <!-- Y Axis Labels -->
-                <g class="y-axis-labels">
-                  <text *ngFor="let yVal of todayGridYValues" 
-                        [attr.x]="svgPadding - 10" 
-                        [attr.y]="getTodayYCoordinate(yVal) + 4" 
-                        fill="rgba(255, 255, 255, 0.6)" 
-                        font-size="11" 
-                        text-anchor="end">
-                    {{ yVal >= 1000 ? (yVal/1000) + 'k' : yVal }}
-                  </text>
-                </g>
+        <!-- Daily KPI Card 4 -->
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="kpi-card glass-panel hover-grow">
+            <div class="kpi-icon-box purple">
+              <i class="bi bi-wallet2"></i>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Main Payment Channel</span>
+              <h3 class="kpi-value text-green">{{ kpis.topPaymentMode }}</h3>
+              <span class="kpi-desc">Dominant payment mode today</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-                <!-- X Axis Labels -->
-                <g class="x-axis-labels">
-                  <ng-container *ngFor="let d of todaySalesData; let i = index">
-                    <text *ngIf="todaySalesData.length <= 12 || i % 2 === 0 || i === todaySalesData.length - 1"
-                          [attr.x]="getTodayXCoordinate(i)" 
-                          [attr.y]="svgHeight - svgPadding + 20" 
+      <!-- Daily Row 1: Hourly Sales Chart & Daily Sales Overview Chart -->
+      <div class="row mb-4">
+        <!-- Hourly Sales Graph (Selected Date) -->
+        <div [ngClass]="hourlyChartSize === 'full' ? 'col-12 mb-4' : 'col-lg-6 col-12 mb-4'">
+          <div class="chart-card glass-panel" style="height: 100%;">
+            <div class="chart-header flex-wrap">
+              <h4 style="flex: 1; min-width: 250px;">Hourly Performance ({{ getFormattedDisplayDate(selectedDate) }})</h4>
+              <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-md-0">
+                <div class="toggle-buttons">
+                  <button [class.active]="todayChartType === 'line'" (click)="todayChartType = 'line'">Line</button>
+                  <button [class.active]="todayChartType === 'bar'" (click)="todayChartType = 'bar'">Bar</button>
+                  <span class="btn-divider"></span>
+                  <button (click)="toggleChartSize('hourly')" [title]="hourlyChartSize === 'full' ? 'Make half-width' : 'Make full-width'">
+                    <i class="bi" [ngClass]="hourlyChartSize === 'full' ? 'bi-arrows-angle-contract' : 'bi-arrows-angle-expand'"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-body">
+              <div class="svg-container">
+                <svg [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight" width="100%" height="100%">
+                  <defs>
+                    <linearGradient id="todayChartAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#cda45e" stop-opacity="0.35" />
+                      <stop offset="100%" stop-color="#cda45e" stop-opacity="0.0" />
+                    </linearGradient>
+                    <linearGradient id="todayBarGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#cda45e" stop-opacity="0.9" />
+                      <stop offset="100%" stop-color="#cda45e" stop-opacity="0.3" />
+                    </linearGradient>
+                  </defs>
+
+                  <!-- Gridlines -->
+                  <g class="grid-lines">
+                    <line *ngFor="let yVal of todayGridYValues" 
+                          [attr.x1]="svgPadding" 
+                          [attr.y1]="getTodayYCoordinate(yVal)" 
+                          [attr.x2]="svgWidth - svgPadding" 
+                          [attr.y2]="getTodayYCoordinate(yVal)"
+                          stroke="rgba(255, 255, 255, 0.08)" 
+                          stroke-dasharray="4,4" />
+                  </g>
+
+                  <!-- Y Axis Labels -->
+                  <g class="y-axis-labels">
+                    <text *ngFor="let yVal of todayGridYValues" 
+                          [attr.x]="svgPadding - 10" 
+                          [attr.y]="getTodayYCoordinate(yVal) + 4" 
                           fill="rgba(255, 255, 255, 0.6)" 
                           font-size="11" 
-                          text-anchor="middle">
-                      {{ d.month }}
+                          text-anchor="end">
+                      {{ yVal >= 1000 ? (yVal/1000) + 'k' : yVal }}
                     </text>
-                  </ng-container>
-                </g>
+                  </g>
 
-                <!-- AREA Chart Drawing -->
-                <path *ngIf="todayChartType === 'line'" 
-                      [attr.d]="todayLineAreaPath" 
-                      fill="url(#todayChartAreaGradient)" />
+                  <!-- X Axis Labels -->
+                  <g class="x-axis-labels">
+                    <ng-container *ngFor="let d of todaySalesData; let i = index">
+                      <text *ngIf="todaySalesData.length <= 12 || i % 2 === 0 || i === todaySalesData.length - 1"
+                            [attr.x]="getTodayXCoordinate(i)" 
+                            [attr.y]="svgHeight - svgPadding + 20" 
+                            fill="rgba(255, 255, 255, 0.6)" 
+                            font-size="11" 
+                            text-anchor="middle">
+                        {{ d.month }}
+                      </text>
+                    </ng-container>
+                  </g>
 
-                <!-- LINE Chart Drawing -->
-                <path *ngIf="todayChartType === 'line'" 
-                      [attr.d]="todayLinePath" 
-                      fill="transparent" 
-                      stroke="#cda45e" 
-                      stroke-width="3.5" 
-                      stroke-linecap="round" />
+                  <!-- AREA Chart Drawing -->
+                  <path *ngIf="todayChartType === 'line'" 
+                        [attr.d]="todayLineAreaPath" 
+                        fill="url(#todayChartAreaGradient)" />
 
-                <!-- CIRCLE Tooltip Targets (Line Chart) -->
-                <g *ngIf="todayChartType === 'line'">
-                  <circle *ngFor="let d of todaySalesData; let i = index" 
-                          [attr.cx]="getTodayXCoordinate(i)" 
-                          [attr.cy]="getTodayYCoordinate(d.revenue)" 
-                          r="6" 
-                          fill="#1a1814" 
-                          stroke="#cda45e" 
-                          stroke-width="2.5"
-                          class="interactive-dot"
+                  <!-- LINE Chart Drawing -->
+                  <path *ngIf="todayChartType === 'line'" 
+                        [attr.d]="todayLinePath" 
+                        fill="transparent" 
+                        stroke="#cda45e" 
+                        stroke-width="3.5" 
+                        stroke-linecap="round" />
+
+                  <!-- CIRCLE Tooltip Targets (Line Chart) -->
+                  <g *ngIf="todayChartType === 'line'">
+                    <circle *ngFor="let d of todaySalesData; let i = index" 
+                            [attr.cx]="getTodayXCoordinate(i)" 
+                            [attr.cy]="getTodayYCoordinate(d.revenue)" 
+                            r="6" 
+                            fill="#1a1814" 
+                            stroke="#cda45e" 
+                            stroke-width="2.5"
+                            class="interactive-dot"
+                            (mouseenter)="showTodayPointTooltip($event, d, i)"
+                            (mouseleave)="hideTodayPointTooltip()" />
+                  </g>
+
+                  <!-- BAR Chart Drawing -->
+                  <g *ngIf="todayChartType === 'bar'">
+                    <rect *ngFor="let d of todaySalesData; let i = index" 
+                          [attr.x]="getTodayXCoordinate(i) - 15" 
+                          [attr.y]="getTodayYCoordinate(d.revenue)" 
+                          width="30" 
+                          [attr.height]="svgHeight - svgPadding - getTodayYCoordinate(d.revenue)"
+                          fill="url(#todayBarGradient)" 
+                          rx="4"
+                          class="interactive-bar"
                           (mouseenter)="showTodayPointTooltip($event, d, i)"
                           (mouseleave)="hideTodayPointTooltip()" />
-                </g>
+                  </g>
+                </svg>
 
-                <!-- BAR Chart Drawing -->
-                <g *ngIf="todayChartType === 'bar'">
-                  <rect *ngFor="let d of todaySalesData; let i = index" 
-                        [attr.x]="getTodayXCoordinate(i) - 15" 
-                        [attr.y]="getTodayYCoordinate(d.revenue)" 
-                        width="30" 
-                        [attr.height]="svgHeight - svgPadding - getTodayYCoordinate(d.revenue)"
-                        fill="url(#todayBarGradient)" 
-                        rx="4"
-                        class="interactive-bar"
-                        (mouseenter)="showTodayPointTooltip($event, d, i)"
-                        (mouseleave)="hideTodayPointTooltip()" />
-                </g>
-              </svg>
-
-              <!-- Today's Dynamic Tooltip -->
-              <div *ngIf="todayHoveredPoint" class="chart-tooltip" [style.left.px]="todayTooltipX" [style.top.px]="todayTooltipY">
-                <div class="tooltip-title">
-                  Time: {{ todayHoveredPoint.month }}
-                </div>
-                <div class="tooltip-row">
-                  <span class="dot gold"></span>
-                  <span class="label">Actual Amount:</span>
-                  <span class="value">{{ formatCurrency(todayHoveredPoint.actualAmount) }}</span>
-                </div>
-                <div class="tooltip-row">
-                  <span class="dot cyan"></span>
-                  <span class="label">Paid Amount:</span>
-                  <span class="value">{{ formatCurrency(todayHoveredPoint.paidAmount) }}</span>
-                </div>
-                <div class="tooltip-row">
-                  <span class="dot green"></span>
-                  <span class="label">Orders:</span>
-                  <span class="value">{{ todayHoveredPoint.orders }}</span>
+                <!-- Tooltip -->
+                <div *ngIf="todayHoveredPoint" class="chart-tooltip" [style.left.px]="todayTooltipX" [style.top.px]="todayTooltipY">
+                  <div class="tooltip-title">Time: {{ todayHoveredPoint.month }}</div>
+                  <div class="tooltip-row">
+                    <span class="dot gold"></span>
+                    <span class="label">Actual Amount:</span>
+                    <span class="value">{{ formatCurrency(todayHoveredPoint.actualAmount) }}</span>
+                  </div>
+                  <div class="tooltip-row">
+                    <span class="dot cyan"></span>
+                    <span class="label">Paid Amount:</span>
+                    <span class="value">{{ formatCurrency(todayHoveredPoint.paidAmount) }}</span>
+                  </div>
+                  <div class="tooltip-row">
+                    <span class="dot green"></span>
+                    <span class="label">Orders:</span>
+                    <span class="value">{{ todayHoveredPoint.orders }}</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Daily Sales Graph (Adjustable layout size) -->
-      <div [ngClass]="dailyChartSize === 'full' ? 'col-12 mb-4' : 'col-lg-6 col-12 mb-4'">
-        <div class="chart-card glass-panel" style="height: 100%;">
-          <div class="chart-header flex-wrap">
-            <h4 style="flex: 1; min-width: 200px;">Daily Sales ({{ selectedMonth }} {{ selectedYear }})</h4>
-            <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-sm-0">
-              <!-- Inline Month selector -->
-              <div class="filter-group-inline">
-                <label for="monthSelectInline" class="sr-only">Month</label>
-                <select id="monthSelectInline" class="form-control-inline" [(ngModel)]="selectedMonth" (change)="onFilterChange()">
-                  <option *ngFor="let m of monthsList" [value]="m">{{ m }}</option>
-                </select>
-              </div>
-              <div class="toggle-buttons">
-                <button [class.active]="dailyChartType === 'line'" (click)="dailyChartType = 'line'">Line</button>
-                <button [class.active]="dailyChartType === 'bar'" (click)="dailyChartType = 'bar'">Bar</button>
-                <span class="btn-divider"></span>
-                <button (click)="toggleChartSize('daily')" [title]="dailyChartSize === 'full' ? 'Make half-width' : 'Make full-width'">
-                  <i class="bi" [ngClass]="dailyChartSize === 'full' ? 'bi-arrows-angle-contract' : 'bi-arrows-angle-expand'"></i>
-                </button>
+        <!-- Daily Sales Overview Graph (Selected Month) -->
+        <div [ngClass]="dailyChartSize === 'full' ? 'col-12 mb-4' : 'col-lg-6 col-12 mb-4'">
+          <div class="chart-card glass-panel" style="height: 100%;">
+            <div class="chart-header flex-wrap">
+              <h4 style="flex: 1; min-width: 200px;">Daily Sales Curve ({{ selectedMonth }} {{ selectedYear }})</h4>
+              <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-sm-0">
+                <div class="toggle-buttons">
+                  <button [class.active]="dailyChartType === 'line'" (click)="dailyChartType = 'line'">Line</button>
+                  <button [class.active]="dailyChartType === 'bar'" (click)="dailyChartType = 'bar'">Bar</button>
+                  <span class="btn-divider"></span>
+                  <button (click)="toggleChartSize('daily')" [title]="dailyChartSize === 'full' ? 'Make half-width' : 'Make full-width'">
+                    <i class="bi" [ngClass]="dailyChartSize === 'full' ? 'bi-arrows-angle-contract' : 'bi-arrows-angle-expand'"></i>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="chart-body">
-            <div class="svg-container">
-              <svg [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight" width="100%" height="100%">
-                <defs>
-                  <linearGradient id="dailyChartAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#cda45e" stop-opacity="0.35" />
-                    <stop offset="100%" stop-color="#cda45e" stop-opacity="0.0" />
-                  </linearGradient>
-                  <linearGradient id="dailyBarGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#cda45e" stop-opacity="0.9" />
-                    <stop offset="100%" stop-color="#cda45e" stop-opacity="0.3" />
-                  </linearGradient>
-                </defs>
+            <div class="chart-body">
+              <div class="svg-container">
+                <svg [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight" width="100%" height="100%">
+                  <defs>
+                    <linearGradient id="dailyChartAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#cda45e" stop-opacity="0.35" />
+                      <stop offset="100%" stop-color="#cda45e" stop-opacity="0.0" />
+                    </linearGradient>
+                    <linearGradient id="dailyBarGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#cda45e" stop-opacity="0.9" />
+                      <stop offset="100%" stop-color="#cda45e" stop-opacity="0.3" />
+                    </linearGradient>
+                  </defs>
 
-                <!-- Gridlines -->
-                <g class="grid-lines">
-                  <line *ngFor="let yVal of dailyGridYValues" 
-                        [attr.x1]="svgPadding" 
-                        [attr.y1]="getDailyYCoordinate(yVal)" 
-                        [attr.x2]="svgWidth - svgPadding" 
-                        [attr.y2]="getDailyYCoordinate(yVal)"
-                        stroke="rgba(255, 255, 255, 0.08)" 
-                        stroke-dasharray="4,4" />
-                </g>
+                  <!-- Gridlines -->
+                  <g class="grid-lines">
+                    <line *ngFor="let yVal of dailyGridYValues" 
+                          [attr.x1]="svgPadding" 
+                          [attr.y1]="getDailyYCoordinate(yVal)" 
+                          [attr.x2]="svgWidth - svgPadding" 
+                          [attr.y2]="getDailyYCoordinate(yVal)"
+                          stroke="rgba(255, 255, 255, 0.08)" 
+                          stroke-dasharray="4,4" />
+                  </g>
 
-                <!-- Y Axis Labels -->
-                <g class="y-axis-labels">
-                  <text *ngFor="let yVal of dailyGridYValues" 
-                        [attr.x]="svgPadding - 10" 
-                        [attr.y]="getDailyYCoordinate(yVal) + 4" 
-                        fill="rgba(255, 255, 255, 0.6)" 
-                        font-size="11" 
-                        text-anchor="end">
-                    {{ yVal >= 1000 ? (yVal/1000) + 'k' : yVal }}
-                  </text>
-                </g>
-
-                <!-- X Axis Labels -->
-                <g class="x-axis-labels">
-                  <ng-container *ngFor="let d of dailySalesData; let i = index">
-                    <text [attr.x]="getDailyXCoordinate(i)" 
-                          [attr.y]="svgHeight - svgPadding + 18" 
-                          fill="rgba(255, 255, 255, 0.65)" 
-                          font-size="9" 
-                          text-anchor="middle">
-                      {{ getUltraShortDayOfWeek(d.month) }} {{ d.month }}
+                  <!-- Y Axis Labels -->
+                  <g class="y-axis-labels">
+                    <text *ngFor="let yVal of dailyGridYValues" 
+                          [attr.x]="svgPadding - 10" 
+                          [attr.y]="getDailyYCoordinate(yVal) + 4" 
+                          fill="rgba(255, 255, 255, 0.6)" 
+                          font-size="11" 
+                          text-anchor="end">
+                      {{ yVal >= 1000 ? (yVal/1000) + 'k' : yVal }}
                     </text>
-                  </ng-container>
-                </g>
+                  </g>
 
-                <!-- AREA Chart Drawing -->
-                <path *ngIf="dailyChartType === 'line'" 
-                      [attr.d]="dailyLineAreaPath" 
-                      fill="url(#dailyChartAreaGradient)" />
+                  <!-- X Axis Labels -->
+                  <g class="x-axis-labels">
+                    <ng-container *ngFor="let d of dailySalesData; let i = index">
+                      <text [attr.x]="getDailyXCoordinate(i)" 
+                            [attr.y]="svgHeight - svgPadding + 18" 
+                            fill="rgba(255, 255, 255, 0.65)" 
+                            font-size="9" 
+                            text-anchor="middle">
+                        {{ getUltraShortDayOfWeek(d.month) }} {{ d.month }}
+                      </text>
+                    </ng-container>
+                  </g>
 
-                <!-- LINE Chart Drawing -->
-                <path *ngIf="dailyChartType === 'line'" 
-                      [attr.d]="dailyLinePath" 
-                      fill="transparent" 
-                      stroke="#cda45e" 
-                      stroke-width="3.5" 
-                      stroke-linecap="round" />
+                  <!-- AREA Chart Drawing -->
+                  <path *ngIf="dailyChartType === 'line'" 
+                        [attr.d]="dailyLineAreaPath" 
+                        fill="url(#dailyChartAreaGradient)" />
 
-                <!-- CIRCLE Tooltip Targets (Line Chart) -->
-                <g *ngIf="dailyChartType === 'line'">
-                  <circle *ngFor="let d of dailySalesData; let i = index" 
-                          [attr.cx]="getDailyXCoordinate(i)" 
-                          [attr.cy]="getDailyYCoordinate(d.revenue)" 
-                          r="5" 
-                          fill="#1a1814" 
-                          stroke="#cda45e" 
-                          stroke-width="2"
-                          class="interactive-dot"
+                  <!-- LINE Chart Drawing -->
+                  <path *ngIf="dailyChartType === 'line'" 
+                        [attr.d]="dailyLinePath" 
+                        fill="transparent" 
+                        stroke="#cda45e" 
+                        stroke-width="3.5" 
+                        stroke-linecap="round" />
+
+                  <!-- CIRCLE Tooltip Targets (Line Chart) -->
+                  <g *ngIf="dailyChartType === 'line'">
+                    <circle *ngFor="let d of dailySalesData; let i = index" 
+                            [attr.cx]="getDailyXCoordinate(i)" 
+                            [attr.cy]="getDailyYCoordinate(d.revenue)" 
+                            r="5" 
+                            fill="#1a1814" 
+                            stroke="#cda45e" 
+                            stroke-width="2"
+                            class="interactive-dot"
+                            (mouseenter)="showDailyPointTooltip($event, d, i)"
+                            (mouseleave)="hideDailyPointTooltip()"
+                            (click)="openDailySalesModal(d)" />
+                  </g>
+
+                  <!-- BAR Chart Drawing -->
+                  <g *ngIf="dailyChartType === 'bar'">
+                    <rect *ngFor="let d of dailySalesData; let i = index" 
+                          [attr.x]="getDailyXCoordinate(i) - 6" 
+                          [attr.y]="getDailyYCoordinate(d.revenue)" 
+                          width="12" 
+                          [attr.height]="svgHeight - svgPadding - getDailyYCoordinate(d.revenue)"
+                          fill="url(#dailyBarGradient)" 
+                          rx="2"
+                          class="interactive-bar"
                           (mouseenter)="showDailyPointTooltip($event, d, i)"
                           (mouseleave)="hideDailyPointTooltip()"
                           (click)="openDailySalesModal(d)" />
-                </g>
+                  </g>
+                </svg>
 
-                <!-- BAR Chart Drawing -->
-                <g *ngIf="dailyChartType === 'bar'">
-                  <rect *ngFor="let d of dailySalesData; let i = index" 
-                        [attr.x]="getDailyXCoordinate(i) - 6" 
-                        [attr.y]="getDailyYCoordinate(d.revenue)" 
-                        width="12" 
-                        [attr.height]="svgHeight - svgPadding - getDailyYCoordinate(d.revenue)"
-                        fill="url(#dailyBarGradient)" 
-                        rx="2"
-                        class="interactive-bar"
-                        (mouseenter)="showDailyPointTooltip($event, d, i)"
-                        (mouseleave)="hideDailyPointTooltip()"
-                        (click)="openDailySalesModal(d)" />
-                </g>
-              </svg>
-
-              <!-- Daily Dynamic Tooltip -->
-              <div *ngIf="dailyHoveredPoint" class="chart-tooltip" [style.left.px]="dailyTooltipX" [style.top.px]="dailyTooltipY">
-                <div class="tooltip-title">
-                  Date: {{ getDayOfWeek(dailyHoveredPoint.month) }}, {{ selectedMonth }} {{ dailyHoveredPoint.month }}, {{ selectedYear }}
-                </div>
-                <div class="tooltip-row">
-                  <span class="dot gold"></span>
-                  <span class="label">Actual Amount:</span>
-                  <span class="value">{{ formatCurrency(dailyHoveredPoint.actualAmount) }}</span>
-                </div>
-                <div class="tooltip-row">
-                  <span class="dot cyan"></span>
-                  <span class="label">Paid Amount:</span>
-                  <span class="value">{{ formatCurrency(dailyHoveredPoint.paidAmount) }}</span>
-                </div>
-                <div class="tooltip-row" *ngIf="dailyHoveredPoint.grandTotal != null">
-                  <span class="dot purple"></span>
-                  <span class="label">Grand Total:</span>
-                  <span class="value text-gold" style="font-weight: 700;">{{ formatCurrency(dailyHoveredPoint.grandTotal) }}</span>
-                </div>
-                <div class="tooltip-row">
-                  <span class="dot green"></span>
-                  <span class="label">Orders:</span>
-                  <span class="value">{{ dailyHoveredPoint.orders }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Monthly Sales Graph (Adjustable layout size) -->
-      <div [ngClass]="monthlyChartSize === 'full' ? 'col-12 mb-4' : 'col-lg-6 col-12 mb-4'">
-        <div class="chart-card glass-panel" style="height: 100%;">
-          <div class="chart-header flex-wrap">
-            <h4 style="flex: 1; min-width: 200px;">Monthly Sales ({{ selectedYear }})</h4>
-            <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-sm-0">
-              <!-- Inline Year selector -->
-              <div class="filter-group-inline">
-                <label for="yearSelectInline" class="sr-only">Year</label>
-                <select id="yearSelectInline" class="form-control-inline" [(ngModel)]="selectedYear" (change)="onFilterChange()">
-                  <option value="2025">2025</option>
-                  <option value="2026">2026</option>
-                  <option value="2027">2027</option>
-                </select>
-              </div>
-              <div class="toggle-buttons">
-                <button [class.active]="chartType === 'line'" (click)="chartType = 'line'">Line</button>
-                <button [class.active]="chartType === 'bar'" (click)="chartType = 'bar'">Bar</button>
-                <span class="btn-divider"></span>
-                <button (click)="toggleChartSize('monthly')" [title]="monthlyChartSize === 'full' ? 'Make half-width' : 'Make full-width'">
-                  <i class="bi" [ngClass]="monthlyChartSize === 'full' ? 'bi-arrows-angle-contract' : 'bi-arrows-angle-expand'"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="chart-body">
-            <div class="svg-container">
-              <svg [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight" width="100%" height="100%">
-                <defs>
-                  <linearGradient id="chartAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#cda45e" stop-opacity="0.35" />
-                    <stop offset="100%" stop-color="#cda45e" stop-opacity="0.0" />
-                  </linearGradient>
-                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#cda45e" stop-opacity="0.9" />
-                    <stop offset="100%" stop-color="#cda45e" stop-opacity="0.3" />
-                  </linearGradient>
-                </defs>
-
-                <!-- Gridlines -->
-                <g class="grid-lines">
-                  <line *ngFor="let yVal of gridYValues" 
-                        [attr.x1]="svgPadding" 
-                        [attr.y1]="getYCoordinate(yVal)" 
-                        [attr.x2]="svgWidth - svgPadding" 
-                        [attr.y2]="getYCoordinate(yVal)"
-                        stroke="rgba(255, 255, 255, 0.08)" 
-                        stroke-dasharray="4,4" />
-                </g>
-
-                <!-- Y Axis Labels -->
-                <g class="y-axis-labels">
-                  <text *ngFor="let yVal of gridYValues" 
-                        [attr.x]="svgPadding - 10" 
-                        [attr.y]="getYCoordinate(yVal) + 4" 
-                        fill="rgba(255, 255, 255, 0.6)" 
-                        font-size="11" 
-                        text-anchor="end">
-                    {{ yVal >= 1000 ? (yVal/1000) + 'k' : yVal }}
-                  </text>
-                </g>
-
-                <!-- X Axis Labels -->
-                <g class="x-axis-labels">
-                  <ng-container *ngFor="let d of salesData; let i = index">
-                    <text [attr.x]="getXCoordinate(i)" 
-                          [attr.y]="svgHeight - svgPadding + 20" 
-                          fill="rgba(255, 255, 255, 0.6)" 
-                          font-size="11" 
-                          text-anchor="middle">
-                      {{ d.month }}
-                    </text>
-                  </ng-container>
-                </g>
-
-                <!-- AREA Chart Drawing -->
-                <path *ngIf="chartType === 'line'" 
-                      [attr.d]="lineAreaPath" 
-                      fill="url(#chartAreaGradient)" />
-
-                <!-- LINE Chart Drawing -->
-                <path *ngIf="chartType === 'line'" 
-                      [attr.d]="linePath" 
-                      fill="transparent" 
-                      stroke="#cda45e" 
-                      stroke-width="3.5" 
-                      stroke-linecap="round" />
-
-                <!-- CIRCLE Tooltip Targets (Line Chart) -->
-                <g *ngIf="chartType === 'line'">
-                  <circle *ngFor="let d of salesData; let i = index" 
-                          [attr.cx]="getXCoordinate(i)" 
-                          [attr.cy]="getYCoordinate(d.revenue)" 
-                          r="5" 
-                          fill="#1a1814" 
-                          stroke="#cda45e" 
-                          stroke-width="2"
-                          class="interactive-dot"
-                          (click)="openMonthlySalesModal(d, i)"
-                          (mouseenter)="showPointTooltip($event, d, i)"
-                          (mouseleave)="hidePointTooltip()" />
-                </g>
-
-                <!-- BAR Chart Drawing -->
-                <g *ngIf="chartType === 'bar'">
-                  <rect *ngFor="let d of salesData; let i = index" 
-                        [attr.x]="getXCoordinate(i) - 15" 
-                        [attr.y]="getYCoordinate(d.revenue)" 
-                        width="30" 
-                        [attr.height]="svgHeight - svgPadding - getYCoordinate(d.revenue)"
-                        fill="url(#barGradient)" 
-                        rx="4"
-                        class="interactive-bar"
-                        (click)="openMonthlySalesModal(d, i)"
-                        (mouseenter)="showPointTooltip($event, d, i)"
-                        (mouseleave)="hidePointTooltip()" />
-                </g>
-              </svg>
-
-              <!-- Monthly Dynamic Tooltip -->
-              <div *ngIf="hoveredPoint" class="chart-tooltip" [style.left.px]="tooltipX" [style.top.px]="tooltipY">
-                <div class="tooltip-title">
-                  Month: {{ monthsList[hoveredPoint.index] }} {{ selectedYear }}
-                </div>
-                <div class="tooltip-row">
-                  <span class="dot gold"></span>
-                  <span class="label">Actual Amount:</span>
-                  <span class="value">{{ formatCurrency(hoveredPoint.actualAmount) }}</span>
-                </div>
-                <div class="tooltip-row">
-                  <span class="dot cyan"></span>
-                  <span class="label">Paid Amount:</span>
-                  <span class="value">{{ formatCurrency(hoveredPoint.paidAmount) }}</span>
-                </div>
-                <div class="tooltip-row" *ngIf="hoveredPoint.grandTotal != null">
-                  <span class="dot purple"></span>
-                  <span class="label">Grand Total:</span>
-                  <span class="value text-gold" style="font-weight: 700;">{{ formatCurrency(hoveredPoint.grandTotal) }}</span>
-                </div>
-                <div class="tooltip-row">
-                  <span class="dot green"></span>
-                  <span class="label">Orders:</span>
-                  <span class="value">{{ hoveredPoint.orders }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product Sales Volume (Adjustable layout size) -->
-      <div [ngClass]="productChartSize === 'full' ? 'col-12 mb-4' : 'col-lg-6 col-12 mb-4'">
-        <div class="chart-card glass-panel" style="height: 100%;">
-          <div class="chart-header flex-wrap">
-            <h4 style="flex: 1; min-width: 200px;">Product Sales Volume ({{ getFormattedDisplayDate(selectedDate) || 'Selected Date' }})</h4>
-            <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-sm-0">
-              <div class="toggle-buttons">
-                <button [class.active]="productChartType === 'line'" (click)="productChartType = 'line'">Line</button>
-                <button [class.active]="productChartType === 'bar'" (click)="productChartType = 'bar'">Bar</button>
-                <span class="btn-divider"></span>
-                <button (click)="toggleChartSize('product')" [title]="productChartSize === 'full' ? 'Make half-width' : 'Make full-width'">
-                  <i class="bi" [ngClass]="productChartSize === 'full' ? 'bi-arrows-angle-contract' : 'bi-arrows-angle-expand'"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="chart-body">
-            <div *ngIf="topProductSales.length === 0" class="d-flex flex-column align-items-center justify-content-center" style="height: 250px;">
-              <i class="bi bi-egg-fried text-muted" style="font-size: 2.5rem; opacity: 0.5;"></i>
-              <p class="text-muted mt-2 mb-0">No product orders recorded for this date.</p>
-            </div>
-            
-            <div *ngIf="topProductSales.length > 0" class="svg-container">
-              <svg [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight" width="100%" height="100%">
-                <defs>
-                  <linearGradient id="productChartAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#cda45e" stop-opacity="0.35" />
-                    <stop offset="100%" stop-color="#cda45e" stop-opacity="0.0" />
-                  </linearGradient>
-                  <linearGradient id="productBarGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#cda45e" stop-opacity="0.9" />
-                    <stop offset="100%" stop-color="#cda45e" stop-opacity="0.3" />
-                  </linearGradient>
-                </defs>
-
-                <!-- Gridlines -->
-                <g class="grid-lines">
-                  <line *ngFor="let yVal of productGridYValues" 
-                        [attr.x1]="svgPadding" 
-                        [attr.y1]="getProductYCoordinate(yVal)" 
-                        [attr.x2]="svgWidth - svgPadding" 
-                        [attr.y2]="getProductYCoordinate(yVal)"
-                        stroke="rgba(255, 255, 255, 0.08)" 
-                        stroke-dasharray="4,4" />
-                </g>
-
-                <!-- Y Axis Labels -->
-                <g class="y-axis-labels">
-                  <text *ngFor="let yVal of productGridYValues" 
-                        [attr.x]="svgPadding - 10" 
-                        [attr.y]="getProductYCoordinate(yVal) + 4" 
-                        fill="rgba(255, 255, 255, 0.6)" 
-                        font-size="11" 
-                        text-anchor="end">
-                    {{ yVal }}
-                  </text>
-                </g>
-
-                <!-- X Axis Labels -->
-                <g class="x-axis-labels">
-                  <ng-container *ngFor="let d of topProductSales; let i = index">
-                    <text [attr.x]="getProductXCoordinate(i)" 
-                          [attr.y]="svgHeight - svgPadding + 20" 
-                          fill="rgba(255, 255, 255, 0.6)" 
-                          font-size="10" 
-                          text-anchor="end"
-                          [attr.transform]="'rotate(-15, ' + getProductXCoordinate(i) + ', ' + (svgHeight - svgPadding + 20) + ')'">
-                      {{ d.name.length > 12 ? d.name.substring(0, 10) + '..' : d.name }}
-                    </text>
-                  </ng-container>
-                </g>
-
-                <!-- AREA Chart Drawing -->
-                <path *ngIf="productChartType === 'line'" 
-                      [attr.d]="productLineAreaPath" 
-                      fill="url(#productChartAreaGradient)" />
-
-                <!-- LINE Chart Drawing -->
-                <path *ngIf="productChartType === 'line'" 
-                      [attr.d]="productLinePath" 
-                      fill="transparent" 
-                      stroke="#cda45e" 
-                      stroke-width="3.5" 
-                      stroke-linecap="round" />
-
-                <!-- CIRCLE Tooltip Targets (Line Chart) -->
-                <g *ngIf="productChartType === 'line'">
-                  <circle *ngFor="let d of topProductSales; let i = index" 
-                          [attr.cx]="getProductXCoordinate(i)" 
-                          [attr.cy]="getProductYCoordinate(d.quantity)" 
-                          r="5" 
-                          fill="#1a1814" 
-                          stroke="#cda45e" 
-                          stroke-width="2"
-                          class="interactive-dot"
-                          (mouseenter)="showProductPointTooltip($event, d, i)"
-                          (mouseleave)="hideProductPointTooltip()" />
-                </g>
-
-                <!-- BAR Chart Drawing -->
-                <g *ngIf="productChartType === 'bar'">
-                  <rect *ngFor="let d of topProductSales; let i = index" 
-                        [attr.x]="getProductXCoordinate(i) - 15" 
-                        [attr.y]="getProductYCoordinate(d.quantity)" 
-                        width="30" 
-                        [attr.height]="svgHeight - svgPadding - getProductYCoordinate(d.quantity)"
-                        fill="url(#productBarGradient)" 
-                        rx="4"
-                        class="interactive-bar"
-                        (mouseenter)="showProductPointTooltip($event, d, i)"
-                        (mouseleave)="hideProductPointTooltip()" />
-                </g>
-              </svg>
-
-              <!-- Product Dynamic Tooltip -->
-              <div *ngIf="productHoveredPoint" class="chart-tooltip" [style.left.px]="productTooltipX" [style.top.px]="productTooltipY">
-                <div class="tooltip-title">
-                  {{ productHoveredPoint.name }}
-                </div>
-                <div class="tooltip-row">
-                  <span class="dot gold"></span>
-                  <span class="label">Quantity Sold:</span>
-                  <span class="value">{{ productHoveredPoint.quantity }} units</span>
-                </div>
-                <div class="tooltip-row">
-                  <span class="dot green"></span>
-                  <span class="label">Total Revenue:</span>
-                  <span class="value">{{ formatCurrency(productHoveredPoint.revenue) }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Secondary Row (Payment modes & Top selling products) -->
-    <div class="row">
-      <!-- Doughnut Chart: Payment Splits -->
-      <div class="col-lg-5 mb-4">
-        <div class="chart-card glass-panel" style="height: 100%;">
-          <div class="chart-header">
-            <h4>Checkouts By Mode</h4>
-          </div>
-          <div class="chart-body d-flex flex-column align-items-center justify-content-center">
-            
-            <div class="doughnut-container">
-              <svg width="200" height="200" viewBox="0 0 200 200">
-                <g transform="rotate(-90, 100, 100)">
-                  <!-- Track -->
-                  <circle cx="100" cy="100" [attr.r]="doughnutRadius" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="18" />
-                  
-                  <!-- Segments -->
-                  <circle *ngFor="let segment of paymentModes"
-                          cx="100" 
-                          cy="100" 
-                          [attr.r]="doughnutRadius" 
-                          fill="none" 
-                          [attr.stroke]="segment.color" 
-                          stroke-width="18" 
-                          [attr.stroke-dasharray]="segment.dashArray" 
-                          [attr.stroke-dashoffset]="segment.dashOffset"
-                          stroke-linecap="round"
-                          class="doughnut-segment"
-                          (mouseenter)="showSegmentTooltip($event, segment)"
-                          (mouseleave)="hideSegmentTooltip()" />
-                </g>
-              </svg>
-              <div class="doughnut-center-labels">
-                <span class="center-title">Payment</span>
-                <span class="center-subtitle">Channels</span>
-              </div>
-            </div>
-
-            <!-- Segment Info Summary -->
-            <div class="segment-details mt-3" style="width: 100%;">
-              <div *ngFor="let item of paymentModes" class="legend-item" [class.highlight]="hoveredSegment === item">
-                <div class="legend-key">
-                  <span class="legend-dot" [style.background-color]="item.color"></span>
-                  <span class="legend-name">{{ item.mode }}</span>
-                </div>
-                <div class="legend-values">
-                  <span class="legend-val font-weight-bold">{{ item.percentage }}%</span>
-                  <span class="legend-amt">({{ formatCurrency(item.amount) }})</span>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      <!-- Bar Progress List: Top Menu items -->
-      <div class="col-lg-7 mb-4">
-        <div class="chart-card glass-panel" style="height: 100%;">
-          <div class="chart-header">
-            <h4>Popular Menu Items</h4>
-            <span class="badge badge-gold">Volume Leaders</span>
-          </div>
-          <div class="chart-body">
-            <div class="product-progress-list">
-              <div *ngFor="let product of topItems; let idx = index" class="product-progress-item mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                  <span class="product-name">
-                    <span class="rank-badge">{{ idx + 1 }}</span>
-                    {{ product.name }}
-                  </span>
-                  <span class="product-stats">
-                    <strong>{{ product.quantity }} sold</strong> / {{ formatCurrency(product.revenue) }}
-                  </span>
-                </div>
-                
-                <div class="progress-bar-track">
-                  <div class="progress-bar-fill" 
-                       [style.width.%]="(product.quantity / topItems[0].quantity) * 100">
+                <!-- Daily Dynamic Tooltip -->
+                <div *ngIf="dailyHoveredPoint" class="chart-tooltip" [style.left.px]="dailyTooltipX" [style.top.px]="dailyTooltipY">
+                  <div class="tooltip-title">
+                    Date: {{ getDayOfWeek(dailyHoveredPoint.month) }}, {{ selectedMonth }} {{ dailyHoveredPoint.month }}, {{ selectedYear }}
+                  </div>
+                  <div class="tooltip-row">
+                    <span class="dot gold"></span>
+                    <span class="label">Actual Amount:</span>
+                    <span class="value">{{ formatCurrency(dailyHoveredPoint.actualAmount) }}</span>
+                  </div>
+                  <div class="tooltip-row">
+                    <span class="dot cyan"></span>
+                    <span class="label">Paid Amount:</span>
+                    <span class="value">{{ formatCurrency(dailyHoveredPoint.paidAmount) }}</span>
+                  </div>
+                  <div class="tooltip-row" *ngIf="dailyHoveredPoint.grandTotal != null">
+                    <span class="dot purple"></span>
+                    <span class="label">Grand Total:</span>
+                    <span class="value text-gold" style="font-weight: 700;">{{ formatCurrency(dailyHoveredPoint.grandTotal) }}</span>
+                  </div>
+                  <div class="tooltip-row">
+                    <span class="dot green"></span>
+                    <span class="label">Orders:</span>
+                    <span class="value">{{ dailyHoveredPoint.orders }}</span>
                   </div>
                 </div>
               </div>
@@ -758,28 +469,1000 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Monthly Target Status Section -->
-    <div class="row">
-      <div class="col-12 mb-4">
-        <div class="glass-panel progress-status-bar">
-          <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
-            <h5 style="margin: 0; color: #cda45e;">
-              <i class="bi bi-bullseye"></i> Monthly Revenue Target Tracker
-            </h5>
-            <span style="font-weight: 600; font-size: 0.95rem;">
-              {{ kpis.targetProgress }}% Achieved (Target: {{ selectedMonth === 'All' ? '₹4,50,000' : '₹40,000' }})
-            </span>
+      <!-- Daily Row 2: Circular Doughnut Item Sales & Cuisine Revenue Share -->
+      <div class="row mb-4">
+        <!-- Daily Product Sales Breakdown (Circular Graph + Item Table) -->
+        <div [ngClass]="productChartSize === 'full' ? 'col-12 mb-4' : 'col-lg-6 col-12 mb-4'">
+          <div class="chart-card glass-panel" style="height: 100%;">
+            <div class="chart-header flex-wrap">
+              <div class="d-flex align-items-center gap-2" style="flex: 1; min-width: 200px;">
+                <h4 class="m-0">Daily Item Sales Breakdown</h4>
+                <span class="badge badge-gold">{{ getFormattedDisplayDate(selectedDate) || 'Selected Date' }}</span>
+              </div>
+              <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-sm-0">
+                <button (click)="toggleChartSize('product')" class="btn-icon" [title]="productChartSize === 'full' ? 'Make half-width' : 'Make full-width'">
+                  <i class="bi" [ngClass]="productChartSize === 'full' ? 'bi-arrows-angle-contract' : 'bi-arrows-angle-expand'"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="chart-body">
+              <div *ngIf="dailyItemSegments.length === 0" class="d-flex flex-column align-items-center justify-content-center" style="height: 250px;">
+                <i class="bi bi-egg-fried text-muted" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                <p class="text-muted mt-2 mb-0">No item orders recorded for this date.</p>
+              </div>
+
+              <div *ngIf="dailyItemSegments.length > 0">
+                <!-- Circular Doughnut Graph -->
+                <div class="d-flex justify-content-center my-3">
+                  <div class="doughnut-container">
+                    <svg width="200" height="200" viewBox="0 0 200 200">
+                      <g transform="rotate(-90, 100, 100)">
+                        <circle cx="100" cy="100" [attr.r]="doughnutRadius" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="18" />
+                        <circle *ngFor="let segment of dailyItemSegments"
+                                cx="100" 
+                                cy="100" 
+                                [attr.r]="doughnutRadius" 
+                                fill="none" 
+                                [attr.stroke]="segment.color" 
+                                stroke-width="18" 
+                                [attr.stroke-dasharray]="segment.dashArray" 
+                                [attr.stroke-dashoffset]="segment.dashOffset"
+                                stroke-linecap="round"
+                                class="doughnut-segment"
+                                (mouseenter)="dailyHoveredSegment = segment"
+                                (mouseleave)="dailyHoveredSegment = null" />
+                      </g>
+                    </svg>
+                    <div class="doughnut-center-labels">
+                      <span class="center-title">{{ dailyHoveredSegment ? dailyHoveredSegment.name : 'Total Items' }}</span>
+                      <span class="center-subtitle">{{ dailyHoveredSegment ? (dailyHoveredSegment.quantity + ' units') : (dailyTotalItemQty + ' Units') }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Table View Below Circular Graph -->
+                <div class="table-responsive item-sales-table-wrapper">
+                  <table class="table table-dark table-hover align-middle item-sales-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 40px;">#</th>
+                        <th>Item Name</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-end">Share</th>
+                        <th class="text-end">Revenue</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let item of dailyItemSegments; let idx = index"
+                          [class.table-active]="dailyHoveredSegment === item"
+                          (mouseenter)="dailyHoveredSegment = item"
+                          (mouseleave)="dailyHoveredSegment = null">
+                        <td class="text-muted font-weight-bold">{{ idx + 1 }}</td>
+                        <td>
+                          <div class="d-flex align-items-center gap-2">
+                            <span class="item-color-dot" [style.background-color]="item.color"></span>
+                            <span class="item-name-text">{{ item.name }}</span>
+                          </div>
+                        </td>
+                        <td class="text-center">
+                          <span class="badge bg-dark border border-secondary text-gold font-weight-bold px-2 py-1">
+                            {{ item.quantity }} units
+                          </span>
+                        </td>
+                        <td class="text-end font-weight-bold text-light">
+                          {{ item.percentage }}%
+                        </td>
+                        <td class="text-end text-gold font-weight-bold">
+                          {{ formatCurrency(item.revenue) }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="progress-bar-track large">
-            <div class="progress-bar-fill gold glowing" [style.width.%]="kpis.targetProgress"></div>
+        </div>
+
+        <!-- Daily Cuisine Revenue Share -->
+        <div [ngClass]="cuisineChartSize === 'full' ? 'col-12 mb-4' : 'col-lg-6 col-12 mb-4'">
+          <div class="chart-card glass-panel" style="height: 100%;">
+            <div class="chart-header flex-wrap">
+              <div class="d-flex align-items-center gap-2" style="flex: 1; min-width: 200px;">
+                <h4 class="m-0">Daily Cuisine Revenue Share</h4>
+                <span class="badge badge-gold">{{ getFormattedDisplayDate(selectedDate) || 'Selected Date' }}</span>
+              </div>
+              <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-sm-0">
+                <div class="toggle-buttons">
+                  <button [class.active]="cuisineChartType === 'donut'" (click)="cuisineChartType = 'donut'">Donut</button>
+                  <button [class.active]="cuisineChartType === 'bar'" (click)="cuisineChartType = 'bar'">Bars</button>
+                </div>
+                <button (click)="toggleChartSize('cuisine')" class="btn-icon" [title]="cuisineChartSize === 'full' ? 'Make half-width' : 'Make full-width'">
+                  <i class="bi" [ngClass]="cuisineChartSize === 'full' ? 'bi-arrows-angle-contract' : 'bi-arrows-angle-expand'"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="chart-body">
+              <div *ngIf="cuisineSalesData.length === 0" class="d-flex flex-column align-items-center justify-content-center" style="height: 250px;">
+                <i class="bi bi-pie-chart text-muted" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                <p class="text-muted mt-2 mb-0">No cuisine revenue data available for date.</p>
+              </div>
+
+              <div *ngIf="cuisineSalesData.length > 0">
+                <!-- Donut View -->
+                <div *ngIf="cuisineChartType === 'donut'" class="d-flex justify-content-center my-3">
+                  <div class="doughnut-container">
+                    <svg width="200" height="200" viewBox="0 0 200 200">
+                      <g transform="rotate(-90, 100, 100)">
+                        <circle cx="100" cy="100" [attr.r]="doughnutRadius" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="18" />
+                        <circle *ngFor="let segment of cuisineSalesData"
+                                cx="100" 
+                                cy="100" 
+                                [attr.r]="doughnutRadius" 
+                                fill="none" 
+                                [attr.stroke]="segment.color" 
+                                stroke-width="18" 
+                                [attr.stroke-dasharray]="segment.dashArray" 
+                                [attr.stroke-dashoffset]="segment.dashOffset"
+                                stroke-linecap="round"
+                                class="doughnut-segment"
+                                (mouseenter)="cuisineHoveredSegment = segment"
+                                (mouseleave)="cuisineHoveredSegment = null" />
+                      </g>
+                    </svg>
+                    <div class="doughnut-center-labels">
+                      <span class="center-title">{{ cuisineHoveredSegment ? cuisineHoveredSegment.name : 'Cuisine Share' }}</span>
+                      <span class="center-subtitle">{{ cuisineHoveredSegment ? formatCurrency(cuisineHoveredSegment.revenue) : formatCurrency(cuisineTotalRevenue) }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Table Breakdown -->
+                <div class="table-responsive item-sales-table-wrapper" style="max-height: 290px;">
+                  <table class="table table-dark table-hover align-middle item-sales-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 35px;">#</th>
+                        <th>Cuisine</th>
+                        <th class="text-center">Units</th>
+                        <th class="text-end">Share</th>
+                        <th class="text-end">Revenue</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let item of cuisineSalesData; let idx = index"
+                          [class.table-active]="cuisineHoveredSegment === item"
+                          (mouseenter)="cuisineHoveredSegment = item"
+                          (mouseleave)="cuisineHoveredSegment = null">
+                        <td class="text-muted font-weight-bold">{{ idx + 1 }}</td>
+                        <td>
+                          <div class="d-flex align-items-center gap-2">
+                            <span class="item-color-dot" [style.background-color]="item.color"></span>
+                            <span class="item-name-text">{{ item.name }}</span>
+                          </div>
+                          <div *ngIf="cuisineChartType === 'bar'" class="progress-bar-track mt-1" style="height: 4px;">
+                            <div class="progress-bar-fill" [style.background-color]="item.color" [style.width.%]="item.percentage"></div>
+                          </div>
+                        </td>
+                        <td class="text-center">
+                          <span class="badge bg-dark border border-secondary text-light px-2 py-1">
+                            {{ item.quantity }}
+                          </span>
+                        </td>
+                        <td class="text-end font-weight-bold text-light">
+                          {{ item.percentage }}%
+                        </td>
+                        <td class="text-end text-gold font-weight-bold">
+                          {{ formatCurrency(item.revenue) }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           </div>
-          <p class="target-desc mt-2 mb-0">
-            Current filter range total revenue is <strong class="text-gold">{{ formatCurrency(kpis.totalRevenue) }}</strong>. Target values adjust dynamically depending on the selected monthly scope.
-          </p>
         </div>
       </div>
+
+      <!-- Daily Row 3: Platform Revenue Share & Payment Split -->
+      <div class="row mb-4">
+        <!-- Daily Platform Revenue Share (Swiggy, Zomato, Swiggy Dine-In, Dstrict, Direct) -->
+        <div [ngClass]="platformChartSize === 'full' ? 'col-12 mb-4' : 'col-lg-6 col-12 mb-4'">
+          <div class="chart-card glass-panel" style="height: 100%;">
+            <div class="chart-header flex-wrap">
+              <div class="d-flex align-items-center gap-2" style="flex: 1; min-width: 200px;">
+                <h4 class="m-0">Daily Platform Revenue Share</h4>
+                <span class="badge badge-gold">{{ getFormattedDisplayDate(selectedDate) || 'Selected Date' }}</span>
+              </div>
+              <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-sm-0">
+                <div class="toggle-buttons">
+                  <button [class.active]="platformChartType === 'donut'" (click)="platformChartType = 'donut'">Donut</button>
+                  <button [class.active]="platformChartType === 'bar'" (click)="platformChartType = 'bar'">Bars</button>
+                </div>
+                <button (click)="toggleChartSize('platform')" class="btn-icon" [title]="platformChartSize === 'full' ? 'Make half-width' : 'Make full-width'">
+                  <i class="bi" [ngClass]="platformChartSize === 'full' ? 'bi-arrows-angle-contract' : 'bi-arrows-angle-expand'"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="chart-body">
+              <div *ngIf="dailyPlatformSalesData.length === 0" class="d-flex flex-column align-items-center justify-content-center" style="height: 250px;">
+                <i class="bi bi-pie-chart text-muted" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                <p class="text-muted mt-2 mb-0">No platform revenue data available for date.</p>
+              </div>
+
+              <div *ngIf="dailyPlatformSalesData.length > 0">
+                <!-- Donut View -->
+                <div *ngIf="platformChartType === 'donut'" class="d-flex justify-content-center my-3">
+                  <div class="doughnut-container">
+                    <svg width="200" height="200" viewBox="0 0 200 200">
+                      <g transform="rotate(-90, 100, 100)">
+                        <circle cx="100" cy="100" [attr.r]="doughnutRadius" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="18" />
+                        <circle *ngFor="let segment of dailyPlatformSalesData"
+                                cx="100" 
+                                cy="100" 
+                                [attr.r]="doughnutRadius" 
+                                fill="none" 
+                                [attr.stroke]="segment.color" 
+                                stroke-width="18" 
+                                [attr.stroke-dasharray]="segment.dashArray" 
+                                [attr.stroke-dashoffset]="segment.dashOffset"
+                                stroke-linecap="round"
+                                class="doughnut-segment"
+                                (mouseenter)="dailyPlatformHoveredSegment = segment"
+                                (mouseleave)="dailyPlatformHoveredSegment = null" />
+                      </g>
+                    </svg>
+                    <div class="doughnut-center-labels">
+                      <span class="center-title">{{ dailyPlatformHoveredSegment ? dailyPlatformHoveredSegment.name : 'Platform Share' }}</span>
+                      <span class="center-subtitle">{{ dailyPlatformHoveredSegment ? formatCurrency(dailyPlatformHoveredSegment.amount) : formatCurrency(dailyPlatformTotalRevenue) }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Table Breakdown -->
+                <div class="table-responsive item-sales-table-wrapper" style="max-height: 290px;">
+                  <table class="table table-dark table-hover align-middle item-sales-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 35px;">#</th>
+                        <th>Platform</th>
+                        <th class="text-end">Share</th>
+                        <th class="text-end">Revenue</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let item of dailyPlatformSalesData; let idx = index"
+                          [class.table-active]="dailyPlatformHoveredSegment === item"
+                          (mouseenter)="dailyPlatformHoveredSegment = item"
+                          (mouseleave)="dailyPlatformHoveredSegment = null">
+                        <td class="text-muted font-weight-bold">{{ idx + 1 }}</td>
+                        <td>
+                          <div class="d-flex align-items-center gap-2">
+                            <span class="item-color-dot" [style.background-color]="item.color"></span>
+                            <i class="bi {{ item.icon }} text-gold" style="font-size: 0.9rem;"></i>
+                            <span class="item-name-text">{{ item.name }}</span>
+                          </div>
+                          <div *ngIf="platformChartType === 'bar'" class="progress-bar-track mt-1" style="height: 4px;">
+                            <div class="progress-bar-fill" [style.background-color]="item.color" [style.width.%]="item.percentage"></div>
+                          </div>
+                        </td>
+                        <td class="text-end font-weight-bold text-light">
+                          {{ item.percentage }}%
+                        </td>
+                        <td class="text-end text-gold font-weight-bold">
+                          {{ formatCurrency(item.amount) }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Daily Payment Splits -->
+        <div class="col-lg-6 col-12 mb-4">
+          <div class="chart-card glass-panel" style="height: 100%;">
+            <div class="chart-header">
+              <h4>Checkouts By Mode</h4>
+            </div>
+            <div class="chart-body d-flex flex-column align-items-center justify-content-center">
+              <div class="doughnut-container">
+                <svg width="200" height="200" viewBox="0 0 200 200">
+                  <g transform="rotate(-90, 100, 100)">
+                    <circle cx="100" cy="100" [attr.r]="doughnutRadius" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="18" />
+                    <circle *ngFor="let segment of paymentModes"
+                            cx="100" 
+                            cy="100" 
+                            [attr.r]="doughnutRadius" 
+                            fill="none" 
+                            [attr.stroke]="segment.color" 
+                            stroke-width="18" 
+                            [attr.stroke-dasharray]="segment.dashArray" 
+                            [attr.stroke-dashoffset]="segment.dashOffset"
+                            stroke-linecap="round"
+                            class="doughnut-segment"
+                            (mouseenter)="showSegmentTooltip($event, segment)"
+                            (mouseleave)="hideSegmentTooltip()" />
+                  </g>
+                </svg>
+                <div class="doughnut-center-labels">
+                  <span class="center-title">Payment</span>
+                  <span class="center-subtitle">Channels</span>
+                </div>
+              </div>
+
+              <div class="segment-details mt-3" style="width: 100%;">
+                <div *ngFor="let item of paymentModes" class="legend-item" [class.highlight]="hoveredSegment === item">
+                  <div class="legend-key">
+                    <span class="legend-dot" [style.background-color]="item.color"></span>
+                    <span class="legend-name">{{ item.mode }}</span>
+                  </div>
+                  <div class="legend-values">
+                    <span class="legend-val font-weight-bold">{{ item.percentage }}%</span>
+                    <span class="legend-amt">({{ formatCurrency(item.amount) }})</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Row 4: Popular Menu Items -->
+      <div class="row mb-4">
+        <div class="col-12 mb-4">
+          <div class="chart-card glass-panel" style="height: 100%;">
+            <div class="chart-header">
+              <h4>Popular Menu Items</h4>
+              <span class="badge badge-gold">Volume Leaders</span>
+            </div>
+            <div class="chart-body">
+              <div *ngIf="dailyTopItems.length === 0" class="text-center py-4 text-muted">
+                <i class="bi bi-cup-hot text-muted" style="font-size: 2rem; opacity: 0.5;"></i>
+                <p class="mt-2 mb-0">No menu item sales recorded for this date.</p>
+              </div>
+              <div *ngIf="dailyTopItems.length > 0" class="product-progress-list">
+                <div *ngFor="let product of dailyTopItems; let idx = index" class="product-progress-item mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="product-name">
+                      <span class="rank-badge">{{ idx + 1 }}</span>
+                      {{ product.name }}
+                    </span>
+                    <span class="product-stats">
+                      <strong>{{ product.quantity }} sold</strong> / {{ formatCurrency(product.revenue) }}
+                    </span>
+                  </div>
+                  <div class="progress-bar-track">
+                    <div class="progress-bar-fill" [style.width.%]="(product.quantity / (dailyTopItems[0]?.quantity || 1)) * 100"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!-- TAB 2: MONTHLY DETAILS                                                    -->
+    <!-- ========================================================================= -->
+    <div *ngIf="activeTab === 'monthly'" class="tab-content-fade">
+
+      <!-- Monthly Controls Scope Bar -->
+      <div class="d-flex justify-content-between align-items-center mb-4 p-3 glass-panel flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-calendar-month text-gold fs-5"></i>
+          <h5 class="m-0 text-light font-weight-bold">Monthly Analytics Scope</h5>
+        </div>
+        <div class="d-flex align-items-center flex-wrap gap-3">
+          <div class="filter-group-inline">
+            <label for="monthlyMonthSelect" class="me-2 text-gold font-weight-bold">Select Month:</label>
+            <select id="monthlyMonthSelect" class="form-control-inline" [(ngModel)]="monthlySelectedMonth" (change)="onMonthlyFilterChange()">
+              <option *ngFor="let m of monthsList" [value]="m">{{ m }}</option>
+            </select>
+          </div>
+          <div class="filter-group-inline me-2">
+            <label for="monthlyYearSelect" class="me-2 text-gold font-weight-bold">Select Year:</label>
+            <select id="monthlyYearSelect" class="form-control-inline" [(ngModel)]="monthlySelectedYear" (change)="onMonthlyFilterChange()">
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly KPI Summary Row -->
+      <div class="row kpi-row">
+        <!-- Monthly KPI Card 1 -->
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="kpi-card glass-panel hover-grow">
+            <div class="kpi-icon-box orange">
+              <i class="bi bi-calendar-check-fill"></i>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Monthly Revenue</span>
+              <h3 class="kpi-value text-gold">{{ formatCurrency(monthlyKpis.totalRevenue) }}</h3>
+              <span class="kpi-desc">Total sales in {{ selectedMonth }} {{ selectedYear }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly KPI Card 2 -->
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="kpi-card glass-panel hover-grow">
+            <div class="kpi-icon-box green">
+              <i class="bi bi-bag-check-fill"></i>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Monthly Orders</span>
+              <h3 class="kpi-value">{{ monthlyKpis.totalOrders }}</h3>
+              <span class="kpi-desc">Total fulfilled orders in {{ selectedMonth }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly KPI Card 3 -->
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="kpi-card glass-panel hover-grow">
+            <div class="kpi-icon-box blue">
+              <i class="bi bi-graph-up"></i>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Monthly AOV</span>
+              <h3 class="kpi-value">{{ formatCurrency(monthlyKpis.aov) }}</h3>
+              <span class="kpi-desc">Average ticket size for month</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly KPI Card 4 -->
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="kpi-card glass-panel hover-grow">
+            <div class="kpi-icon-box purple">
+              <i class="bi bi-bullseye"></i>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Target Progress</span>
+              <h3 class="kpi-value text-green">{{ monthlyKpis.targetProgress }}%</h3>
+              <span class="kpi-desc">Monthly sales target achieved</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly Row 1: Monthly Sales Trend & Target Tracker -->
+      <div class="row mb-4">
+        <!-- Monthly Sales Graph (Yearly Overview) -->
+        <div class="col-12 mb-4">
+          <div class="chart-card glass-panel" style="height: 100%;">
+            <div class="chart-header flex-wrap">
+              <h4 style="flex: 1; min-width: 200px;">Monthly Sales Trend ({{ selectedYear }})</h4>
+              <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-sm-0">
+                <div class="toggle-buttons">
+                  <button [class.active]="chartType === 'line'" (click)="chartType = 'line'">Line</button>
+                  <button [class.active]="chartType === 'bar'" (click)="chartType = 'bar'">Bar</button>
+                  <span class="btn-divider"></span>
+                  <button (click)="toggleChartSize('monthly')" [title]="monthlyChartSize === 'full' ? 'Make half-width' : 'Make full-width'">
+                    <i class="bi" [ngClass]="monthlyChartSize === 'full' ? 'bi-arrows-angle-contract' : 'bi-arrows-angle-expand'"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-body">
+              <div class="svg-container">
+                <svg [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight" width="100%" height="100%">
+                  <defs>
+                    <linearGradient id="chartAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#cda45e" stop-opacity="0.35" />
+                      <stop offset="100%" stop-color="#cda45e" stop-opacity="0.0" />
+                    </linearGradient>
+                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#cda45e" stop-opacity="0.9" />
+                      <stop offset="100%" stop-color="#cda45e" stop-opacity="0.3" />
+                    </linearGradient>
+                  </defs>
+
+                  <!-- Gridlines -->
+                  <g class="grid-lines">
+                    <line *ngFor="let yVal of gridYValues" 
+                          [attr.x1]="svgPadding" 
+                          [attr.y1]="getYCoordinate(yVal)" 
+                          [attr.x2]="svgWidth - svgPadding" 
+                          [attr.y2]="getYCoordinate(yVal)"
+                          stroke="rgba(255, 255, 255, 0.08)" 
+                          stroke-dasharray="4,4" />
+                  </g>
+
+                  <!-- Y Axis Labels -->
+                  <g class="y-axis-labels">
+                    <text *ngFor="let yVal of gridYValues" 
+                          [attr.x]="svgPadding - 10" 
+                          [attr.y]="getYCoordinate(yVal) + 4" 
+                          fill="rgba(255, 255, 255, 0.6)" 
+                          font-size="11" 
+                          text-anchor="end">
+                      {{ yVal >= 1000 ? (yVal/1000) + 'k' : yVal }}
+                    </text>
+                  </g>
+
+                  <!-- X Axis Labels -->
+                  <g class="x-axis-labels">
+                    <ng-container *ngFor="let d of salesData; let i = index">
+                      <text [attr.x]="getXCoordinate(i)" 
+                            [attr.y]="svgHeight - svgPadding + 20" 
+                            fill="rgba(255, 255, 255, 0.6)" 
+                            font-size="11" 
+                            text-anchor="middle">
+                        {{ d.month }}
+                      </text>
+                    </ng-container>
+                  </g>
+
+                  <!-- AREA Chart Drawing -->
+                  <path *ngIf="chartType === 'line'" 
+                        [attr.d]="lineAreaPath" 
+                        fill="url(#chartAreaGradient)" />
+
+                  <!-- LINE Chart Drawing -->
+                  <path *ngIf="chartType === 'line'" 
+                        [attr.d]="linePath" 
+                        fill="transparent" 
+                        stroke="#cda45e" 
+                        stroke-width="3.5" 
+                        stroke-linecap="round" />
+
+                  <!-- CIRCLE Tooltip Targets (Line Chart) -->
+                  <g *ngIf="chartType === 'line'">
+                    <circle *ngFor="let d of salesData; let i = index" 
+                            [attr.cx]="getXCoordinate(i)" 
+                            [attr.cy]="getYCoordinate(d.revenue)" 
+                            r="5" 
+                            fill="#1a1814" 
+                            stroke="#cda45e" 
+                            stroke-width="2"
+                            class="interactive-dot"
+                            (click)="openMonthlySalesModal(d, i)"
+                            (mouseenter)="showPointTooltip($event, d, i)"
+                            (mouseleave)="hidePointTooltip()" />
+                  </g>
+
+                  <!-- BAR Chart Drawing -->
+                  <g *ngIf="chartType === 'bar'">
+                    <rect *ngFor="let d of salesData; let i = index" 
+                          [attr.x]="getXCoordinate(i) - 15" 
+                          [attr.y]="getYCoordinate(d.revenue)" 
+                          width="30" 
+                          [attr.height]="svgHeight - svgPadding - getYCoordinate(d.revenue)"
+                          fill="url(#barGradient)" 
+                          rx="4"
+                          class="interactive-bar"
+                          (click)="openMonthlySalesModal(d, i)"
+                          (mouseenter)="showPointTooltip($event, d, i)"
+                          (mouseleave)="hidePointTooltip()" />
+                  </g>
+                </svg>
+
+                <!-- Monthly Dynamic Tooltip -->
+                <div *ngIf="hoveredPoint" class="chart-tooltip" [style.left.px]="tooltipX" [style.top.px]="tooltipY">
+                  <div class="tooltip-title">
+                    Month: {{ monthsList[hoveredPoint.index] }} {{ selectedYear }}
+                  </div>
+                  <div class="tooltip-row">
+                    <span class="dot gold"></span>
+                    <span class="label">Actual Amount:</span>
+                    <span class="value">{{ formatCurrency(hoveredPoint.actualAmount) }}</span>
+                  </div>
+                  <div class="tooltip-row">
+                    <span class="dot cyan"></span>
+                    <span class="label">Paid Amount:</span>
+                    <span class="value">{{ formatCurrency(hoveredPoint.paidAmount) }}</span>
+                  </div>
+                  <div class="tooltip-row" *ngIf="hoveredPoint.grandTotal != null">
+                    <span class="dot purple"></span>
+                    <span class="label">Grand Total:</span>
+                    <span class="value text-gold" style="font-weight: 700;">{{ formatCurrency(hoveredPoint.grandTotal) }}</span>
+                  </div>
+                  <div class="tooltip-row">
+                    <span class="dot green"></span>
+                    <span class="label">Orders:</span>
+                    <span class="value">{{ hoveredPoint.orders }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly Row 2: Monthly Product Sales Breakdown & Monthly Cuisine Revenue Share -->
+      <div class="row mb-4">
+        <!-- Monthly Product Sales Breakdown (Circular Graph + Item Table) -->
+        <div [ngClass]="monthlyProductChartSize === 'full' ? 'col-12 mb-4' : 'col-lg-6 col-12 mb-4'">
+          <div class="chart-card glass-panel" style="height: 100%;">
+            <div class="chart-header flex-wrap">
+              <div class="d-flex align-items-center gap-2" style="flex: 1; min-width: 200px;">
+                <h4 class="m-0">Monthly Item Sales Breakdown</h4>
+                <span class="badge badge-gold">{{ selectedMonth }} {{ selectedYear }}</span>
+              </div>
+              <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-sm-0">
+                <button (click)="toggleChartSize('monthlyProduct')" class="btn-icon" [title]="monthlyProductChartSize === 'full' ? 'Make half-width' : 'Make full-width'">
+                  <i class="bi" [ngClass]="monthlyProductChartSize === 'full' ? 'bi-arrows-angle-contract' : 'bi-arrows-angle-expand'"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="chart-body">
+              <div *ngIf="monthlyItemSegments.length === 0" class="d-flex flex-column align-items-center justify-content-center" style="height: 250px;">
+                <i class="bi bi-egg-fried text-muted" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                <p class="text-muted mt-2 mb-0">No item orders recorded for {{ selectedMonth }} {{ selectedYear }}.</p>
+              </div>
+
+              <div *ngIf="monthlyItemSegments.length > 0">
+                <!-- Circular Doughnut Graph -->
+                <div class="d-flex justify-content-center my-3">
+                  <div class="doughnut-container">
+                    <svg width="200" height="200" viewBox="0 0 200 200">
+                      <g transform="rotate(-90, 100, 100)">
+                        <circle cx="100" cy="100" [attr.r]="doughnutRadius" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="18" />
+                        <circle *ngFor="let segment of monthlyItemSegments"
+                                cx="100" 
+                                cy="100" 
+                                [attr.r]="doughnutRadius" 
+                                fill="none" 
+                                [attr.stroke]="segment.color" 
+                                stroke-width="18" 
+                                [attr.stroke-dasharray]="segment.dashArray" 
+                                [attr.stroke-dashoffset]="segment.dashOffset"
+                                stroke-linecap="round"
+                                class="doughnut-segment"
+                                (mouseenter)="monthlyHoveredSegment = segment"
+                                (mouseleave)="monthlyHoveredSegment = null" />
+                      </g>
+                    </svg>
+                    <div class="doughnut-center-labels">
+                      <span class="center-title">{{ monthlyHoveredSegment ? monthlyHoveredSegment.name : 'Total Items' }}</span>
+                      <span class="center-subtitle">{{ monthlyHoveredSegment ? (monthlyHoveredSegment.quantity + ' units') : (monthlyTotalItemQty + ' Units') }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Table View Below Circular Graph -->
+                <div class="table-responsive item-sales-table-wrapper">
+                  <table class="table table-dark table-hover align-middle item-sales-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 40px;">#</th>
+                        <th>Item Name</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-end">Share</th>
+                        <th class="text-end">Revenue</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let item of monthlyItemSegments; let idx = index"
+                          [class.table-active]="monthlyHoveredSegment === item"
+                          (mouseenter)="monthlyHoveredSegment = item"
+                          (mouseleave)="monthlyHoveredSegment = null">
+                        <td class="text-muted font-weight-bold">{{ idx + 1 }}</td>
+                        <td>
+                          <div class="d-flex align-items-center gap-2">
+                            <span class="item-color-dot" [style.background-color]="item.color"></span>
+                            <span class="item-name-text">{{ item.name }}</span>
+                          </div>
+                        </td>
+                        <td class="text-center">
+                          <span class="badge bg-dark border border-secondary text-gold font-weight-bold px-2 py-1">
+                            {{ item.quantity }} units
+                          </span>
+                        </td>
+                        <td class="text-end font-weight-bold text-light">
+                          {{ item.percentage }}%
+                        </td>
+                        <td class="text-end text-gold font-weight-bold">
+                          {{ formatCurrency(item.revenue) }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly Cuisine Revenue Share -->
+        <div [ngClass]="cuisineChartSize === 'full' ? 'col-12 mb-4' : 'col-lg-6 col-12 mb-4'">
+          <div class="chart-card glass-panel" style="height: 100%;">
+            <div class="chart-header flex-wrap">
+              <div class="d-flex align-items-center gap-2" style="flex: 1; min-width: 200px;">
+                <h4 class="m-0">Monthly Cuisine Revenue Share</h4>
+                <span class="badge badge-gold">{{ selectedMonth }} {{ selectedYear }}</span>
+              </div>
+              <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-sm-0">
+                <div class="toggle-buttons">
+                  <button [class.active]="cuisineChartType === 'donut'" (click)="cuisineChartType = 'donut'">Donut</button>
+                  <button [class.active]="cuisineChartType === 'bar'" (click)="cuisineChartType = 'bar'">Bars</button>
+                </div>
+                <button (click)="toggleChartSize('cuisine')" class="btn-icon" [title]="cuisineChartSize === 'full' ? 'Make half-width' : 'Make full-width'">
+                  <i class="bi" [ngClass]="cuisineChartSize === 'full' ? 'bi-arrows-angle-contract' : 'bi-arrows-angle-expand'"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="chart-body">
+              <div *ngIf="cuisineSalesData.length === 0" class="d-flex flex-column align-items-center justify-content-center" style="height: 250px;">
+                <i class="bi bi-pie-chart text-muted" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                <p class="text-muted mt-2 mb-0">No cuisine revenue data available for {{ selectedMonth }}.</p>
+              </div>
+
+              <div *ngIf="cuisineSalesData.length > 0">
+                <!-- Donut View -->
+                <div *ngIf="cuisineChartType === 'donut'" class="d-flex justify-content-center my-3">
+                  <div class="doughnut-container">
+                    <svg width="200" height="200" viewBox="0 0 200 200">
+                      <g transform="rotate(-90, 100, 100)">
+                        <circle cx="100" cy="100" [attr.r]="doughnutRadius" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="18" />
+                        <circle *ngFor="let segment of cuisineSalesData"
+                                cx="100" 
+                                cy="100" 
+                                [attr.r]="doughnutRadius" 
+                                fill="none" 
+                                [attr.stroke]="segment.color" 
+                                stroke-width="18" 
+                                [attr.stroke-dasharray]="segment.dashArray" 
+                                [attr.stroke-dashoffset]="segment.dashOffset"
+                                stroke-linecap="round"
+                                class="doughnut-segment"
+                                (mouseenter)="cuisineHoveredSegment = segment"
+                                (mouseleave)="cuisineHoveredSegment = null" />
+                      </g>
+                    </svg>
+                    <div class="doughnut-center-labels">
+                      <span class="center-title">{{ cuisineHoveredSegment ? cuisineHoveredSegment.name : 'Cuisine Share' }}</span>
+                      <span class="center-subtitle">{{ cuisineHoveredSegment ? formatCurrency(cuisineHoveredSegment.revenue) : formatCurrency(cuisineTotalRevenue) }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Table Breakdown -->
+                <div class="table-responsive item-sales-table-wrapper" style="max-height: 290px;">
+                  <table class="table table-dark table-hover align-middle item-sales-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 35px;">#</th>
+                        <th>Cuisine</th>
+                        <th class="text-center">Units</th>
+                        <th class="text-end">Share</th>
+                        <th class="text-end">Revenue</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let item of cuisineSalesData; let idx = index"
+                          [class.table-active]="cuisineHoveredSegment === item"
+                          (mouseenter)="cuisineHoveredSegment = item"
+                          (mouseleave)="cuisineHoveredSegment = null">
+                        <td class="text-muted font-weight-bold">{{ idx + 1 }}</td>
+                        <td>
+                          <div class="d-flex align-items-center gap-2">
+                            <span class="item-color-dot" [style.background-color]="item.color"></span>
+                            <span class="item-name-text">{{ item.name }}</span>
+                          </div>
+                          <div *ngIf="cuisineChartType === 'bar'" class="progress-bar-track mt-1" style="height: 4px;">
+                            <div class="progress-bar-fill" [style.background-color]="item.color" [style.width.%]="item.percentage"></div>
+                          </div>
+                        </td>
+                        <td class="text-center">
+                          <span class="badge bg-dark border border-secondary text-light px-2 py-1">
+                            {{ item.quantity }}
+                          </span>
+                        </td>
+                        <td class="text-end font-weight-bold text-light">
+                          {{ item.percentage }}%
+                        </td>
+                        <td class="text-end text-gold font-weight-bold">
+                          {{ formatCurrency(item.revenue) }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly Row 3: Platform Revenue Share & Payment Split -->
+      <div class="row mb-4">
+        <!-- Monthly Platform Revenue Share (Swiggy, Zomato, Swiggy Dine-In, Dstrict, Direct) -->
+        <div [ngClass]="platformChartSize === 'full' ? 'col-12 mb-4' : 'col-lg-6 col-12 mb-4'">
+          <div class="chart-card glass-panel" style="height: 100%;">
+            <div class="chart-header flex-wrap">
+              <div class="d-flex align-items-center gap-2" style="flex: 1; min-width: 200px;">
+                <h4 class="m-0">Monthly Platform Revenue Share</h4>
+                <span class="badge badge-gold">{{ selectedMonth }} {{ selectedYear }}</span>
+              </div>
+              <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-sm-0">
+                <div class="toggle-buttons">
+                  <button [class.active]="platformChartType === 'donut'" (click)="platformChartType = 'donut'">Donut</button>
+                  <button [class.active]="platformChartType === 'bar'" (click)="platformChartType = 'bar'">Bars</button>
+                </div>
+                <button (click)="toggleChartSize('platform')" class="btn-icon" [title]="platformChartSize === 'full' ? 'Make half-width' : 'Make full-width'">
+                  <i class="bi" [ngClass]="platformChartSize === 'full' ? 'bi-arrows-angle-contract' : 'bi-arrows-angle-expand'"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="chart-body">
+              <div *ngIf="monthlyPlatformSalesData.length === 0" class="d-flex flex-column align-items-center justify-content-center" style="height: 250px;">
+                <i class="bi bi-pie-chart text-muted" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                <p class="text-muted mt-2 mb-0">No platform revenue data available for {{ selectedMonth }}.</p>
+              </div>
+
+              <div *ngIf="monthlyPlatformSalesData.length > 0">
+                <!-- Donut View -->
+                <div *ngIf="platformChartType === 'donut'" class="d-flex justify-content-center my-3">
+                  <div class="doughnut-container">
+                    <svg width="200" height="200" viewBox="0 0 200 200">
+                      <g transform="rotate(-90, 100, 100)">
+                        <circle cx="100" cy="100" [attr.r]="doughnutRadius" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="18" />
+                        <circle *ngFor="let segment of monthlyPlatformSalesData"
+                                cx="100" 
+                                cy="100" 
+                                [attr.r]="doughnutRadius" 
+                                fill="none" 
+                                [attr.stroke]="segment.color" 
+                                stroke-width="18" 
+                                [attr.stroke-dasharray]="segment.dashArray" 
+                                [attr.stroke-dashoffset]="segment.dashOffset"
+                                stroke-linecap="round"
+                                class="doughnut-segment"
+                                (mouseenter)="monthlyPlatformHoveredSegment = segment"
+                                (mouseleave)="monthlyPlatformHoveredSegment = null" />
+                      </g>
+                    </svg>
+                    <div class="doughnut-center-labels">
+                      <span class="center-title">{{ monthlyPlatformHoveredSegment ? monthlyPlatformHoveredSegment.name : 'Platform Share' }}</span>
+                      <span class="center-subtitle">{{ monthlyPlatformHoveredSegment ? formatCurrency(monthlyPlatformHoveredSegment.amount) : formatCurrency(monthlyPlatformTotalRevenue) }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Table Breakdown -->
+                <div class="table-responsive item-sales-table-wrapper" style="max-height: 290px;">
+                  <table class="table table-dark table-hover align-middle item-sales-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 35px;">#</th>
+                        <th>Platform</th>
+                        <th class="text-end">Share</th>
+                        <th class="text-end">Revenue</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let item of monthlyPlatformSalesData; let idx = index"
+                          [class.table-active]="monthlyPlatformHoveredSegment === item"
+                          (mouseenter)="monthlyPlatformHoveredSegment = item"
+                          (mouseleave)="monthlyPlatformHoveredSegment = null">
+                        <td class="text-muted font-weight-bold">{{ idx + 1 }}</td>
+                        <td>
+                          <div class="d-flex align-items-center gap-2">
+                            <span class="item-color-dot" [style.background-color]="item.color"></span>
+                            <i class="bi {{ item.icon }} text-gold" style="font-size: 0.9rem;"></i>
+                            <span class="item-name-text">{{ item.name }}</span>
+                          </div>
+                          <div *ngIf="platformChartType === 'bar'" class="progress-bar-track mt-1" style="height: 4px;">
+                            <div class="progress-bar-fill" [style.background-color]="item.color" [style.width.%]="item.percentage"></div>
+                          </div>
+                        </td>
+                        <td class="text-end font-weight-bold text-light">
+                          {{ item.percentage }}%
+                        </td>
+                        <td class="text-end text-gold font-weight-bold">
+                          {{ formatCurrency(item.amount) }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6 col-12 mb-4">
+          <div class="chart-card glass-panel" style="height: 100%;">
+            <div class="chart-header">
+              <h4>Checkouts By Mode</h4>
+            </div>
+            <div class="chart-body d-flex flex-column align-items-center justify-content-center">
+              <div class="doughnut-container">
+                <svg width="200" height="200" viewBox="0 0 200 200">
+                  <g transform="rotate(-90, 100, 100)">
+                    <circle cx="100" cy="100" [attr.r]="doughnutRadius" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="18" />
+                    <circle *ngFor="let segment of paymentModes"
+                            cx="100" 
+                            cy="100" 
+                            [attr.r]="doughnutRadius" 
+                            fill="none" 
+                            [attr.stroke]="segment.color" 
+                            stroke-width="18" 
+                            [attr.stroke-dasharray]="segment.dashArray" 
+                            [attr.stroke-dashoffset]="segment.dashOffset"
+                            stroke-linecap="round"
+                            class="doughnut-segment"
+                            (mouseenter)="showSegmentTooltip($event, segment)"
+                            (mouseleave)="hideSegmentTooltip()" />
+                  </g>
+                </svg>
+                <div class="doughnut-center-labels">
+                  <span class="center-title">Payment</span>
+                  <span class="center-subtitle">Channels</span>
+                </div>
+              </div>
+
+              <div class="segment-details mt-3" style="width: 100%;">
+                <div *ngFor="let item of paymentModes" class="legend-item" [class.highlight]="hoveredSegment === item">
+                  <div class="legend-key">
+                    <span class="legend-dot" [style.background-color]="item.color"></span>
+                    <span class="legend-name">{{ item.mode }}</span>
+                  </div>
+                  <div class="legend-values">
+                    <span class="legend-val font-weight-bold">{{ item.percentage }}%</span>
+                    <span class="legend-amt">({{ formatCurrency(item.amount) }})</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly Row 4: Popular Menu Items -->
+      <div class="row mb-4">
+        <div class="col-12 mb-4">
+          <div class="chart-card glass-panel" style="height: 100%;">
+            <div class="chart-header">
+              <h4>Popular Menu Items</h4>
+              <span class="badge badge-gold">Volume Leaders</span>
+            </div>
+            <div class="chart-body">
+              <div *ngIf="monthlyTopItems.length === 0" class="text-center py-4 text-muted">
+                <i class="bi bi-cup-hot text-muted" style="font-size: 2rem; opacity: 0.5;"></i>
+                <p class="mt-2 mb-0">No menu item sales recorded for {{ monthlySelectedMonth }} {{ monthlySelectedYear }}.</p>
+              </div>
+              <div *ngIf="monthlyTopItems.length > 0" class="product-progress-list">
+                <div *ngFor="let product of monthlyTopItems; let idx = index" class="product-progress-item mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="product-name">
+                      <span class="rank-badge">{{ idx + 1 }}</span>
+                      {{ product.name }}
+                    </span>
+                    <span class="product-stats">
+                      <strong>{{ product.quantity }} sold</strong> / {{ formatCurrency(product.revenue) }}
+                    </span>
+                  </div>
+                  <div class="progress-bar-track">
+                    <div class="progress-bar-fill" [style.width.%]="(product.quantity / (monthlyTopItems[0]?.quantity || 1)) * 100"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -901,8 +1584,6 @@
         </div>
       </div>
 
-
-
       <!-- 3. Transactions Table -->
       <div class="modal-section-title">
         <h5><i class="bi bi-list-ul me-1"></i> Daily Transactions List</h5>
@@ -961,4 +1642,5 @@
       </button>
     </div>
   </div>
+</div>
 </div>

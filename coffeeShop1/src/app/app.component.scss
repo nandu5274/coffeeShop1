@@ -28,8 +28,8 @@
   height: 60px;
   width: 60px;
   position: fixed;
-  bottom: 96px;
-  right: 20px;
+  bottom: 40px;
+  right: 16px;
   
   /* Liquid glass background */
   background: linear-gradient(135deg, rgba(205, 164, 94, 0.25) 0%, rgba(205, 164, 94, 0.05) 100%);
@@ -124,8 +124,8 @@
 /* Popup Content - Liquid Glass Theme */
 .notification-popup {
   position: fixed;
-  bottom: 170px; /* Positioned above the floating bell button */
-  right: 20px;
+  bottom: 115px; /* Positioned above the floating bell button */
+  right: 16px;
   width: 320px;
   z-index: 100000;
   
@@ -324,7 +324,7 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   position: absolute;
-  bottom: -32px;
+  bottom: -24px;
   left: 50%;
   transform: translateX(-50%);
   

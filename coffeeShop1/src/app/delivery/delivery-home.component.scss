@@ -94,8 +94,6 @@
   box-shadow: none;
   outline: none;
   object-fit: contain;
-  -webkit-mask-image: radial-gradient(ellipse 72% 72% at 50% 48%, #000 42%, transparent 72%);
-  mask-image: radial-gradient(ellipse 72% 72% at 50% 48%, #000 42%, transparent 72%);
   filter: drop-shadow(0 0 22px rgba(205, 164, 94, 0.35));
   animation: hologram-breathe 4.2s ease-in-out infinite;
 }

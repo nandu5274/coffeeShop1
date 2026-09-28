@@ -256,35 +256,51 @@ triggerPopupMessage(mesg: any) {
 }
 
 
-navigateToMenu(nav:any) {
-  
-  if(nav=='menu')
-  {
-    this.isMenuActive = true
+navigateToMenu(nav: any) {
+  this.closeMobileNav();
+  if (nav === 'menu') {
+    this.isMenuActive = true;
     this.router.navigate(['/' + nav], { fragment: nav });
-   const elements = document.querySelectorAll(`[href="#hero"], [href="#about"], [href="#specials"], [href="#events"], [href="#chefs"], [href="#gallery"], [href="#contact"]`);
-   elements.forEach((element) => {
-    element.classList.remove('active');
-  });
-  this.previousUrl = sessionStorage.getItem("previousUrl");
-  sessionStorage.setItem("previousUrl", nav);
-  }
-  else if(sessionStorage.getItem("previousUrl") == 'menu'){
-    this.isMenuActive = false
-    this.router.navigate(['/'], { fragment: nav }) .then(() => {
-      window.location.reload();
+    const elements = document.querySelectorAll(
+      `[href="#hero"], [href="#about"], [href="#specials"], [href="#events"], [href="#chefs"], [href="#gallery"], [href="#contact"], [href="#book-a-table"]`
+    );
+    elements.forEach((element) => {
+      element.classList.remove('active');
     });
     this.previousUrl = sessionStorage.getItem("previousUrl");
-  
     sessionStorage.setItem("previousUrl", nav);
-  }else
-  {
-    this.isMenuActive = false
-    this.router.navigate(['/'], { fragment: nav })
+  } else {
+    this.isMenuActive = false;
+    const currentUrl = this.router.url;
     this.previousUrl = sessionStorage.getItem("previousUrl");
-  
     sessionStorage.setItem("previousUrl", nav);
+
+    const isHomePage = currentUrl === '/' || currentUrl.startsWith('/#') || currentUrl.startsWith('/?');
+
+    if (!isHomePage) {
+      this.router.navigate(['/'], { fragment: nav }).then(() => {
+        this.scrollToSection(nav);
+      });
+    } else {
+      this.router.navigate(['/'], { fragment: nav });
+      this.scrollToSection(nav);
+    }
   }
+}
+
+scrollToSection(sectionId: string): void {
+  setTimeout(() => {
+    const el = document.getElementById(sectionId);
+    if (el) {
+      const header = document.getElementById('header');
+      const offset = header ? header.offsetHeight : 0;
+      const elementPos = el.getBoundingClientRect().top + window.pageYOffset;
+      window.scrollTo({
+        top: elementPos - offset,
+        behavior: 'smooth'
+      });
+    }
+  }, 50);
 }
 
 navigateToDashboard() {

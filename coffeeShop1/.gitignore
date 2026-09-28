@@ -9,6 +9,10 @@ scripts/
 .DS_Store
 **/.DS_Store
 
+# Compiled output & source maps
+out-tsc/
+*.js.map
+
 src/app/common/constanst.ts
 
 

@@ -145,29 +145,20 @@ export class SharedService {
 
 
 navigateToMenu(nav:any) {
-  
   if(nav=='menu')
   {
     this.router.navigate(['/' + nav], { fragment: nav });
-   const elements = document.querySelectorAll(`[href="#hero"], [href="#about"], [href="#specials"], [href="#events"], [href="#chefs"], [href="#gallery"]`);
-   elements.forEach((element) => {
-    element.classList.remove('active');
-  });
-  this.previousUrl = sessionStorage.getItem("previousUrl");
-  sessionStorage.setItem("previousUrl", nav);
-  }
-  else if(sessionStorage.getItem("previousUrl") == 'menu'){
-    this.router.navigate(['/'], { fragment: nav }) .then(() => {
-      window.location.reload();
+    const elements = document.querySelectorAll(`[href="#hero"], [href="#about"], [href="#specials"], [href="#events"], [href="#chefs"], [href="#gallery"], [href="#contact"], [href="#book-a-table"]`);
+    elements.forEach((element) => {
+      element.classList.remove('active');
     });
     this.previousUrl = sessionStorage.getItem("previousUrl");
-  
     sessionStorage.setItem("previousUrl", nav);
-  }else
+  }
+  else
   {
-    this.router.navigate(['/'], { fragment: nav })
+    this.router.navigate(['/'], { fragment: nav });
     this.previousUrl = sessionStorage.getItem("previousUrl");
-  
     sessionStorage.setItem("previousUrl", nav);
   }
 }

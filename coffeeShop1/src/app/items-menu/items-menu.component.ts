@@ -52,6 +52,10 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
       this.showFirstTimeDemo = false;
       return;
     }
+    if (sessionStorage.getItem('hasSeenMenuDemo') === 'true') {
+      this.showFirstTimeDemo = false;
+      return;
+    }
     if (this.showChefSplPopup) {
       return;
     }
@@ -61,15 +65,21 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
     this.demoStep = 1;
   }
 
-  openChefSplPopup() {
+  openChefSplPopup(isAuto: boolean = true) {
     if (!this.sharedService.getShowMenuFlagData()) {
+      return;
+    }
+    if (isAuto && sessionStorage.getItem('hasSeenChefSplPopup') === 'true') {
+      this.checkFirstTimeUserDemo();
       return;
     }
     this.chefSplItems = this.menuItemsList.filter(
       (item: any) => item.cuisine === 'ChefSPL'
     );
     if (this.chefSplItems.length === 0) {
-      this.checkFirstTimeUserDemo();
+      if (isAuto) {
+        this.checkFirstTimeUserDemo();
+      }
       return;
     }
     this.showFirstTimeDemo = false;
@@ -79,6 +89,7 @@ export class ItemsMenuComponent implements AfterViewInit, OnInit {
 
   dismissChefSplPopup() {
     this.showChefSplPopup = false;
+    sessionStorage.setItem('hasSeenChefSplPopup', 'true');
     document.body.style.overflow = '';
     this.checkFirstTimeUserDemo();
   }

@@ -1721,12 +1721,9 @@ margin: 5px 0;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
   background: rgba(10, 9, 8, 0.75) !important;
-  align-items: flex-end !important;
-  padding: 12px !important;
-
-  @media (min-width: 480px) {
-    align-items: center !important;
-  }
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
 }
 
 .demo-card-v2 {
