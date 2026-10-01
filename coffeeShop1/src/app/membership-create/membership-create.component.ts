@@ -306,8 +306,7 @@ export class MembershipCreateComponent {
       + "\n2. 10% Discount on all Cafe Kubera bills, redeemable with loyalty points."
       + "\n3. Complimentary Dish for candlelight dinners at Cafe Kubera."
       + "\n4. 10% Discount on SNAP Gym annual memberships."
-      + "\n5. ₹500 Instant Discount on Duty-Free purchases for every ₹3500 spent."
-      + "\n6. 10% Discount on Adventura Rides."
+      + "\n5. 10% Discount on Adventura Rides."
       + " \n\nThanks and Regards,\nCAFE KUBERA,\n3rd line, near Guru Nanak Colony,\nKanaka Durga Gazetted Officers Colony, \nGuru Nanak Colony, Vijayawada, Andhra Pradesh 520007.\ncontact: 9652544239";
     request.subject = "We appreciate your enrollment in Cafe Kubera membership program."
     this.dataService.SendSimpleMail(request).subscribe();

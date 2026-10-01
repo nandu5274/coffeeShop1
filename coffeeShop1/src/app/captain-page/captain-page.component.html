@@ -755,46 +755,60 @@
 </div>
 
 
-<div *ngIf="isMemberShipModalOpen" class="modal" style="z-index: 9999;">
-
-  <div class="cust-login">
+<div *ngIf="isMemberShipModalOpen" class="modal-backdrop-custom" (click)="closeMemberShipModal()">
+  <div class="cust-login-modal" (click)="$event.stopPropagation()">
+    <button class="btn-modal-close" (click)="closeMemberShipModal()" title="Close Portal">
+      <i class="bi bi-x-lg"></i>
+    </button>
     <app-membership-create></app-membership-create>
-    <div style="   text-align: center; background: #1a1814;">
-      <span>
-        <button class="btn-glass-danger" (click)="closeMemberShipModal()">close</button>
-      </span>
+    <div class="modal-footer-action">
+      <button type="button" class="btn-close-modal" (click)="closeMemberShipModal()">
+        <i class="bi bi-x-circle me-1"></i> Close
+      </button>
     </div>
   </div>
-
-
-
-
 </div>
 
-
-
-<div *ngIf="isProfileModalOpen" class="modal" style="z-index: 9999;">
-
-  <div class="cust-login">
-    <form>
-      <div class="form-group ">
-        <label for="mobile_number">Mobile Number:</label>
-        <input type="text" id="mobile_number" name="mobile_number" class="username mem-user" [(ngModel)]="mobile_number"
-          required>
+<div *ngIf="isProfileModalOpen" class="modal-backdrop-custom" (click)="closeProfileModalClose()">
+  <div class="cust-login-modal" (click)="$event.stopPropagation()">
+    <button class="btn-modal-close" (click)="closeProfileModalClose()" title="Close">
+      <i class="bi bi-x-lg"></i>
+    </button>
+    
+    <div class="membership-modal-card">
+      <div class="modal-card-header">
+        <h3 class="modal-card-title">
+          <i class="bi bi-person-bounding-box text-gold me-2"></i> Check Profile
+        </h3>
       </div>
+      <div class="modal-card-body">
+        <form (submit)="navigateToProfile(); $event.preventDefault()">
+          <div class="form-group mb-3">
+            <label for="mobile_number" class="form-label">Customer Mobile Number</label>
+            <div class="input-wrap">
+              <i class="bi bi-telephone-fill input-icon"></i>
+              <input 
+                type="text" 
+                id="mobile_number" 
+                name="mobile_number" 
+                class="form-control-dark" 
+                placeholder="Enter mobile number..."
+                [(ngModel)]="mobile_number"
+                required />
+            </div>
+          </div>
+          <button type="button" class="btn-gold-action w-100" (click)="navigateToProfile()">
+            <i class="bi bi-search me-1"></i> Check Profile
+          </button>
+        </form>
+      </div>
+    </div>
 
-
-      <button type="button" class="btn-glass-success" (click)="navigateToProfile()">Check</button>
-    </form>
-    <div style="   text-align: center; background: #1a1814;">
-      <span>
-        <button class="btn-glass-danger" (click)="closeProfileModalClose()">close</button>
-      </span>
+    <div class="modal-footer-action">
+      <button type="button" class="btn-close-modal" (click)="closeProfileModalClose()">
+        <i class="bi bi-x-circle me-1"></i> Close
+      </button>
     </div>
   </div>
-
-
-
-
 </div>
 <app-booking-order [orderProcessingStatus]="orderProcessingStatus" [response]="response"></app-booking-order>

@@ -486,7 +486,7 @@ body.light-mode {
     backdrop-filter: blur(20px) saturate(140%) !important;
     -webkit-backdrop-filter: blur(20px) saturate(140%) !important;
     
-    .logo a, .navbar a, .navbar a:focus {
+    .logo a, .navbar:not(.navbar-mobile) a, .navbar:not(.navbar-mobile) a:focus {
       color: #1a1814 !important;
     }
     
@@ -508,7 +508,7 @@ body.light-mode {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     
-    .logo a, .navbar a, .navbar a:focus {
+    .logo a, .navbar:not(.navbar-mobile) a, .navbar:not(.navbar-mobile) a:focus {
       color: #ffffff !important;
     }
 
@@ -530,7 +530,7 @@ body.light-mode {
     backdrop-filter: blur(20px) saturate(140%) !important;
     -webkit-backdrop-filter: blur(20px) saturate(140%) !important;
     
-    .logo a, .navbar a, .navbar a:focus {
+    .logo a, .navbar:not(.navbar-mobile) a, .navbar:not(.navbar-mobile) a:focus {
       color: #1a1814 !important;
     }
 

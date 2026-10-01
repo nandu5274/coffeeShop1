@@ -34,42 +34,27 @@
 
       <nav id="navbar" class="navbar order-last order-lg-0">
         <ul>
-          <li><a class="nav-link scrollto" href="#hero" [class.active]="isOtherItemsActive" (click)="navigateToMenu('hero')">Home</a></li>
-          <li><a class="nav-link scrollto" href="#about" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('about')" >About</a></li>
-          <li><a  *ngIf="showMenu" class="nav-link scrollto" href="#menu"  [class.active]="isMenuActive" (click)="navigateToMenu('menu')" >Menu</a></li>
-          <!-- <li><a class="nav-link scrollto" href="#specials" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('specials')" >Specials</a></li>
-          <li><a class="nav-link scrollto" href="#events" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('events')" >Events</a></li>
-          <li><a class="nav-link scrollto" href="#chefs" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('chefs')">Chefs</a></li>
-          <li><a class="nav-link scrollto" href="#gallery" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('gallery')" >Gallery</a></li> -->
-       
-          <!-- <li class="dropdown"><a href="#"><span>Drop Down</span> <i class="bi bi-chevron-down"></i></a>
-            <ul>
-              <li><a href="#">Drop Down 1</a></li>
-              <li class="dropdown"><a href="#"><span>Deep Drop Down</span> <i class="bi bi-chevron-right"></i></a>
-                <ul>
-                  <li><a href="#">Deep Drop Down 1</a></li>
-                  <li><a href="#">Deep Drop Down 2</a></li>
-                  <li><a href="#">Deep Drop Down 3</a></li>
-                  <li><a href="#">Deep Drop Down 4</a></li>
-                  <li><a href="#">Deep Drop Down 5</a></li>
-                </ul>
-              </li>
-              <li><a href="#">Drop Down 2</a></li>
-              <li><a href="#">Drop Down 3</a></li>
-              <li><a href="#">Drop Down 4</a></li>
-            </ul>
-          </li> -->
-          <li><a class="nav-link scrollto" href="#contact"  [class.active]="isOtherItemsActive"  (click)="navigateToMenu('contact')"  >Contact</a></li>
-          <li><a class="nav-link scrollto" href="#book-a-table" [class.active]="isOtherItemsActive" (click)="navigateToMenu('book-a-table'); $event.preventDefault()">Book Table</a></li>
-          <li><a class="nav-link" routerLink="/ar-view" style="color: #cda45e; font-weight: 600;"><i class="fa fa-cube me-1"></i>AR View</a></li>
+          <li class="mobile-nav-brand d-lg-none">
+            <div class="brand-inner">
+              <span class="brand-title">Cafe Kubera</span>
+              <span class="brand-subtitle">Luxury Coffee & Dining</span>
+            </div>
+          </li>
+          <li><a class="nav-link scrollto" href="#hero" [class.active]="isOtherItemsActive" (click)="navigateToMenu('hero')"><i class="bi bi-house-door me-2 d-lg-none"></i>Home</a></li>
+          <li><a class="nav-link scrollto" href="#about" [class.active]="isOtherItemsActive"  (click)="navigateToMenu('about')" ><i class="bi bi-info-circle me-2 d-lg-none"></i>About</a></li>
+          <li><a  *ngIf="showMenu" class="nav-link scrollto" href="#menu"  [class.active]="isMenuActive" (click)="navigateToMenu('menu')" ><i class="bi bi-journal-richtext me-2 d-lg-none"></i>Menu</a></li>
+          <li><a class="nav-link scrollto" href="#membership" [class.active]="isOtherItemsActive" (click)="navigateToMenu('membership')"><i class="bi bi-card-heading me-2 d-lg-none"></i>Membership</a></li>
+          <li><a class="nav-link scrollto" href="#contact"  [class.active]="isOtherItemsActive"  (click)="navigateToMenu('contact')"  ><i class="bi bi-envelope me-2 d-lg-none"></i>Contact</a></li>
+          <li><a class="nav-link scrollto" href="#book-a-table" [class.active]="isOtherItemsActive" (click)="navigateToMenu('book-a-table'); $event.preventDefault()"><i class="bi bi-calendar-check me-2 d-lg-none"></i>Book Table</a></li>
+          <li><a class="nav-link" routerLink="/ar-view" style="color: #cda45e; font-weight: 600;"><i class="fa fa-cube me-2"></i>AR View</a></li>
           <li *ngIf="!diable_login_btn && !isLoggedIn" class="nav-login-item">
-            <a class="nav-link nav-login-link" (click)="openCustomerLoginModal(); $event.preventDefault()">Login</a>
+            <a class="nav-link nav-login-link" (click)="openCustomerLoginModal(); $event.preventDefault()"><i class="bi bi-person me-2 d-lg-none"></i>Login</a>
           </li>
           <li *ngIf="!diable_login_btn && isLoggedIn" class="nav-login-item">
-            <a class="nav-link" (click)="navigateToProfile(); $event.preventDefault()">Profile</a>
+            <a class="nav-link" (click)="navigateToProfile(); $event.preventDefault()"><i class="bi bi-person-circle me-2 d-lg-none"></i>Profile</a>
           </li>
           <li *ngIf="!diable_login_btn && isLoggedIn" class="nav-login-item">
-            <a class="nav-link" (click)="onSignOut(); $event.preventDefault()">Sign Out</a>
+            <a class="nav-link" (click)="onSignOut(); $event.preventDefault()"><i class="bi bi-box-arrow-right me-2 d-lg-none"></i>Sign Out</a>
           </li>
         </ul>
         <i class="bi bi-list mobile-nav-toggle"></i>

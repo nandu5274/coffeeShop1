@@ -1,75 +1,105 @@
 <div *ngIf="showSpinner" class="spinner-overlay">
-    <div class="spinner"></div>
+  <div class="spinner"></div>
+</div>
+
+<div *ngIf="pageType == 'cap'" class="membership-modal-card">
+  <!-- Modal Header -->
+  <div class="modal-card-header">
+    <h3 class="modal-card-title">
+      <i class="bi bi-card-heading text-gold me-2"></i> Membership Portal
+    </h3>
   </div>
 
-  <div *ngIf="pageType == 'cap' ">
-    <section id="menu" class="menu section-bg" style="    padding: 1em; border-radius: 42px;" >
-      <div class="tab-content">
-        
-        <h1>Member Ship Portal</h1>
-  
-        <div *ngIf="selectedTab === 'sign_in'">
-  
-  
-          <div class="login-container">
-            <div *ngIf="otpSentBanner" class="success-banner">
-              Otp Sent to Email
-            </div>
-            <div *ngIf="memberShipOtpSuccessBanner" class="success-banner">
-              MemberShip Activated
-            </div>
-            <div *ngIf="showSignUpSuccessBanner" class="success-banner">
-              Reward Pointes Added
-            </div>
-            <div *ngIf="loginShowErrorBanner" class="error-banner">
-             No profile found. Please try again.
-            </div>
-            <div *ngIf="loginSessionExpiredBanner" class="error-banner">
-              Session expired Please renew your session.
-            </div>
-            <div *ngIf="invalidOtpBanner" class="error-banner">
-              Invalid otp. Please try again.
-            </div>
-            <div *ngIf="errorOccurredBanner" class="error-banner">
-              error occurred. Membership might present. Try again with other details.
-            </div>
-            <form>
-              <div class="form-group ">
-                <label for="sign_in_username">Mobile Number:</label>
-                <input type="text" id="sign_in_username" name="sign_in_username" class="username mem-user"
-                  [(ngModel)]="sign_in_username" required [disabled]="isProfileFound">
-              </div>
-            
-  
-              <button type="button" class="login-btn" (click)="CheckPoints()">Check</button>
-            </form>
-             <div *ngIf="isProfileFound" style="margin: 1em;">
-              <form>
-                <label for="validity_month">Validity Month:</label>
-                <select id="validity_month" name="validity_month" class="username" [(ngModel)]="validity_month" required>
-                  <option value="6" selected>6 Months</option>
-                  <option value="12">12 Month</option>
-                </select>
-                <div >
-                <button type="button" class="login-btn" style="margin-top: 1em; margin-bottom: 1em;" (click)="sendOtpForMembership()">otp</button>
-                   
-                <label for="sign_in_username">OTP:</label>
-                <input type="text" id="member_ship_otp_field" name="member_ship_otp_field" class="username"
-                  [(ngModel)]="member_ship_otp_field" required>
-                  <button type="button" class="login-btn" style="margin-top: 1em; margin-bottom: 1em;" (click)="createMemberShip()">Create</button>
-              </div>
-              </form>
+  <div class="modal-card-body">
+    <!-- Alert Banners -->
+    <div *ngIf="otpSentBanner" class="alert-banner success">
+      <i class="bi bi-check-circle-fill me-1"></i> OTP Sent to Email
+    </div>
+    <div *ngIf="memberShipOtpSuccessBanner" class="alert-banner success">
+      <i class="bi bi-check-circle-fill me-1"></i> Membership Activated Successfully!
+    </div>
+    <div *ngIf="showSignUpSuccessBanner" class="alert-banner success">
+      <i class="bi bi-star-fill me-1"></i> Reward Points Added
+    </div>
+    <div *ngIf="loginShowErrorBanner" class="alert-banner error">
+      <i class="bi bi-exclamation-triangle-fill me-1"></i> No profile found. Please try again.
+    </div>
+    <div *ngIf="loginSessionExpiredBanner" class="alert-banner error">
+      <i class="bi bi-clock-history me-1"></i> Session expired. Please renew.
+    </div>
+    <div *ngIf="invalidOtpBanner" class="alert-banner error">
+      <i class="bi bi-x-circle-fill me-1"></i> Invalid OTP. Please try again.
+    </div>
+    <div *ngIf="errorOccurredBanner" class="alert-banner error">
+      <i class="bi bi-exclamation-octagon-fill me-1"></i> Error occurred. Membership may already exist.
+    </div>
 
-             </div> 
-          
-          </div>
-  
-  
-  
+    <!-- Phone Number Form -->
+    <form (submit)="CheckPoints(); $event.preventDefault()">
+      <div class="form-group mb-3">
+        <label for="sign_in_username" class="form-label">Customer Mobile Number</label>
+        <div class="input-wrap">
+          <i class="bi bi-telephone-fill input-icon"></i>
+          <input 
+            type="text" 
+            id="sign_in_username" 
+            name="sign_in_username" 
+            class="form-control-dark"
+            placeholder="Enter mobile number..."
+            [(ngModel)]="sign_in_username" 
+            required 
+            [disabled]="isProfileFound" />
+        </div>
+      </div>
+
+      <button 
+        type="button" 
+        class="btn-gold-action w-100" 
+        *ngIf="!isProfileFound"
+        (click)="CheckPoints()">
+        <i class="bi bi-search me-1"></i> Check Profile
+      </button>
+    </form>
+
+    <!-- Profile Verified Section -->
+    <div *ngIf="isProfileFound" class="membership-details-box mt-3">
+      <div class="customer-info-badge mb-3" *ngIf="customerDetails">
+        <i class="bi bi-person-check-fill text-gold me-1"></i>
+        <span>{{ customerDetails?.customer_detail?.name || 'Customer Verified' }}</span>
+        <span class="ms-2 text-muted">({{ customerDetails?.available_points || 0 }} pts)</span>
+      </div>
+
+      <form>
+        <div class="form-group mb-3">
+          <label for="validity_month" class="form-label">Membership Validity</label>
+          <select id="validity_month" name="validity_month" class="form-select-dark" [(ngModel)]="validity_month" required>
+            <option value="6">6 Months Plan</option>
+            <option value="12">12 Months Plan</option>
+          </select>
         </div>
 
-      </div>
-  
-  
-    </section>
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <button type="button" class="btn-outline-gold flex-fill" (click)="sendOtpForMembership()">
+            <i class="bi bi-send-fill me-1"></i> Send OTP
+          </button>
+        </div>
+
+        <div class="form-group mb-3">
+          <label for="member_ship_otp_field" class="form-label">Enter Verification OTP</label>
+          <input 
+            type="text" 
+            id="member_ship_otp_field" 
+            name="member_ship_otp_field" 
+            class="form-control-dark"
+            placeholder="Enter 4-digit OTP"
+            [(ngModel)]="member_ship_otp_field" 
+            required />
+        </div>
+
+        <button type="button" class="btn-gold-action w-100" (click)="createMemberShip()">
+          <i class="bi bi-patch-check-fill me-1"></i> Create Membership
+        </button>
+      </form>
+    </div>
   </div>
+</div>

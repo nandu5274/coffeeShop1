@@ -265,9 +265,9 @@
                   </span>
                 </td>
                 <td class="col-status">
-                  <span class="status-badge" [ngClass]="item.available?.toLowerCase() === 'y' ? 'active' : (item.available?.toLowerCase() === 'd' ? 'deleted' : 'inactive')">
+                  <span class="status-badge" [ngClass]="item.available.toLowerCase() === 'y' ? 'active' : (item.available.toLowerCase() === 'd' ? 'deleted' : 'inactive')">
                     <span class="status-dot"></span>
-                    <span class="status-text">{{ item.available?.toLowerCase() === 'y' ? 'Active' : (item.available?.toLowerCase() === 'd' ? 'Deleted' : 'Inactive') }}</span>
+                    <span class="status-text">{{ item.available.toLowerCase() === 'y' ? 'Active' : (item.available.toLowerCase() === 'd' ? 'Deleted' : 'Inactive') }}</span>
                   </span>
                 </td>
                 <td class="col-desc">
@@ -290,14 +290,14 @@
                     </button>
                     <button 
                       class="btn-action-col btn-toggle-status" 
-                      [ngClass]="item.available?.toLowerCase() === 'y' ? 'btn-make-inactive' : 'btn-make-active highlighted'"
+                      [ngClass]="item.available.toLowerCase() === 'y' ? 'btn-make-inactive' : 'btn-make-active highlighted'"
                       (click)="toggleItemAvailability(item)"
-                      [attr.data-tooltip]="item.available?.toLowerCase() === 'y' ? 'Inactive' : 'Active'"
+                      [attr.data-tooltip]="item.available.toLowerCase() === 'y' ? 'Inactive' : 'Active'"
                     >
-                      <i class="fa" [ngClass]="item.available?.toLowerCase() === 'y' ? 'fa-ban' : 'fa-check-circle'"></i>
+                      <i class="fa" [ngClass]="item.available.toLowerCase() === 'y' ? 'fa-ban' : 'fa-check-circle'"></i>
                     </button>
                     <button 
-                      *ngIf="item.available?.toLowerCase() !== 'd'"
+                      *ngIf="item.available.toLowerCase() !== 'd'"
                       class="btn-action-col btn-delete" 
                       (click)="confirmDeleteMenuItem(item)" 
                       data-tooltip="Delete"

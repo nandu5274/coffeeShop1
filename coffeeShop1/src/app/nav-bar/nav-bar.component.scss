@@ -448,10 +448,10 @@ padding-right: 4px;
   cursor: pointer;
 }
 
-/* Mobile sidebar (white panel): keep login readable */
+/* Mobile sidebar (dark luxury glass): keep login highlighted in gold */
 :host-context(.navbar-mobile) .nav-login-link,
 .navbar-mobile .nav-login-link {
-  color: #1a1814 !important;
+  color: #cda45e !important;
 }
 
 .delivery-subheader {

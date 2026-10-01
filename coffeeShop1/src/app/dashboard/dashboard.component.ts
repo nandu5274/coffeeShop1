@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HasuraApiService } from '../service/hasura.api.service';
 import { SharedService } from '../service/shared-service';
+import { CustomerService } from '../service/customer.service';
 import * as menuListJsonData from 'src/app/sampleResponse/menu-list.json';
 import { KUBERA_HEALTH_MASTER_OTP } from '../common/constanst';
 
@@ -41,6 +42,19 @@ export class DashboardComponent implements OnInit {
   public isAuthenticated: boolean = false;
   public passwordInput: string = '';
   public loginErrorMsg: string | null = null;
+
+  // Side Drawer & Tab View State
+  public isDrawerOpen: boolean = false;
+  public selectedDrawerTab: 'dashboard' | 'customers' = 'dashboard';
+
+  // Customer Analytics State
+  public customersList: any[] = [];
+  public filteredCustomers: any[] = [];
+  public customerSearchTerm: string = '';
+  public customerMembershipFilter: 'all' | 'active' | 'expired' | 'none' = 'all';
+  public isCustomersLoading: boolean = false;
+  public totalLoyaltyPointsSum: number = 0;
+  public activeMembershipsCount: number = 0;
 
   showSpinner: boolean = false;
   chartType: 'line' | 'bar' = 'line';
@@ -255,7 +269,8 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private hasuraService: HasuraApiService,
-    private sharedService: SharedService
+    private sharedService: SharedService,
+    private customerService: CustomerService
   ) {
     const initialMonth = this.getInitialSelectedMonth();
     this.dailySelectedMonth = initialMonth;
@@ -272,6 +287,166 @@ export class DashboardComponent implements OnInit {
     this.initMenuPriceMap();
     this.initCuisineMap();
     this.refreshDashboardData();
+  }
+
+  public toggleDrawer(): void {
+    this.isDrawerOpen = !this.isDrawerOpen;
+  }
+
+  public closeDrawer(): void {
+    this.isDrawerOpen = false;
+  }
+
+  public selectDrawerTab(tab: 'dashboard' | 'customers'): void {
+    this.selectedDrawerTab = tab;
+    this.isDrawerOpen = false;
+    if (tab === 'customers' && this.customersList.length === 0) {
+      this.fetchCustomersData();
+    }
+  }
+
+  public fetchCustomersData(): void {
+    this.isCustomersLoading = true;
+    this.customerService.getAllCustomerDetails().subscribe({
+      next: (res: any) => {
+        this.isCustomersLoading = false;
+        const list = res?.data?.kubera_profile_customer_details || [];
+        this.customersList = list;
+        this.applyCustomerSearch();
+        this.calculateCustomerStats();
+      },
+      error: (err: any) => {
+        this.isCustomersLoading = false;
+        console.error('Error loading customer list:', err);
+      }
+    });
+  }
+
+  public applyCustomerSearch(): void {
+    const term = (this.customerSearchTerm || '').toLowerCase().trim();
+    const filter = this.customerMembershipFilter || 'all';
+
+    this.filteredCustomers = this.customersList.filter((c: any) => {
+      const nameMatch = (c.name || '').toLowerCase().includes(term);
+      const phoneMatch = (c.mobile_number || '').toLowerCase().includes(term);
+      const emailMatch = (c.email_id || '').toLowerCase().includes(term);
+      const searchMatch = !term || nameMatch || phoneMatch || emailMatch;
+
+      let membershipMatch = true;
+      if (filter !== 'all') {
+        const memInfo = this.getMembershipDetails(c);
+        membershipMatch = memInfo.status === filter;
+      }
+
+      return searchMatch && membershipMatch;
+    });
+  }
+
+  public getCustomerPoints(customer: any): number {
+    if (!customer) return 0;
+    const pts = customer.customer_points;
+    if (Array.isArray(pts) && pts.length > 0) {
+      return pts[0]?.available_points || 0;
+    } else if (pts && typeof pts === 'object') {
+      return (pts as any).available_points || 0;
+    }
+    return 0;
+  }
+
+  public getMembershipDetails(customer: any): { status: 'active' | 'expired' | 'none', label: string, expiryDate: any } {
+    if (!customer) {
+      return { status: 'none', label: 'No Membership', expiryDate: null };
+    }
+
+    const rawMem = customer.customer_member_ship || customer.customer_member_ships || customer.membership;
+    if (!rawMem) {
+      return { status: 'none', label: 'No Membership', expiryDate: null };
+    }
+
+    let mem: any = null;
+    if (Array.isArray(rawMem)) {
+      if (rawMem.length === 0) {
+        return { status: 'none', label: 'No Membership', expiryDate: null };
+      }
+      const sorted = [...rawMem].sort((a: any, b: any) => (b?.id || 0) - (a?.id || 0));
+      mem = sorted[0];
+    } else if (typeof rawMem === 'object') {
+      mem = rawMem;
+    }
+
+    if (!mem || typeof mem !== 'object') {
+      return { status: 'none', label: 'No Membership', expiryDate: null };
+    }
+
+    let expiryVal: any = mem.expiry_date || mem.expiryDate || mem.expires_at || null;
+
+    if (!expiryVal && mem.validity_month) {
+      const baseDateStr = mem.created_date || customer.created_at;
+      if (baseDateStr) {
+        const baseD = new Date(baseDateStr);
+        if (!isNaN(baseD.getTime())) {
+          baseD.setMonth(baseD.getMonth() + parseInt(mem.validity_month, 10));
+          expiryVal = baseD;
+        }
+      }
+    }
+
+    if (!expiryVal) {
+      return { status: 'active', label: 'Active Member', expiryDate: null };
+    }
+
+    let expiryDateObj: Date | null = null;
+    if (expiryVal instanceof Date) {
+      expiryDateObj = expiryVal;
+    } else if (typeof expiryVal === 'string') {
+      const str = expiryVal.trim();
+      if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+        const parts = str.split('T')[0].split('-');
+        expiryDateObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      } else if (/^\d{2}[-/]\d{2}[-/]\d{4}/.test(str)) {
+        const parts = str.split(/[-/]/);
+        expiryDateObj = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+      } else {
+        const parsed = new Date(str);
+        if (!isNaN(parsed.getTime())) {
+          expiryDateObj = parsed;
+        }
+      }
+    } else if (typeof expiryVal === 'number') {
+      expiryDateObj = new Date(expiryVal);
+    }
+
+    if (!expiryDateObj || isNaN(expiryDateObj.getTime())) {
+      return { status: 'active', label: 'Active Member', expiryDate: expiryVal };
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const checkDate = new Date(expiryDateObj);
+    checkDate.setHours(23, 59, 59, 999);
+
+    const isExpired = checkDate.getTime() < today.getTime();
+
+    if (isExpired) {
+      return { status: 'expired', label: 'Expired', expiryDate: expiryDateObj };
+    } else {
+      return { status: 'active', label: 'Active Member', expiryDate: expiryDateObj };
+    }
+  }
+
+  private calculateCustomerStats(): void {
+    let pointsSum = 0;
+    let activeCount = 0;
+    for (const c of this.customersList) {
+      pointsSum += this.getCustomerPoints(c);
+      const memInfo = this.getMembershipDetails(c);
+      if (memInfo.status === 'active') {
+        activeCount++;
+      }
+    }
+    this.totalLoyaltyPointsSum = pointsSum;
+    this.activeMembershipsCount = activeCount;
   }
 
   public verifyAndLogin(): void {

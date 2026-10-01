@@ -1,31 +1,1003 @@
+/* ==========================================================================
+   GLOBAL UTILITIES & SHARED GLASSMORPHISM TOKENS
+   ========================================================================== */
 
-    /* loading-spinner.component.css */
-    .spinner-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
+.text-gold {
+  color: #cda45e !important;
+}
+
+.text-gold-gradient {
+  background: linear-gradient(135deg, #f8d795 0%, #cda45e 50%, #a67c33 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.badge-glass {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  background: rgba(205, 164, 94, 0.12);
+  border: 1px solid rgba(205, 164, 94, 0.35);
+  border-radius: 20px;
+  color: #cda45e;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+/* Modern Elegant Section Headers Override */
+.section-title {
+  padding-bottom: 25px;
+  text-align: center;
+
+  h2 {
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    line-height: 1.5 !important;
+    letter-spacing: 2px !important;
+    color: #cda45e !important;
+    margin: 0 0 8px 0 !important;
+    text-transform: uppercase !important;
+
+    &::after {
+      display: none !important; /* Removes cramped inline line suffix */
+    }
+  }
+
+  .section-main-heading {
+    font-family: "Playfair Display", Georgia, serif !important;
+    font-size: 2.3rem !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    line-height: 1.3 !important;
+    margin: 8px 0 12px 0 !important;
+    letter-spacing: -0.3px !important;
+  }
+
+  p, .section-desc {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: 1rem !important;
+    line-height: 1.6 !important;
+    margin: 0 auto !important;
+    max-width: 650px !important;
+    font-weight: 300 !important;
+    font-family: "Poppins", sans-serif !important;
+  }
+}
+
+/* Spinner Overlay */
+.spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(12px);
+}
+
+.spinner {
+  border: 5px solid rgba(255, 255, 255, 0.1);
+  border-top: 5px solid #cda45e;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Back to Top Floating Button */
+.back-to-top {
+  position: fixed;
+  visibility: hidden;
+  opacity: 0;
+  right: 20px;
+  bottom: 20px;
+  z-index: 996;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(26, 24, 20, 0.85);
+  border: 1px solid rgba(205, 164, 94, 0.4);
+  backdrop-filter: blur(12px);
+  color: #cda45e;
+  transition: all 0.35s ease;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+
+  i {
+    font-size: 24px;
+  }
+
+  &:hover {
+    background: #cda45e;
+    color: #0c0b09;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(205, 164, 94, 0.4);
+  }
+
+  &.active {
+    visibility: visible;
+    opacity: 1;
+  }
+}
+
+
+
+/* ==========================================================================
+   2. ABOUT SECTION GLASSMORPHISM
+   ========================================================================== */
+
+.about {
+  padding: 90px 0;
+  background: radial-gradient(circle at 80% 20%, rgba(205, 164, 94, 0.12) 0%, #0d0c09 60%, #050504 100%),
+              url("../../assets/img/about-bg.jpg") center center / cover no-repeat;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    background: rgba(12, 11, 9, 0.88);
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+  }
+
+  .about-img-showcase {
+    position: relative;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(205, 164, 94, 0.25);
+    border-radius: 24px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+
+    .about-img-frame {
+      overflow: hidden;
+      border-radius: 18px;
+
+      img {
         width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+        height: auto;
+        display: block;
+        transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+
+        &:hover {
+          transform: scale(1.04);
+        }
+      }
+    }
+
+    .floating-badge {
+      position: absolute;
+      z-index: 2;
+      background: rgba(20, 18, 14, 0.88);
+      border: 1px solid rgba(205, 164, 94, 0.4);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      border-radius: 14px;
+      padding: 10px 18px;
+      color: #ffffff;
+      font-size: 0.85rem;
+      font-weight: 600;
+
+      &.badge-top-right {
+        top: 24px;
+        right: -12px;
+      }
+
+      &.badge-bottom-left {
+        bottom: 24px;
+        left: -12px;
         display: flex;
-        justify-content: center;
         align-items: center;
-        z-index: 9999; /* Ensure it's above other content */
-        backdrop-filter: blur(10px); 
+        gap: 12px;
+
+        .badge-rating-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: rgba(205, 164, 94, 0.2);
+          color: #cda45e;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.1rem;
+        }
+
+        .badge-title {
+          font-weight: 700;
+          font-size: 0.9rem;
+          color: #ffffff;
+        }
+
+        .badge-sub {
+          font-size: 0.75rem;
+          color: rgba(255, 255, 255, 0.7);
+        }
       }
-      
-      .spinner {
-        border: 6px solid #f3f3f3;
-        border-top: 6px solid #d49b3b;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 2s linear infinite;
+    }
+  }
+
+  .about-main-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.35;
+    margin-bottom: 16px;
+  }
+
+  .about-lead {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #d4af6e !important;
+    margin-bottom: 25px;
+    font-weight: 400;
+  }
+
+  .about-features-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    .about-feature-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      transition: all 0.35s ease;
+
+      &:hover {
+        background: rgba(205, 164, 94, 0.08);
+        border-color: rgba(205, 164, 94, 0.4);
+        transform: translateX(6px);
+
+        .feature-icon-wrap {
+          background: #cda45e;
+          color: #0c0b09;
+          transform: scale(1.1);
+        }
       }
-      
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+
+      .feature-icon-wrap {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        border-radius: 12px;
+        background: rgba(205, 164, 94, 0.15);
+        border: 1px solid rgba(205, 164, 94, 0.3);
+        color: #cda45e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        transition: all 0.35s ease;
       }
-      
-      
+
+      .feature-body {
+        h5 {
+          font-family: "Playfair Display", serif;
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: #ffffff;
+          margin-bottom: 4px;
+        }
+
+        p {
+          font-size: 0.88rem;
+          color: rgba(255, 255, 255, 0.75);
+          line-height: 1.5;
+          margin: 0;
+        }
+      }
+    }
+  }
+
+  .about-stats-strip {
+    padding: 20px 16px;
+    background: linear-gradient(135deg, rgba(205, 164, 94, 0.12) 0%, rgba(205, 164, 94, 0.03) 100%);
+    border: 1px solid rgba(205, 164, 94, 0.3);
+    border-radius: 18px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+
+    .stat-card {
+      .stat-number {
+        font-family: "Playfair Display", serif;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #cda45e;
+        line-height: 1;
+        margin-bottom: 4px;
+      }
+
+      .stat-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.8);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+    }
+  }
+}
+
+
+
+/* ==========================================================================
+   3. MEMBERSHIP SECTION GLASSMORPHISM
+   ========================================================================== */
+
+.membership {
+  padding: 90px 0;
+  background: radial-gradient(circle at 20% 80%, rgba(205, 164, 94, 0.08) 0%, #0a0907 60%, #040403 100%);
+
+  .membership-card-preview-box {
+    background: linear-gradient(145deg, rgba(26, 24, 20, 0.85) 0%, rgba(14, 13, 10, 0.95) 100%);
+    border: 1px solid rgba(205, 164, 94, 0.4);
+    border-radius: 22px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+
+    &:hover {
+      border-color: #cda45e;
+      transform: translateY(-6px);
+      box-shadow: 0 25px 60px rgba(205, 164, 94, 0.2);
+    }
+
+    .vip-badge {
+      display: inline-block;
+      padding: 6px 18px;
+      background: rgba(205, 164, 94, 0.15);
+      border: 1px solid rgba(205, 164, 94, 0.45);
+      border-radius: 20px;
+      color: #cda45e;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 1.8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-img-wrap {
+      position: relative;
+      display: inline-block;
+
+      .card-glow {
+        position: absolute;
+        inset: -25px;
+        background: radial-gradient(circle, rgba(205, 164, 94, 0.35) 0%, transparent 70%);
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      .hero-card-img {
+        position: relative;
+        z-index: 1;
+        max-width: 320px;
+        border-radius: 14px;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.85);
+        transition: transform 0.4s ease;
+
+        &:hover {
+          transform: scale(1.04) rotate(1deg);
+        }
+      }
+    }
+
+    .card-preview-title {
+      color: #ffffff;
+      font-family: "Playfair Display", serif;
+      font-weight: 700;
+      font-size: 1.45rem;
+      margin-bottom: 8px;
+    }
+
+    .card-preview-sub {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.85) !important;
+      margin-bottom: 18px;
+    }
+
+    .btn-card-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 6px;
+      padding: 12px 26px;
+      background: linear-gradient(135deg, #cda45e 0%, #a67c33 100%);
+      color: #0c0b09;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border-radius: 30px;
+      text-decoration: none;
+      transition: all 0.35s ease;
+      box-shadow: 0 6px 20px rgba(205, 164, 94, 0.35);
+
+      &:hover {
+        background: linear-gradient(135deg, #e3be7f 0%, #cda45e 100%);
+        color: #000000;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(205, 164, 94, 0.55);
+      }
+    }
+  }
+
+  .benefits-wrapper {
+    .benefits-heading {
+      color: #ffffff;
+      font-family: "Playfair Display", serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    .home-benefit-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      height: 100%;
+      backdrop-filter: blur(12px);
+      transition: all 0.35s ease;
+
+      &:hover {
+        background: rgba(205, 164, 94, 0.08);
+        border-color: rgba(205, 164, 94, 0.35);
+        transform: translateY(-3px);
+      }
+
+      &.highlight-item {
+        background: rgba(205, 164, 94, 0.08);
+        border-color: rgba(205, 164, 94, 0.35);
+      }
+
+      .benefit-icon {
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        border-radius: 12px;
+        background: rgba(205, 164, 94, 0.15);
+        border: 1px solid rgba(205, 164, 94, 0.3);
+        color: #cda45e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+      }
+
+      h6 {
+        color: #cda45e;
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 4px;
+      }
+
+      p {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.85rem;
+        line-height: 1.5;
+        margin: 0;
+      }
+    }
+  }
+
+  .join-banner {
+    background: linear-gradient(135deg, rgba(26, 24, 20, 0.9) 0%, rgba(40, 36, 28, 0.9) 100%);
+    border: 1px solid rgba(205, 164, 94, 0.4);
+    border-radius: 20px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+}
+
+
+
+/* ==========================================================================
+   4. BOOK A TABLE SECTION GLASSMORPHISM
+   ========================================================================== */
+
+.book-a-table {
+  padding: 90px 0;
+  background: radial-gradient(circle at 50% 50%, rgba(205, 164, 94, 0.06) 0%, #0b0a08 60%, #050504 100%),
+              url("../../assets/img/events-bg.jpg") center center / cover no-repeat;
+  position: relative;
+
+  &::before {
+    content: "";
+    background: rgba(12, 11, 9, 0.85);
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+  }
+
+  .glass-form-card {
+    background: rgba(20, 18, 14, 0.8);
+    border: 1px solid rgba(205, 164, 94, 0.35);
+    border-radius: 24px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+    .input-glass-wrap {
+      position: relative;
+      cursor: pointer;
+
+      .input-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #cda45e;
+        font-size: 1.1rem;
+        z-index: 2;
+        pointer-events: none;
+
+        &.textarea-icon {
+          top: 20px;
+          transform: none;
+        }
+      }
+
+      .glass-control {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        border-radius: 12px !important;
+        padding: 12px 16px 12px 46px !important;
+        color: #ffffff !important;
+        font-size: 0.92rem !important;
+        font-family: "Poppins", sans-serif !important;
+        transition: all 0.3s ease !important;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        color-scheme: dark;
+
+        &[type="date"],
+        &[type="time"] {
+          cursor: pointer;
+        }
+
+        &::-webkit-calendar-picker-indicator {
+          filter: invert(0.85) sepia(100%) saturate(300%) hue-rotate(5deg);
+          cursor: pointer;
+          opacity: 0.8;
+          transition: opacity 0.2s ease, transform 0.2s ease;
+
+          &:hover {
+            opacity: 1;
+            transform: scale(1.1);
+          }
+        }
+
+        &::placeholder {
+          color: rgba(255, 255, 255, 0.45) !important;
+        }
+
+        &:focus {
+          outline: none !important;
+          border-color: rgba(205, 164, 94, 0.7) !important;
+          background: rgba(255, 255, 255, 0.08) !important;
+          box-shadow: 0 0 15px rgba(205, 164, 94, 0.25), inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+        }
+      }
+
+      .glass-textarea {
+        border-radius: 16px !important;
+        resize: vertical;
+      }
+    }
+
+    .btn-book-table-glass {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 36px;
+      background: linear-gradient(135deg, #cda45e 0%, #a67c33 100%);
+      color: #0c0b09;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: all 0.35s ease;
+      box-shadow: 0 8px 25px rgba(205, 164, 94, 0.35);
+
+      &:hover {
+        background: linear-gradient(135deg, #e3be7f 0%, #cda45e 100%);
+        color: #000000;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(205, 164, 94, 0.55);
+      }
+    }
+  }
+}
+
+
+
+/* ==========================================================================
+   5. CONTACT SECTION GLASSMORPHISM
+   ========================================================================== */
+
+.contact {
+  padding: 90px 0;
+  background: radial-gradient(circle at 50% 100%, rgba(205, 164, 94, 0.08) 0%, #0a0907 60%, #040403 100%);
+
+  .glass-map-wrapper {
+    background: rgba(20, 18, 14, 0.75);
+    border: 1px solid rgba(205, 164, 94, 0.3);
+    border-radius: 20px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+  }
+
+  .glass-contact-card {
+    height: 100%;
+    padding: 24px 20px;
+    background: rgba(20, 18, 14, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    text-align: center;
+    transition: all 0.35s ease;
+
+    &:hover {
+      border-color: #cda45e;
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(205, 164, 94, 0.15);
+
+      .contact-icon-box {
+        background: linear-gradient(135deg, #cda45e 0%, #a67c33 100%);
+        color: #0c0b09;
+        transform: scale(1.08) rotate(4deg);
+      }
+    }
+
+    .contact-icon-box {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 16px auto;
+      border-radius: 14px;
+      background: rgba(205, 164, 94, 0.15);
+      border: 1px solid rgba(205, 164, 94, 0.3);
+      color: #cda45e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      transition: all 0.35s ease;
+    }
+
+    .contact-card-body {
+      h5 {
+        color: #ffffff;
+        font-family: "Playfair Display", serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+        text-align: center;
+      }
+
+      p {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin: 0;
+        text-align: center;
+      }
+    }
+  }
+}
+
+/* ==========================================================================
+   MOBILE VIEW & RESPONSIVE OPTIMIZATIONS (< 768px)
+   ========================================================================== */
+
+@media (max-width: 767px) {
+  /* Section Headers Mobile */
+  .section-title {
+    padding-bottom: 20px !important;
+
+    .badge-glass {
+      font-size: 0.72rem !important;
+      padding: 5px 14px !important;
+    }
+
+    .section-main-heading {
+      font-size: 1.7rem !important;
+      margin: 6px 0 10px 0 !important;
+    }
+
+    p, .section-desc {
+      font-size: 0.88rem !important;
+      line-height: 1.5 !important;
+      padding: 0 10px;
+    }
+  }
+
+  /* Contact Cards Mobile Layout */
+  .contact {
+    padding: 50px 0 !important;
+
+    .glass-map-wrapper {
+      margin-bottom: 30px !important;
+
+      iframe {
+        height: 260px !important;
+      }
+    }
+
+    .glass-contact-card {
+      display: flex !important;
+      align-items: center !important;
+      gap: 16px !important;
+      text-align: left !important;
+      padding: 14px 18px !important;
+      border-radius: 14px !important;
+
+      .contact-icon-box {
+        margin: 0 !important;
+        width: 46px !important;
+        height: 46px !important;
+        min-width: 46px !important;
+        border-radius: 12px !important;
+        font-size: 1.2rem !important;
+      }
+
+      .contact-card-body {
+        flex: 1;
+
+        h5 {
+          font-size: 1.05rem !important;
+          margin-bottom: 2px !important;
+          text-align: left !important;
+        }
+
+        p {
+          font-size: 0.85rem !important;
+          line-height: 1.4 !important;
+          text-align: left !important;
+        }
+      }
+    }
+  }
+
+  /* About Section Mobile */
+  .about {
+    padding: 50px 0 !important;
+
+    .about-main-title {
+      font-size: 1.7rem !important;
+    }
+
+    .about-lead {
+      font-size: 0.9rem !important;
+      margin-bottom: 20px !important;
+    }
+
+    .about-features-grid {
+      gap: 10px !important;
+
+      .about-feature-card {
+        padding: 12px 14px !important;
+        gap: 12px !important;
+        border-radius: 12px !important;
+
+        .feature-icon-wrap {
+          width: 38px !important;
+          height: 38px !important;
+          min-width: 38px !important;
+          font-size: 1.1rem !important;
+          border-radius: 10px !important;
+        }
+
+        .feature-body {
+          h5 {
+            font-size: 0.95rem !important;
+          }
+
+          p {
+            font-size: 0.82rem !important;
+          }
+        }
+      }
+    }
+
+    .about-stats-strip {
+      padding: 16px 10px !important;
+      border-radius: 14px !important;
+
+      .stat-card {
+        .stat-number {
+          font-size: 1.4rem !important;
+        }
+
+        .stat-label {
+          font-size: 0.7rem !important;
+          letter-spacing: 0.5px !important;
+        }
+      }
+    }
+
+    .about-img-showcase {
+      padding: 5px !important;
+
+      .floating-badge {
+        padding: 6px 12px !important;
+        border-radius: 10px !important;
+
+        &.badge-top-right {
+          top: 6px !important;
+          right: 6px !important;
+          font-size: 0.72rem !important;
+        }
+
+        &.badge-bottom-left {
+          bottom: 6px !important;
+          left: 6px !important;
+
+          .badge-rating-icon {
+            width: 28px !important;
+            height: 28px !important;
+            font-size: 0.85rem !important;
+          }
+
+          .badge-title {
+            font-size: 0.78rem !important;
+          }
+
+          .badge-sub {
+            font-size: 0.68rem !important;
+          }
+        }
+      }
+    }
+  }
+
+  /* Membership Mobile */
+  .membership {
+    padding: 50px 0 !important;
+
+    .membership-card-preview-box {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      padding: 24px 16px !important;
+
+      .vip-badge {
+        display: inline-flex !important;
+        margin: 0 auto 14px auto !important;
+      }
+
+      .card-img-wrap {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        margin: 0 auto 16px auto !important;
+        width: 100% !important;
+
+        .hero-card-img {
+          max-width: 230px !important;
+          margin: 0 auto !important;
+          display: block !important;
+        }
+      }
+
+      .card-preview-title {
+        text-align: center !important;
+        width: 100% !important;
+        font-size: 1.15rem !important;
+      }
+
+      .card-preview-sub {
+        text-align: center !important;
+        width: 100% !important;
+        max-width: 280px !important;
+        margin: 0 auto 16px auto !important;
+        font-size: 0.85rem !important;
+      }
+
+      .btn-card-link {
+        margin: 0 auto !important;
+        padding: 10px 22px !important;
+        font-size: 0.85rem !important;
+      }
+    }
+
+    .benefits-wrapper {
+      .benefits-heading {
+        font-size: 1.3rem !important;
+        margin-bottom: 16px !important;
+      }
+
+      .home-benefit-item {
+        padding: 12px 14px !important;
+        gap: 12px !important;
+
+        .benefit-icon {
+          width: 34px !important;
+          height: 34px !important;
+          min-width: 34px !important;
+          font-size: 0.95rem !important;
+        }
+
+        h6 {
+          font-size: 0.9rem !important;
+        }
+
+        p {
+          font-size: 0.8rem !important;
+        }
+      }
+    }
+
+    .join-banner {
+      padding: 18px 14px !important;
+
+      h4 {
+        font-size: 1.05rem !important;
+      }
+
+      p {
+        font-size: 0.82rem !important;
+      }
+    }
+  }
+
+  /* Book a Table Mobile */
+  .book-a-table {
+    padding: 50px 0 !important;
+
+    .glass-form-card {
+      padding: 20px 14px !important;
+      border-radius: 18px !important;
+
+      .glass-control {
+        padding: 10px 14px 10px 42px !important;
+        font-size: 0.88rem !important;
+      }
+
+      .input-icon {
+        left: 14px !important;
+        font-size: 1rem !important;
+      }
+
+      .btn-book-table-glass {
+        width: 100% !important;
+        padding: 12px 20px !important;
+        font-size: 0.95rem !important;
+      }
+    }
+  }
+}

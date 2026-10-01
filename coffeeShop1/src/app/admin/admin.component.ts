@@ -230,6 +230,15 @@ export class AdminComponent implements OnInit {
       badgeClass: 'badge-warning'
     },
     {
+      title: 'External Membership Check',
+      path: '/external-profile',
+      category: 'staff',
+      icon: 'bi-shield-check',
+      description: 'Password-protected verification tool to search and check customer membership status by mobile number.',
+      badge: 'Membership',
+      badgeClass: 'badge-info'
+    },
+    {
       title: 'Payment Gateway Portal',
       path: '/payment',
       category: 'analytics',

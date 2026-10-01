@@ -53,9 +53,88 @@
 </div>
 
 <div *ngIf="isAuthenticated">
-<section id="dashboard" class="dashboard-section section-bg" style="padding-top: 7.5em; min-height: 100vh;">
+
+<!-- Side Drawer Backdrop -->
+<div class="drawer-backdrop" *ngIf="isDrawerOpen" (click)="closeDrawer()"></div>
+
+<!-- Side Drawer Navigation Panel -->
+<div class="dashboard-side-drawer" [class.open]="isDrawerOpen">
+  <div class="drawer-header">
+    <div class="brand-badge">
+      <i class="bi bi-shop"></i>
+      <span>Café Dashboard</span>
+    </div>
+    <button class="btn-close-drawer" (click)="closeDrawer()" title="Close Menu">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+
+  <div class="drawer-menu">
+    <div class="menu-label">NAVIGATION</div>
+    
+    <button class="drawer-item" [class.active]="selectedDrawerTab === 'dashboard'" (click)="selectDrawerTab('dashboard')">
+      <i class="bi bi-speedometer2 item-icon"></i>
+      <div class="item-text">
+        <span class="title">Dashboard</span>
+        <span class="sub">Sales & Revenue Analytics</span>
+      </div>
+    </button>
+
+    <button class="drawer-item" [class.active]="selectedDrawerTab === 'customers'" (click)="selectDrawerTab('customers')">
+      <i class="bi bi-people-fill item-icon"></i>
+      <div class="item-text">
+        <span class="title">Customers</span>
+        <span class="sub">Customer Directory & Points</span>
+      </div>
+    </button>
+  </div>
+
+  <div class="drawer-footer">
+    <button class="btn-drawer-lock" (click)="lockDashboardPage()">
+      <i class="bi bi-lock-fill me-2"></i> Lock Dashboard
+    </button>
+  </div>
+</div>
+
+<section id="dashboard" class="dashboard-section section-bg" style="min-height: 100vh;">
   <div class="container" data-aos="fade-up">
 
+    <!-- Top Breadcrumb & Side Drawer Trigger Bar -->
+    <div class="dashboard-top-nav-bar glass-panel mb-4 p-2 px-3 d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-3">
+        <!-- Side Drawer Toggle Button (Hamburger / Breadcrumb Trigger) -->
+        <button class="btn-drawer-toggle" (click)="toggleDrawer()" title="Toggle Side Menu">
+          <i class="bi bi-list"></i>
+          <span class="toggle-label d-none d-sm-inline ms-1">Menu</span>
+        </button>
+
+        <!-- Breadcrumb Bar -->
+        <nav aria-label="breadcrumb" class="dashboard-breadcrumb">
+          <ol class="breadcrumb m-0 p-0 align-items-center">
+            <li class="breadcrumb-item">
+              <a (click)="selectDrawerTab('dashboard')" class="bc-link">
+                <i class="bi bi-house-door me-1"></i> Dashboard
+              </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+              <span *ngIf="selectedDrawerTab === 'dashboard'"><i class="bi bi-speedometer2 me-1"></i> Sales Analytics</span>
+              <span *ngIf="selectedDrawerTab === 'customers'"><i class="bi bi-people me-1"></i> Customers</span>
+            </li>
+          </ol>
+        </nav>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <button class="lock-admin-top-btn" (click)="lockDashboardPage()" title="Lock Dashboard" style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: rgba(220, 53, 69, 0.18); border: 1px solid rgba(220, 53, 69, 0.5); color: #ff6b6b; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; transition: all 0.2s ease;">
+          <i class="bi bi-lock-fill"></i> Lock
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 1: SALES ANALYTICS DASHBOARD                                         -->
+    <!-- ========================================================================= -->
+    <div *ngIf="selectedDrawerTab === 'dashboard'">
     <!-- Top Header & Navigation Tabs Panel -->
     <div class="section-title" style="padding-bottom: 1.25rem;">
       <h2>Analytics</h2>
@@ -840,7 +919,7 @@
                     </span>
                   </div>
                   <div class="progress-bar-track">
-                    <div class="progress-bar-fill" [style.width.%]="(product.quantity / (dailyTopItems[0]?.quantity || 1)) * 100"></div>
+                    <div class="progress-bar-fill" [style.width.%]="(product.quantity / ((dailyTopItems && dailyTopItems[0] && dailyTopItems[0].quantity) || 1)) * 100"></div>
                   </div>
                 </div>
               </div>
@@ -1454,12 +1533,211 @@
                     </span>
                   </div>
                   <div class="progress-bar-track">
-                    <div class="progress-bar-fill" [style.width.%]="(product.quantity / (monthlyTopItems[0]?.quantity || 1)) * 100"></div>
+                    <div class="progress-bar-fill" [style.width.%]="(product.quantity / ((monthlyTopItems && monthlyTopItems[0] && monthlyTopItems[0].quantity) || 1)) * 100"></div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+    </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 2: CUSTOMERS ANALYTICS & DIRECTORY                                    -->
+    <!-- ========================================================================= -->
+    <div *ngIf="selectedDrawerTab === 'customers'" class="tab-content-fade">
+      
+      <!-- Customer Key Metrics Summary Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+          <div class="kpi-card glass-panel hover-grow p-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="kpi-icon-box orange">
+                <i class="bi bi-people-fill"></i>
+              </div>
+              <div>
+                <span class="kpi-label">Total Customers</span>
+                <h3 class="kpi-value text-gold m-0">{{ customersList.length }}</h3>
+                <span class="kpi-desc">Registered profiles</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+          <div class="kpi-card glass-panel hover-grow p-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="kpi-icon-box green">
+                <i class="bi bi-star-fill"></i>
+              </div>
+              <div>
+                <span class="kpi-label">Loyalty Points</span>
+                <h3 class="kpi-value text-success m-0">{{ totalLoyaltyPointsSum | number }}</h3>
+                <span class="kpi-desc">Available points</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+          <div class="kpi-card glass-panel hover-grow p-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="kpi-icon-box cyan">
+                <i class="bi bi-card-heading"></i>
+              </div>
+              <div>
+                <span class="kpi-label">Memberships</span>
+                <h3 class="kpi-value text-cyan m-0">{{ activeMembershipsCount }}</h3>
+                <span class="kpi-desc">Active members</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+          <div class="kpi-card glass-panel hover-grow p-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="kpi-icon-box purple">
+                <i class="bi bi-funnel-fill"></i>
+              </div>
+              <div>
+                <span class="kpi-label">Filtered Results</span>
+                <h3 class="kpi-value text-purple m-0">{{ filteredCustomers.length }}</h3>
+                <span class="kpi-desc">Matching search</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customers Directory Main Panel -->
+      <div class="chart-card glass-panel p-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+          <div>
+            <h4 class="m-0 font-playfair text-gold d-flex align-items-center gap-2">
+              <i class="bi bi-journal-text"></i> Customer Directory
+            </h4>
+            <p class="subtitle-text m-0 mt-1">View customer profile details, mobile numbers, emails, and loyalty points</p>
+          </div>
+
+          <div class="d-flex align-items-center flex-wrap gap-3">
+            <!-- Membership Status Filter Dropdown -->
+            <div class="membership-filter-wrapper">
+              <i class="bi bi-funnel-fill filter-icon"></i>
+              <select 
+                class="membership-filter-select" 
+                [(ngModel)]="customerMembershipFilter" 
+                (change)="applyCustomerSearch()">
+                <option value="all">All Memberships</option>
+                <option value="active">Active Members</option>
+                <option value="expired">Expired Members</option>
+                <option value="none">No Membership</option>
+              </select>
+            </div>
+
+            <!-- Search Input Box -->
+            <div class="search-input-wrapper">
+              <i class="bi bi-search search-icon"></i>
+              <input 
+                type="text" 
+                class="customer-search-field" 
+                placeholder="Search name, phone, email..." 
+                [(ngModel)]="customerSearchTerm" 
+                (input)="applyCustomerSearch()" />
+            </div>
+
+            <!-- Reload Button -->
+            <button class="refresh-btn" (click)="fetchCustomersData()" title="Reload Customer List">
+              <i class="bi bi-arrow-clockwise" [class.spin]="isCustomersLoading"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Customer List Table -->
+        <div class="customer-table-scroll-wrap">
+          <table class="table table-dark table-hover align-middle m-0 customer-table">
+            <thead>
+              <tr class="table-dark">
+                <th class="text-center" style="width: 50px;">#</th>
+                <th style="min-width: 170px;">Customer Name</th>
+                <th style="min-width: 135px;">Mobile Number</th>
+                <th style="min-width: 200px;">Email ID</th>
+                <th class="text-center" style="min-width: 120px;">Loyalty Points</th>
+                <th class="text-center" style="min-width: 150px;">Membership Status</th>
+                <th class="text-center" style="min-width: 150px;">Membership Expiry</th>
+                <th class="text-end" style="min-width: 140px;">Registered Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of filteredCustomers; let idx = index">
+                <td class="text-center text-muted fw-semibold">{{ idx + 1 }}</td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="avatar-circle">
+                      {{ (c.name || 'C').charAt(0).toUpperCase() }}
+                    </div>
+                    <span class="fw-semibold text-light">{{ c.name || 'Anonymous' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="phone-badge">
+                    <i class="bi bi-telephone-fill me-1 text-gold"></i> {{ c.mobile_number || 'N/A' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="email-text" *ngIf="c.email_id">{{ c.email_id }}</span>
+                  <span class="na-text" *ngIf="!c.email_id">N/A</span>
+                </td>
+                <td class="text-center">
+                  <span class="points-badge" *ngIf="getCustomerPoints(c) > 0">
+                    <i class="bi bi-star-fill me-1"></i> {{ getCustomerPoints(c) }} pts
+                  </span>
+                  <span class="na-text" *ngIf="getCustomerPoints(c) <= 0">0 pts</span>
+                </td>
+                <td class="text-center">
+                  <span class="membership-badge active" *ngIf="getMembershipDetails(c).status === 'active'">
+                    <i class="bi bi-patch-check-fill me-1"></i> Active Member
+                  </span>
+                  <span class="membership-badge expired" *ngIf="getMembershipDetails(c).status === 'expired'">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Expired
+                  </span>
+                  <span class="membership-badge standard" *ngIf="getMembershipDetails(c).status === 'none'">
+                    No Membership
+                  </span>
+                </td>
+                <td class="text-center">
+                  <span class="expiry-date-badge active" *ngIf="getMembershipDetails(c).status === 'active' && getMembershipDetails(c).expiryDate">
+                    <i class="bi bi-calendar-check me-1"></i> {{ getMembershipDetails(c).expiryDate | date:'dd MMM yyyy' }}
+                  </span>
+                  <span class="expiry-date-badge expired" *ngIf="getMembershipDetails(c).status === 'expired' && getMembershipDetails(c).expiryDate">
+                    <i class="bi bi-calendar-x me-1"></i> {{ getMembershipDetails(c).expiryDate | date:'dd MMM yyyy' }}
+                  </span>
+                  <span class="na-text" *ngIf="!getMembershipDetails(c).expiryDate">N/A</span>
+                </td>
+                <td class="text-end">
+                  <span class="date-badge" *ngIf="c.created_at">
+                    <i class="bi bi-calendar-event me-1"></i> {{ c.created_at | date:'dd MMM yyyy' }}
+                  </span>
+                  <span class="na-text" *ngIf="!c.created_at">N/A</span>
+                </td>
+              </tr>
+              <tr *ngIf="filteredCustomers.length === 0 && !isCustomersLoading">
+                <td colspan="7" class="text-center py-5 text-muted">
+                  <i class="bi bi-search fs-3 d-block mb-2 text-gold opacity-50"></i>
+                  No customers found matching "{{ customerSearchTerm }}".
+                </td>
+              </tr>
+              <tr *ngIf="isCustomersLoading">
+                <td colspan="7" class="text-center py-5 text-muted">
+                  <div class="spinner-border spinner-border-sm text-warning me-2" role="status"></div>
+                  Loading customer details...
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 

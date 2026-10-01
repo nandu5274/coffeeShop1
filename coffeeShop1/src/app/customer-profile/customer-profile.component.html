@@ -1,60 +1,139 @@
 <div *ngIf="showSpinner" class="spinner-overlay">
-    <div class="spinner"></div>
-  </div>
+  <div class="spinner"></div>
+</div>
 
+<section id="customer-profile-section" class="profile-section section-bg">
+  <div class="container py-4 d-flex justify-content-center">
 
-  <div >
-    <section id="menu" class="menu section-bg" style="padding-top: 9em;">
-      <div class="login-container">
-        
-        <div *ngIf="noProfileError" class="error-banner">
-          Profile not found
-        </div>
-  
-  
+    <!-- Error Banner -->
+    <div *ngIf="noProfileError" class="profile-error-card glass-panel text-center">
+      <div class="error-icon-box mb-3">
+        <i class="bi bi-person-x-fill"></i>
+      </div>
+      <h3 class="error-title">Profile Not Found</h3>
+      <p class="error-desc">We couldn't retrieve customer details for this account. Please check your phone number or scan your membership QR code.</p>
+      <a routerLink="/" class="btn-back-home mt-2">
+        <i class="bi bi-house-door me-1"></i> Back to Homepage
+      </a>
+    </div>
+
+    <!-- Main Profile Card -->
+    <div *ngIf="profileFound" class="profile-main-card glass-card">
       
-
-        <div *ngIf="profileFound" class="profile-details">
-          <p class="membership-header">Profile Details</p>
-          <p><strong>Name:</strong> {{ customerDetails.name }}</p>
-          <p><strong>Email ID:</strong> {{ customerDetails.email_id }}</p>
-          <p><strong>Number:</strong> {{ customerDetails.mobile_number}}</p>
-          <p><strong>created_at:</strong> {{ convertedDate}}</p>
-          <p class="membership-header">Loyalty points</p>
-          <p><strong>Available Points:</strong> {{ customer_points.available_points}}</p>
-          <p><strong>Total Points:</strong> {{ customer_points.total_points}}</p>
-          <p class="membership-header">Membership Details</p>
-          <p><strong>Membership ID:</strong> {{ memberShipDetails.member_ship_id }}</p>
-          <p><strong>Expire Date:</strong> {{ memberShipDetails.expiry_date }}</p>
-          <p>
-            <strong>Status:</strong> 
-            <span 
-            class="status 
-              {{ customerDetails.status === 'Active' ? 'active' : 
-                 customerDetails.status === 'Expired' ? 'expired' : 
-                 'not-found' }}">
-            {{ customerDetails.status }}
-          </span>
-          <p class="membership-header"> </p>
-          <div routerLink="/card" style="align-self: center;">  
-              <button type="button" style = "    background: #ffffff;
-              border: 2px solid #000000;
-              color: #000000;
-              border-radius: 50px;
-              padding: 8px 25px;
-              text-transform: uppercase;
-              font-size: 13px;
-              font-weight: 500;
-              letter-spacing: 1px;
-              transition: 0.3s;"
-        >Member ship Card</button></div>
-        <p style="    font-size: small;
-    align-self: center;">click above button for membership card</p>
+      <!-- Top Banner & Avatar Header -->
+      <div class="profile-card-header">
+        <div class="avatar-large">
+          {{ (customerDetails?.name || 'C').charAt(0).toUpperCase() }}
         </div>
-   
+        <div class="header-info">
+          <h2 class="customer-name">{{ customerDetails?.name || 'Valued Customer' }}</h2>
+          <span class="member-since">
+            <i class="bi bi-calendar3 me-1 text-gold"></i> Member since {{ convertedDate | date:'dd MMM yyyy' }}
+          </span>
+        </div>
+
+        <!-- Status Badge -->
+        <div class="status-badge-wrap">
+          <span class="membership-badge active" *ngIf="customerDetails?.status === 'Active'">
+            <i class="bi bi-patch-check-fill me-1"></i> Active Member
+          </span>
+          <span class="membership-badge expired" *ngIf="customerDetails?.status === 'Expired'">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> Expired
+          </span>
+          <span class="membership-badge standard" *ngIf="customerDetails?.status === 'No Membership' || !customerDetails?.status">
+            <i class="bi bi-person me-1"></i> No Membership
+          </span>
+        </div>
+      </div>
+
+      <div class="profile-card-body">
+        
+        <!-- Grid Row 1: Contact Details -->
+        <div class="profile-section-block">
+          <h4 class="block-title">
+            <i class="bi bi-person-lines-fill me-2 text-gold"></i> Contact Details
+          </h4>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Full Name</span>
+              <span class="info-value">{{ customerDetails?.name || 'N/A' }}</span>
+            </div>
+
+            <div class="info-item">
+              <span class="info-label">Mobile Number</span>
+              <span class="info-value">
+                <i class="bi bi-telephone-fill me-1 text-gold"></i> {{ customerDetails?.mobile_number || 'N/A' }}
+              </span>
+            </div>
+
+            <div class="info-item col-span-2">
+              <span class="info-label">Email Address</span>
+              <span class="info-value">
+                <i class="bi bi-envelope-fill me-1 text-gold"></i> {{ customerDetails?.email_id || 'N/A' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid Row 2: Loyalty Rewards Box -->
+        <div class="profile-section-block">
+          <h4 class="block-title">
+            <i class="bi bi-star-fill me-2 text-gold"></i> Loyalty Rewards
+          </h4>
+
+          <div class="loyalty-points-card">
+            <div class="points-box main-box">
+              <div class="points-icon-wrap">
+                <i class="bi bi-trophy-fill"></i>
+              </div>
+              <div class="points-content">
+                <span class="points-label">Available Balance</span>
+                <h3 class="points-number">{{ customer_points?.available_points || 0 }} <span class="pts-unit">pts</span></h3>
+              </div>
+            </div>
+
+            <div class="points-box sub-box">
+              <span class="points-label">Lifetime Total Earned</span>
+              <h4 class="sub-points-number">{{ customer_points?.total_points || 0 }} pts</h4>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid Row 3: Membership Details (if member) -->
+        <div class="profile-section-block" *ngIf="memberShipDetails && memberShipDetails.member_ship_id">
+          <h4 class="block-title">
+            <i class="bi bi-card-heading me-2 text-gold"></i> VIP Membership Details
+          </h4>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Membership ID</span>
+              <span class="info-value font-mono">#{{ memberShipDetails.member_ship_id }}</span>
+            </div>
+
+            <div class="info-item">
+              <span class="info-label">Expiration Date</span>
+              <span class="info-value">
+                <i class="bi bi-calendar-check me-1 text-gold"></i> {{ memberShipDetails.expiry_date | date:'dd MMM yyyy' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Action Footer -->
+        <div class="profile-action-footer text-center mt-4">
+          <button type="button" class="btn-digital-card" [routerLink]="'/card'">
+            <i class="bi bi-credit-card-2-front-fill me-2"></i> View Digital VIP Membership Card
+          </button>
+          <p class="footer-hint mt-2">
+            Tap to view interactive 3D digital membership card & exclusive perks
+          </p>
+        </div>
 
       </div>
 
-
-    </section>
     </div>
+
+  </div>
+</section>

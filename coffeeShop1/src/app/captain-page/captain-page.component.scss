@@ -1344,6 +1344,186 @@ ul li {
 }
 
 
+.modal-backdrop-custom {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 16px;
+}
+
+.cust-login-modal {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background: linear-gradient(160deg, rgba(28, 24, 20, 0.96) 0%, rgba(16, 14, 12, 0.98) 100%);
+  border: 1px solid rgba(205, 164, 94, 0.35);
+  border-radius: 24px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 240, 200, 0.15);
+  overflow: hidden;
+  animation: modalFadeIn 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
+
+  .btn-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.25);
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.5);
+    }
+  }
+
+  .membership-modal-card {
+    padding: 20px 24px;
+    color: #ffffff;
+
+    .modal-card-header {
+      border-bottom: 1px solid rgba(205, 164, 94, 0.25);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+
+      .modal-card-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0;
+        display: flex;
+        align-items: center;
+      }
+    }
+
+    .form-label {
+      display: block;
+      color: #cda45e;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+
+      .input-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #cda45e;
+        font-size: 0.95rem;
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      .form-control-dark {
+        padding-left: 38px !important;
+      }
+    }
+
+    .form-control-dark {
+      width: 100% !important;
+      background: rgba(255, 255, 255, 0.07) !important;
+      border: 1px solid rgba(205, 164, 94, 0.35) !important;
+      border-radius: 14px !important;
+      padding: 10px 14px !important;
+      color: #ffffff !important;
+      font-size: 0.9rem !important;
+      outline: none !important;
+      transition: all 0.25s ease;
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.45) !important;
+      }
+
+      &:focus {
+        border-color: #cda45e !important;
+        background: rgba(255, 255, 255, 0.12) !important;
+        box-shadow: 0 0 15px rgba(205, 164, 94, 0.25) !important;
+      }
+    }
+
+    .btn-gold-action {
+      background: linear-gradient(135deg, #cda45e 0%, #a67c37 100%) !important;
+      border: none !important;
+      color: #11100e !important;
+      border-radius: 22px !important;
+      padding: 10px 20px !important;
+      font-size: 0.88rem !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.5px !important;
+      cursor: pointer;
+      transition: all 0.25s ease;
+
+      &:hover {
+        background: linear-gradient(135deg, #e5b86e 0%, #b88a42 100%) !important;
+        box-shadow: 0 4px 15px rgba(205, 164, 94, 0.35) !important;
+        transform: translateY(-1px);
+      }
+    }
+  }
+
+  .modal-footer-action {
+    padding: 12px 20px 16px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: center;
+
+    .btn-close-modal {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.8);
+      border-radius: 20px;
+      padding: 6px 22px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba(239, 68, 68, 0.2);
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.4);
+      }
+    }
+  }
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .cust-login {
   border: 1px solid rgba(205, 164, 94, 0.35);
   border-radius: 24px;

@@ -784,6 +784,43 @@ available_points
           return throwError(() => error);
         })
       );
+  }
 
+  getAllCustomerDetails(): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'x-hasura-admin-secret': CUSTOMER_ACCOUNT_GRAPHQL_ADMIN_SECRETE
+    });
+
+    const operationsDoc = `
+    query GetAllCustomerDetails {
+      kubera_profile_customer_details(order_by: {created_at: desc}) {
+        id
+        name
+        email_id
+        mobile_number
+        created_at
+        customer_points {
+          id
+          available_points
+          total_points
+        }
+        customer_member_ship {
+          id
+          member_ship_id
+          validity_month
+          expiry_date
+          created_date
+        }
+      }
+    }
+    `;
+    const body = { query: operationsDoc };
+    return this.http.post(this.apiUrl, body, { headers }).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('Error fetching all customers:', error);
+        return throwError(() => error);
+      })
+    );
   }
-  }
+}
