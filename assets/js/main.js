@@ -76,7 +76,7 @@
     let offset = header ? header.offsetHeight : 0
     let target = select(el)
     if (!target) return
-    let elementPos = target.offsetTop
+    let elementPos = target.getBoundingClientRect().top + window.pageYOffset
     window.scrollTo({
       top: elementPos - offset,
       behavior: 'smooth'
