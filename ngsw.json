@@ -1,12 +1,12 @@
 {
   "configVersion": 1,
-  "timestamp": 1790885764988,
+  "timestamp": 1790958401180,
   "index": "/index.html",
   "assetGroups": [
     {
       "name": "app",
-      "installMode": "lazy",
-      "updateMode": "lazy",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
       "cacheQueryOptions": {
         "ignoreVary": true
       },
@@ -37,7 +37,7 @@
         "/common.1833da0f69beef3c.js",
         "/favicon.ico",
         "/index.html",
-        "/main.40149ed1482ee155.js",
+        "/main.99178781737d5825.js",
         "/manifest.webmanifest",
         "/polyfills.7182ac4f56cd4fc2.js",
         "/runtime.3d7741caac4d3ff6.js",
@@ -48,7 +48,7 @@
     {
       "name": "assets",
       "installMode": "lazy",
-      "updateMode": "lazy",
+      "updateMode": "prefetch",
       "cacheQueryOptions": {
         "ignoreVary": true
       },
@@ -1081,10 +1081,10 @@
     "/events-bg.59c0572d3feeb476.jpg": "ab3511d85262f1105575808a42d53df03f9d2751",
     "/favicon.ico": "0e0b41b9affbad3e804d187cef689c2248de56a2",
     "/hero-bg.a36d8e2629eb4538.jpg": "159e8fd6078e358150ce4b52f7316dfc4925da10",
-    "/index.html": "2a8801ce742d0e8089c3b061b26b2d11811860dd",
+    "/index.html": "0648ddc288d8cc7c741d4ff9447e1efb99ea71b6",
     "/layers-2x.9859cd1231006a4a.png": "152a162333e46d24f9d89f566312fc0c64011dee",
     "/layers.ef6db8722c2c3f9a.png": "c9e7528e491a39232ba24a2706c6c739d6fb0f06",
-    "/main.40149ed1482ee155.js": "acb1720f44992410c132d3560523ba021f3c4e79",
+    "/main.99178781737d5825.js": "01120a91e43c61c8fbfd668d1a5075d55b7f4195",
     "/manifest.webmanifest": "d60dcd6811325a69a3c68475d205b1288b2003a4",
     "/marker-icon.d577052aa271e13f.png": "60a90bcbb2b42b7ddb4556db94eb7c1084b0e5da",
     "/polyfills.7182ac4f56cd4fc2.js": "2723e6b966a3829e5533565159fbfd546a025e08",
